@@ -2,3 +2,4 @@
 rust-lang/**/target
 
 c-lang/new/main
+nodejs-ts/**/node_modules
