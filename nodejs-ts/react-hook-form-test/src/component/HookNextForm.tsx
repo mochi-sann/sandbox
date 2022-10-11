@@ -27,6 +27,7 @@ export const HookNextForm: React.FC = () => {
                 required: "入力してください",
                 minLength: { value: 6, message: `6文字以上で入力してください。` },
                 maxLength: { value: 32, message: `32文字以内で入力してください。` },
+                // pattern: /[a-zA-Z0-9!@#$%^&*()_+\\-=\\]\\[\\{\\}\\|]/,
                 // validate: {
                 //   minLength: (value) =>
                 //     value && value.length > 8 ? true : false,
@@ -40,7 +41,7 @@ export const HookNextForm: React.FC = () => {
               })}
             />
 
-            <pre>{JSON.stringify(errors.name?.types)}
+            <pre>{JSON.stringify(errors.name?.message)}
             </pre>
             <ErrorMessage
               errors={errors}
