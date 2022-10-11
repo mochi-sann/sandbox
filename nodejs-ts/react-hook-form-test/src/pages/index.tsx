@@ -2,14 +2,14 @@ import { createStyles } from "@mantine/core";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { HookForm } from "../component/hookForm";
+import { HookNextForm } from "../component/HookNextForm";
 import { Layout } from "../component/Layout";
 const useStyles = createStyles((theme, _params, getRef) => ({
   wrapper: {
     // subscribe to color scheme changes right in your styles
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[5]
-        : theme.colors.gray[1],
+    backgroundColor: theme.colorScheme === "dark"
+      ? theme.colors.dark[5]
+      : theme.colors.gray[1],
     maxWidth: 400,
     width: "100%",
     height: 180,
@@ -32,8 +32,9 @@ const useStyles = createStyles((theme, _params, getRef) => ({
   child: {
     // assign ref to element
     ref: getRef("child"),
-    backgroundColor:
-      theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.white,
+    backgroundColor: theme.colorScheme === "dark"
+      ? theme.colors.dark[8]
+      : theme.white,
     padding: theme.spacing.md,
     borderRadius: theme.radius.sm,
     boxShadow: theme.shadows.md,
@@ -53,6 +54,8 @@ const Home: NextPage = () => {
           <link rel="icon" href="/favicon.ico" />
         </Head>
         <HookForm />
+        <HookNextForm />
+
         <div className={classes.wrapper}>
           <div className={classes.child}>createStyles demo</div>
         </div>
