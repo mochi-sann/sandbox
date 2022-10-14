@@ -6,7 +6,11 @@ import { ErrorMessage } from "@hookform/error-message";
 export type hookFormProps = {};
 type FormValue = { name: string };
 export const HookNextForm: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValue>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValue>({
     mode: "onChange",
     criteriaMode: "all",
   });
@@ -25,8 +29,14 @@ export const HookNextForm: React.FC = () => {
             <Input
               {...register("name", {
                 required: "入力してください",
-                minLength: { value: 6, message: `6文字以上で入力してください。` },
-                maxLength: { value: 32, message: `32文字以内で入力してください。` },
+                minLength: {
+                  value: 6,
+                  message: `6文字以上で入力してください。`,
+                },
+                maxLength: {
+                  value: 32,
+                  message: `32文字以内で入力してください。`,
+                },
                 // pattern: /[a-zA-Z0-9!@#$%^&*()_+\\-=\\]\\[\\{\\}\\|]/,
                 // validate: {
                 //   minLength: (value) =>
@@ -41,17 +51,16 @@ export const HookNextForm: React.FC = () => {
               })}
             />
 
-            <pre>{JSON.stringify(errors.name?.message)}
-            </pre>
+            <pre>{JSON.stringify(errors.name?.message)}</pre>
             <ErrorMessage
               errors={errors}
               name="name"
               render={({ messages }) =>
                 messages &&
                 Object.entries(messages).map(([type, message], key) => (
-                  <Text sx={{ color: "red" }} key={key}>
-                  </Text>
-                ))}
+                  <Text sx={{ color: "red" }} key={key}></Text>
+                ))
+              }
             />
           </Box>
           <Button type="submit">submit</Button>

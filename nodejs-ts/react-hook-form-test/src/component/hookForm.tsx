@@ -7,7 +7,8 @@ import { ErrorMessage } from "@hookform/error-message";
 
 export type hookFormProps = {};
 const schema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(8, { message: "10文字以上入力してください" })
     .max(100, { message: "100文字以下にしてください" })
     .regex(/(?=.*[a-z])/, { message: "小文字を含めてください。" })
@@ -19,7 +20,11 @@ const schema = z.object({
 });
 
 export const HookForm: React.FC = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     mode: "onChange",
     resolver: zodResolver(schema),
     criteriaMode: "all",
@@ -47,7 +52,8 @@ export const HookForm: React.FC = () => {
                   <Text sx={{ color: "red" }} key={type}>
                     {JSON.stringify(messages, null, 2)}
                   </Text>
-                ))}
+                ))
+              }
             />
           </Box>
           <Box>
