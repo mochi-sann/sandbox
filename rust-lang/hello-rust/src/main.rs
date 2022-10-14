@@ -12,9 +12,6 @@ fn prim_number(num: i32) -> bool {
 }
 
 fn main() {
-    println!("どの数の素数までを計算しますか?");
-    let mut guess = String::new();
-
     // io::stdin()
     //     .read_line(&mut guess)
     //     .expect("行の読み込みに失敗しました"); // 行の読み込みに失敗しました
@@ -22,11 +19,11 @@ fn main() {
     // let stri: String = String::from(guess);
     // let serche_number: i32 = stri.parse().unwrap();
     //
-    for num in 2..1000 {
+    for num in 2..100 {
         if prim_number(num) {
             print!("{} ", num);
         } else {
-            print!("   ");
+            print!("");
             // println!("{} は素数ではありません", num);
         }
     }

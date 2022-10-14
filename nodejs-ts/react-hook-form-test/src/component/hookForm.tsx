@@ -10,11 +10,11 @@ const schema = z.object({
   name: z.string()
     .min(8, { message: "10文字以上入力してください" })
     .max(100, { message: "100文字以下にしてください" })
-    .nonempty({ message: "必須項目です" })
-    .regex(/\d+/, {
-      message: "数字が含まれる必要があります",
-    }).regex(/[a-z]/, { message: "小文字の英数字が含まれる必要があります" })
-    .regex(/[A-Z]/, { message: "大文字ののアルファベットが含まれる必要があります" }),
+    .regex(/(?=.*[a-z])/, { message: "小文字を含めてください。" })
+    .regex(/(?=.*[A-Z])/, { message: "大文字を含めてください。" })
+    .regex(/(?=.*[0-9])/, { message: "数字を含めてください。" })
+    .regex(/(?=.*[!])/, { message: "数字を含めてください。" }),
+
   age: z.number(),
 });
 
@@ -37,6 +37,7 @@ export const HookForm: React.FC = () => {
           <Box>
             <label>First Name</label>
             <Input {...register("name")} />
+            errors.name?{errors.name && JSON.stringify(errors.name?.message)}
             <ErrorMessage
               errors={errors}
               name="name"
@@ -44,7 +45,7 @@ export const HookForm: React.FC = () => {
                 messages &&
                 Object.entries(messages).map(([type, message], key) => (
                   <Text sx={{ color: "red" }} key={type}>
-                    {JSON.stringify(messages)}
+                    {JSON.stringify(messages, null, 2)}
                   </Text>
                 ))}
             />
