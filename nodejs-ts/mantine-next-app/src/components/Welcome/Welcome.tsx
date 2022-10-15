@@ -1,4 +1,4 @@
-import { Title, Text, Anchor } from '@mantine/core';
+import { Title, Text, Anchor, Button } from '@mantine/core';
 import useStyles from './Welcome.styles';
 
 export function Welcome() {
@@ -12,6 +12,7 @@ export function Welcome() {
           Mantine
         </Text>
       </Title>
+      <Button color={'dark'}>ボタン</Button>
       <Text color="dimmed" align="center" size="lg" sx={{ maxWidth: 580 }} mx="auto" mt="xl">
         This starter Next.js project includes a minimal setup for server side rendering, if you want
         to learn more on Mantine + Next.js integration follow{' '}

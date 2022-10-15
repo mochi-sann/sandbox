@@ -11,4 +11,13 @@ export default createStyles((theme) => ({
       fontSize: 50,
     },
   },
+  button: {
+    backgroundColor: theme.black,
+    transition: '100ms',
+    width: '100%',
+    ':hover': {
+      backgroundColor: theme.black,
+      filter: 'brightness(1.2)',
+    },
+  },
 }));
