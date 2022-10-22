@@ -1,4 +1,4 @@
-import { gsap, Bounce } from "gsap";
+import { gsap, Bounce, Power0 } from "gsap";
 
 // 個数
 const MAX = 100;
@@ -54,5 +54,6 @@ window.addEventListener("DOMContentLoaded", () => {
     repeat: -1, // 無限に繰り返し
     yoyo: true, // 反転
     opacity: 0.2,
+    ease: "ease.out",
   });
 });
