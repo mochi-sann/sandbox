@@ -37,7 +37,7 @@ export const HookNextForm: React.FC = () => {
                   value: 32,
                   message: `32文字以内で入力してください。`,
                 },
-                pattern: /[a-zA-Z0-9!@#$%^&*()_+\\-=\\]\\[\\{\\}\\|]/,
+                // pattern: /[a-zA-Z0-9!@#$%^&*()_+\\-=\\]\\[\\{\\}\\|]/,
                 // validate: {
                 //   minLength: (value) =>
                 //     value && value.length > 8 ? true : false,
