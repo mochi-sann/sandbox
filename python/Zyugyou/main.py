@@ -1,16 +1,5 @@
-def inputTN():
-    Number = int(input("数字"))
-    txt = input("名前")
-    return (txt, Number)
+def hello(a, b):
+    return a + b
 
 
-list = [inputTN(), inputTN(), inputTN(), inputTN(), inputTN()]
-# print(list)
-
-
-def waaaaaaaaaaaaaaaaa(hoggggg):
-    return hoggggg[1]
-
-
-list.sort(key=waaaaaaaaaaaaaaaaa)
-print(list[1][0])
+print(hello(100, 200))
