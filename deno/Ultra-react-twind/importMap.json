@@ -5,12 +5,19 @@
     "react-dom": "https://esm.sh/react-dom@18.2.0",
     "react-dom/server": "https://esm.sh/react-dom@18.2.0/server?dev",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.3.0?external=react",
+    "react-router-dom/server": "https://esm.sh/react-router-dom@6.3.0/server?external=react",
 
     "twind": "https://esm.sh/twind@0.16.17",
     "twind/sheets": "https://esm.sh/twind@0.16.17/sheets",
 
     "@tanstack/react-query": "https://esm.sh/@tanstack/react-query@4.2.3?external=react",
 
-    "ultra/": "https://deno.land/x/ultra@v2.1.2/"
+    "ultra/": "https://deno.land/x/ultra@v2.1.2/",
+
+    "chakra-ui": "https://esm.sh/@chakra-ui/react",
+    "emotion/react": "https://esm.sh/@emotion/react",
+    "emotion/styled": "https://esm.sh/@emotion/styled",
+    "framer-motion": "https://esm.sh/framer-motion"
   }
 }

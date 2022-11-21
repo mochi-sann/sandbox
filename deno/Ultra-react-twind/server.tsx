@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.164.0/http/server.ts";
 import { type Context, createServer } from "ultra/server.ts";
+import { StaticRouter } from "react-router-dom/server";
 import App from "./src/app.tsx";
 
 // Twind
@@ -21,9 +22,11 @@ function ServerApp({ context }: Context) {
   const requestUrl = new URL(context.req.url);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <StaticRouter location={new URL(context.req.url).pathname}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </StaticRouter>
   );
 }
 
