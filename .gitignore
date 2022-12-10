@@ -5,3 +5,5 @@ c-lang/new/main
 nodejs-ts/**/node_modules
 
 deno/Ultra-react-twind/.ultra
+deno/test-twi/.env
+deno/test-twi/.env.development

@@ -1,0 +1,15 @@
+{
+  "version": "2",
+  "remote": {
+    "https://deno.land/x/env@v2.2.0/env.js": "f4b4a46d721a848b9aa7e4ba65f1c2ff6087d68cedfe46f92010cbbb1e800934"
+  },
+  "npm": {
+    "specifiers": { "twitter-api-v2": "twitter-api-v2@1.12.9" },
+    "packages": {
+      "twitter-api-v2@1.12.9": {
+        "integrity": "sha512-nmKwcUiXgoEfcOtAH/hYojy0oSxbouWvvNsHVphiHSW9x9aus2Jdg9/NRB2Gzyq5G6xl+EkjUlEWwBQjp1FOfg==",
+        "dependencies": {}
+      }
+    }
+  }
+}
