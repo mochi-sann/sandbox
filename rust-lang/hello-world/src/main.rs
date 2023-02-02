@@ -1,17 +1,34 @@
-enum Color {
-    Red,
-    Blue,
-    Green,
-    Hex(String),
+/**
+ * fizz_buzz rust in if
+ * */
+fn fizz_buzz(value: i32) -> String {
+    let result = if value % 15 == 0 {
+        return "FizzBuzz".to_string();
+    } else if value % 5 == 0 {
+        return "Buzz".to_string();
+    } else if value % 3 == 0 {
+        return "Fizz".to_string();
+    } else {
+        value.to_string()
+    };
+    return result;
+}
+/**
+ * fizz_buzz_mutch rust in match
+ * */
+fn fizz_buzz_mutch(value: i32) -> String {
+    let result = match value {
+        value if value % 15 == 0 => "fizz-buzz".to_string(),
+        value if value % 5 == 0 => "buzz".to_string(),
+        value if value % 3 == 0 => "fizz".to_string(),
+        _ => value.to_string(),
+    };
+    return result;
 }
 fn main() {
-    let red = Color::Hex("#ff00ff".to_string());
-    let mut scores = std::collections::HashMap::new();
-    scores.insert("Sato", 100);
-    scores.insert("Tanaka", 90);
-    //"Tanaka"がなかったら100をinsert
-    scores.entry("Tanaka").or_insert(100);
-    println!("{:?}", scores);
-    let ahoge = if false { 10 } else { 20 };
-    println!("{}", ahoge)
+    let mut cont = 0 ;
+    loop {
+        cont +=1 ;
+        {}
+    }
 }
