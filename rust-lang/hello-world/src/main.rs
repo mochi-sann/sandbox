@@ -1,34 +1,28 @@
-/**
- * fizz_buzz rust in if
- * */
-fn fizz_buzz(value: i32) -> String {
-    let result = if value % 15 == 0 {
-        return "FizzBuzz".to_string();
-    } else if value % 5 == 0 {
-        return "Buzz".to_string();
-    } else if value % 3 == 0 {
-        return "Fizz".to_string();
-    } else {
-        value.to_string()
-    };
-    return result;
+#[derive(Debug)]
+struct User {
+    name: String,
+    age: i32,
 }
-/**
- * fizz_buzz_mutch rust in match
- * */
-fn fizz_buzz_mutch(value: i32) -> String {
-    let result = match value {
-        value if value % 15 == 0 => "fizz-buzz".to_string(),
-        value if value % 5 == 0 => "buzz".to_string(),
-        value if value % 3 == 0 => "fizz".to_string(),
-        _ => value.to_string(),
-    };
-    return result;
-}
-fn main() {
-    let mut cont = 0 ;
-    loop {
-        cont +=1 ;
-        {}
+
+impl User {
+    fn new(name: String, age: i32) -> Self {
+        Self { name, age }
     }
+    fn description(&self) -> String {
+        format!("user name is {} age is {}", &self.name, &self.name)
+    }
+    fn rename(&mut self, name: String) {
+        self.name = name
+    }
+    fn get_name(&self) -> String {
+        return format!("{}", &self.name);
+    }
+}
+
+fn main() {
+    let mut user = User::new(String::from("'hello world this is name'"), 300);
+    println!("{}", user.description());
+    user.rename(String::from("This IS NEW NAME"));
+    println!("{}", user.description());
+    println!("{}", user.get_name());
 }
