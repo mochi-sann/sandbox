@@ -1,39 +1,43 @@
-use std::fmt::{Display, Formatter};
+trait Area {
+    fn area(&self) -> u32;
+}
 
-struct Fraction(u32, u32);
+struct Square(u32);
 
-impl Fraction {
-    // numerator : 分子  , denominator  分母
-    fn new(numerator: u32, denominator: u32) -> Self {
-        let gcf_value = Self::gcf(numerator, denominator);
-        Self(numerator / gcf_value, denominator / gcf_value)
-    }
-
-    // 最大公約数を計算
-    fn gcf(value1: u32, value2: u32) -> u32 {
-        let (mut a, mut b) = if value1 > value2 {
-            (value1, value2);
-        } else {
-            (value1, value2);
-        };
-
-        let mut r = a % b;
-        while r != 0 {
-            a = b;
-            b = r;
-            r = a % b;
-        }
-        b
+impl Area for Square {
+    fn area(&self) -> u32 {
+        self.0.pow(2)
     }
 }
 
-impl Display for Fraction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}/{}", &self.0, &self.1)
+impl Square {
+    fn new(side: u32) -> Self {
+        Self(side)
+    }
+}
+struct Rectangle(u32, u32);
+
+impl Area for Rectangle {
+    fn area(&self) -> u32 {
+        self.0 * self.1
     }
 }
 
+impl Rectangle {
+    fn new(a: u32, b: u32) -> Self {
+        Self(a, b)
+    }
+}
+
+fn comparison_area(a: impl Area, b: impl Area) -> bool {
+    a.area() == b.area()
+}
 fn main() {
-    let a = Fraction::new(8, 18);
-    println!("{}", a)
+    let my_squrea = Square::new(10);
+    let my_rectangle = Rectangle::new(10, 10);
+    if comparison_area(my_squrea, my_rectangle) {
+        println!("True")
+    } else {
+        println!("false")
+    }
 }
