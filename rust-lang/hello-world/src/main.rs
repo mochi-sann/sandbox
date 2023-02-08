@@ -1,28 +1,39 @@
-#[derive(Debug)]
-struct User {
-    name: String,
-    age: i32,
+use std::fmt::{Display, Formatter};
+
+struct Fraction(u32, u32);
+
+impl Fraction {
+    // numerator : 分子  , denominator  分母
+    fn new(numerator: u32, denominator: u32) -> Self {
+        let gcf_value = Self::gcf(numerator, denominator);
+        Self(numerator / gcf_value, denominator / gcf_value)
+    }
+
+    // 最大公約数を計算
+    fn gcf(value1: u32, value2: u32) -> u32 {
+        let (mut a, mut b) = if value1 > value2 {
+            (value1, value2);
+        } else {
+            (value1, value2);
+        };
+
+        let mut r = a % b;
+        while r != 0 {
+            a = b;
+            b = r;
+            r = a % b;
+        }
+        b
+    }
 }
 
-impl User {
-    fn new(name: String, age: i32) -> Self {
-        Self { name, age }
-    }
-    fn description(&self) -> String {
-        format!("user name is {} age is {}", &self.name, &self.name)
-    }
-    fn rename(&mut self, name: String) {
-        self.name = name
-    }
-    fn get_name(&self) -> String {
-        return format!("{}", &self.name);
+impl Display for Fraction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}/{}", &self.0, &self.1)
     }
 }
 
 fn main() {
-    let mut user = User::new(String::from("'hello world this is name'"), 300);
-    println!("{}", user.description());
-    user.rename(String::from("This IS NEW NAME"));
-    println!("{}", user.description());
-    println!("{}", user.get_name());
+    let a = Fraction::new(8, 18);
+    println!("{}", a)
 }
