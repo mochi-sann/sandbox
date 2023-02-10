@@ -1,43 +1,61 @@
-trait Area {
-    fn area(&self) -> u32;
-}
-
-struct Square(u32);
-
-impl Area for Square {
-    fn area(&self) -> u32 {
-        self.0.pow(2)
+pub trait Geometry {
+    fn area(&self) -> f64;
+    fn name(&self) -> &str {
+        return "Geometry";
     }
 }
 
-impl Square {
-    fn new(side: u32) -> Self {
-        Self(side)
-    }
-}
-struct Rectangle(u32, u32);
-
-impl Area for Rectangle {
-    fn area(&self) -> u32 {
-        self.0 * self.1
-    }
+struct Rectangle {
+    width: u32,
+    height: u32,
 }
 
-impl Rectangle {
-    fn new(a: u32, b: u32) -> Self {
-        Self(a, b)
+impl Geometry for Rectangle {
+    fn area(&self) -> f64 {
+        self.width as f64 * self.height as f64
+    }
+    fn name(&self) -> &str {
+        return "Rectangle";
     }
 }
 
-fn comparison_area(a: impl Area, b: impl Area) -> bool {
-    a.area() == b.area()
+struct Triangle {
+    bottom: u32,
+    height: u32,
 }
+
+impl Geometry for Triangle {
+    fn area(&self) -> f64 {
+        self.bottom as f64 * self.height as f64 * 0.5
+    }
+    fn name(&self) -> &str {
+        return "Triangle";
+    }
+}
+
+struct NewCont {
+    bottom: u32,
+    height: u32,
+    population: u32,
+}
+impl Geometry for NewCont {
+    fn area(&self) -> f64 {
+        self.bottom as f64 * self.height as f64 * 0.5
+    }
+    fn name(&self) -> &str {
+        return "Triangle";
+    }
+}
+
 fn main() {
-    let my_squrea = Square::new(10);
-    let my_rectangle = Rectangle::new(10, 10);
-    if comparison_area(my_squrea, my_rectangle) {
-        println!("True")
-    } else {
-        println!("false")
-    }
+    let a = Rectangle {
+        width: 10,
+        height: 20,
+    };
+    let b = Triangle {
+        bottom: 20,
+        height: 5,
+    };
+    println!("{} area={}", a.name(), a.area());
+    println!("{} area={}", b.name(), b.area());
 }
