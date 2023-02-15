@@ -1,36 +1,30 @@
-use warp::Filter;
-mod foo;
+use std::{error, fmt};
 
-use foo::repeat_str::repeat_str;
+#[derive(Debug)]
+enum ApiError {
+    InternalServerError(String),
+    NotFound,
+}
 
-mod parent {
-    pub mod child {
-        use super::privert_child;
-
-        pub fn print_hoge() {
-            privert_child::print_hoge_privert();
-        }
-    }
-
-    mod privert_child {
-        pub fn print_hoge_privert() {
-            println!("hogehoge!!");
+impl fmt::Display for ApiError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ApiError::InternalServerError(msg) => write!(f, "Internal Server Error: {}", msg),
+            ApiError::NotFound => write!(f, "Not Found"),
         }
     }
 }
+fn mayve_fail() -> Result<(), Box<dyn error::Error>> {
+    let x = 1;
+    let y = 0;
+    if y == 0 {
+        return Err("y is zero".into());
+    }
+    let z = x / y;
+    Ok(())
+}
 
-#[tokio::main]
-async fn main() {
-    // GET /hello/warp => 200 OK with body "Hello, warp!"
-
-    let hello = warp::path::end().map(|| format!("Hello, ! , {}", repeat_str("hello!", 10)));
-
-    println!("Server running at http://localhsot:3000");
-
-    use parent::child::print_hoge;
-    print_hoge();
-    crate::parent::child::print_hoge();
-    foo::bar::baz();
-
-    warp::serve(hello).run(([0, 0, 0, 0], 3000)).await;
+fn main() -> Result<(), Box<dyn error::Error>> {
+    let l = mayve_fail()?;
+    Ok(())
 }
