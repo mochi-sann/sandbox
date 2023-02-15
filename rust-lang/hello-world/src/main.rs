@@ -1,4 +1,5 @@
 use std::{error, fmt};
+mod foo;
 
 #[derive(Debug)]
 enum ApiError {
@@ -25,6 +26,7 @@ fn mayve_fail() -> Result<(), Box<dyn error::Error>> {
 }
 
 fn main() -> Result<(), Box<dyn error::Error>> {
+    println!("{}", foo::repeat_str::repeat_str("hello world", 1000));
     let l = mayve_fail()?;
     Ok(())
 }
