@@ -1,4 +1,7 @@
 use warp::Filter;
+mod foo;
+
+use foo::repeat_str::repeat_str;
 
 mod parent {
     pub mod child {
@@ -15,51 +18,19 @@ mod parent {
         }
     }
 }
+
 #[tokio::main]
 async fn main() {
     // GET /hello/warp => 200 OK with body "Hello, warp!"
 
-    let hello = warp::path::end().map(|| format!("Hello, ! , {}", x_str("hello ! ", 10)));
+    let hello = warp::path::end().map(|| format!("Hello, ! , {}", repeat_str("hello!", 10)));
 
     println!("Server running at http://localhsot:3000");
-    parent::child::print_hoge();
+
+    use parent::child::print_hoge;
+    print_hoge();
+    crate::parent::child::print_hoge();
+    foo::bar::baz();
 
     warp::serve(hello).run(([0, 0, 0, 0], 3000)).await;
-}
-
-// x回文字列をループする関数
-fn x_str(s: &str, x: usize) -> String {
-    let mut result = String::new();
-    // loop 0 to x
-    for _ in 0..x {
-        result.push_str(s);
-    }
-    result
-}
-
-#[cfg(test)]
-
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_x_str() {
-        assert_eq!(x_str("hello", 3), "hellohellohello");
-    }
-    #[test]
-    fn test_x_str_10() {
-        assert_eq!(
-            x_str("hello!", 10),
-            "hello!hello!hello!hello!hello!hello!hello!hello!hello!hello!"
-        );
-    }
-
-    #[test]
-    #[should_panic] // この関数はパニックする
-    fn test_x_str_panic() {
-        assert_eq!(
-            x_str("hello!", 10),
-            "!hello!hello!hello!hello!hello!hello!hello!hello!hello!hello!"
-        );
-    }
 }
