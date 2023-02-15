@@ -1,61 +1,65 @@
-pub trait Geometry {
-    fn area(&self) -> f64;
-    fn name(&self) -> &str {
-        return "Geometry";
+use warp::Filter;
+
+mod parent {
+    pub mod child {
+        use super::privert_child;
+
+        pub fn print_hoge() {
+            privert_child::print_hoge_privert();
+        }
     }
+
+    mod privert_child {
+        pub fn print_hoge_privert() {
+            println!("hogehoge!!");
+        }
+    }
+}
+#[tokio::main]
+async fn main() {
+    // GET /hello/warp => 200 OK with body "Hello, warp!"
+
+    let hello = warp::path::end().map(|| format!("Hello, ! , {}", x_str("hello ! ", 10)));
+
+    println!("Server running at http://localhsot:3000");
+    parent::child::print_hoge();
+
+    warp::serve(hello).run(([0, 0, 0, 0], 3000)).await;
 }
 
-struct Rectangle {
-    width: u32,
-    height: u32,
+// x回文字列をループする関数
+fn x_str(s: &str, x: usize) -> String {
+    let mut result = String::new();
+    // loop 0 to x
+    for _ in 0..x {
+        result.push_str(s);
+    }
+    result
 }
 
-impl Geometry for Rectangle {
-    fn area(&self) -> f64 {
-        self.width as f64 * self.height as f64
-    }
-    fn name(&self) -> &str {
-        return "Rectangle";
-    }
-}
+#[cfg(test)]
 
-struct Triangle {
-    bottom: u32,
-    height: u32,
-}
+mod tests {
+    use super::*;
 
-impl Geometry for Triangle {
-    fn area(&self) -> f64 {
-        self.bottom as f64 * self.height as f64 * 0.5
+    #[test]
+    fn test_x_str() {
+        assert_eq!(x_str("hello", 3), "hellohellohello");
     }
-    fn name(&self) -> &str {
-        return "Triangle";
+    #[test]
+    fn test_x_str_10() {
+        assert_eq!(
+            x_str("hello!", 10),
+            "hello!hello!hello!hello!hello!hello!hello!hello!hello!hello!"
+        );
     }
-}
 
-struct NewCont {
-    bottom: u32,
-    height: u32,
-    population: u32,
-}
-impl Geometry for NewCont {
-    fn area(&self) -> f64 {
-        self.bottom as f64 * self.height as f64 * 0.5
+    #[test]
+    #[should_panic] // この関数はパニックする
+    fn test_x_str_panic() {
+        assert_eq!(
+            x_str("hello!", 10),
+            "!hello!hello!hello!hello!hello!hello!hello!hello!hello!hello!"
+        );
     }
-    fn name(&self) -> &str {
-        return "Triangle";
-    }
-}
-
-fn main() {
-    let a = Rectangle {
-        width: 10,
-        height: 20,
-    };
-    let b = Triangle {
-        bottom: 20,
-        height: 5,
-    };
-    println!("{} area={}", a.name(), a.area());
-    println!("{} area={}", b.name(), b.area());
 }
