@@ -18,16 +18,16 @@ pub async fn create_user(
     (StatusCode::CREATED, Json(user))
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct CreateUser {
-    username: String,
+    pub username: String,
 }
 
 // the output to our `create_user` handler
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct User {
-    id: u64,
-    username: String,
+    pub id: u64,
+    pub username: String,
 }
 
 pub async fn user_list() -> (StatusCode, Json<Vec<User>>) {
@@ -41,6 +41,3 @@ pub async fn user_list() -> (StatusCode, Json<Vec<User>>) {
 
     return (StatusCode::OK, Json(users));
 }
-
-
-

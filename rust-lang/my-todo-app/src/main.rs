@@ -57,6 +57,7 @@ mod test {
 
         assert_eq!(body, "hello world\nhello world");
     }
+
     #[tokio::test]
     async fn test_return_user_data() {
         let req = Request::builder()
@@ -71,5 +72,12 @@ mod test {
         let body: String = String::from_utf8(byets.to_vec()).unwrap();
         println!("body: {}", body);
         let user: User = serde_json::from_str(&body).expect("cannot cover User instance ");
+        assert_eq!(
+            user,
+            User {
+                id: 1000,
+                username: "test_user".to_string()
+            }
+        )
     }
 }
