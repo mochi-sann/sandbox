@@ -9,7 +9,7 @@ pub async fn create_user(
 ) -> (StatusCode, Json<User>) {
     // insert your application logic here
     let user = User {
-        id: 1337,
+        id: 1000,
         username: payload.username,
     };
 
@@ -32,12 +32,15 @@ pub struct User {
 
 pub async fn user_list() -> (StatusCode, Json<Vec<User>>) {
     //10人のuser
-    let users = (0..10)
+    let users = (0..100)
         .map(|id| User {
-            id: id as u64,
-            username: format!("user{}", id),
+            id: id + 1 as u64,
+            username: format!("user{}", id + 1),
         })
         .collect();
 
     return (StatusCode::OK, Json(users));
 }
+
+
+
