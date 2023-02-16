@@ -29,3 +29,15 @@ pub struct User {
     id: u64,
     username: String,
 }
+
+pub async fn user_list() -> (StatusCode, Json<Vec<User>>) {
+    //10人のuser
+    let users = (0..10)
+        .map(|id| User {
+            id: id as u64,
+            username: format!("user{}", id),
+        })
+        .collect();
+
+    return (StatusCode::OK, Json(users));
+}

@@ -16,7 +16,8 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(root))
-        .route("/users", post(api::user::create_user));
+        .route("/users", post(api::user::create_user))
+        .route("/users", get(api::user::user_list));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("Listening on {}", addr);
