@@ -4,8 +4,10 @@ use axum::{
     routing::{get, post, Route},
     Router,
 };
+use thiserror::Error;
 
 mod api;
+
 
 #[tokio::main]
 async fn main() {
@@ -35,15 +37,18 @@ fn create_app() -> Router {
 async fn root() -> &'static str {
     "hello world\nhello world"
 }
-#[cfg(test)]
-mod test {
-    use tower::ServiceExt;
 
+//** pont 1 **
+
+#[cfg(test)]
+
+mod test {
     use crate::api::user::User;
     use axum::{
         body::Body,
         http::{header, Method, Request},
     };
+    use tower::ServiceExt;
 
     use super::*;
 
@@ -70,7 +75,6 @@ mod test {
         let res = create_app().oneshot(req).await.unwrap();
         let byets = hyper::body::to_bytes(res.into_body()).await.unwrap();
         let body: String = String::from_utf8(byets.to_vec()).unwrap();
-        println!("body: {}", body);
         let user: User = serde_json::from_str(&body).expect("cannot cover User instance ");
         assert_eq!(
             user,
@@ -78,6 +82,7 @@ mod test {
                 id: 1000,
                 username: "test_user".to_string()
             }
-        )
+        );
+        //ステータスコードをテスト
     }
 }
