@@ -8,7 +8,11 @@ struct Cli {
 }
 fn main() {
     let args = Cli::parse();
-    let contetnt = read_to_string(&args.path).expect("could not read file ");
+    // let file_result = read_to_string(&args.path);
+    let contetnt = match read_to_string(&args.path) {
+        Ok(content) => content,
+        Err(error) => panic!("ファイルは存在しません: {:?} : {:?}", &args.path, error),
+    };
 
     for line in contetnt.lines() {
         // println!("{}", line);

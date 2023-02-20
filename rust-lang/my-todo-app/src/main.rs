@@ -1,5 +1,6 @@
 use std::{env, net::SocketAddr};
 
+use api::todo::TodoRepository;
 use axum::{
     routing::{get, post, Route},
     Router,
@@ -8,7 +9,6 @@ use thiserror::Error;
 
 mod api;
 
-
 #[tokio::main]
 async fn main() {
     // ログレベルの初期化
@@ -16,7 +16,8 @@ async fn main() {
     env::set_var("RUST_LOG", log_level);
     tracing_subscriber::fmt::init();
 
-    let app = create_app();
+    let repository = api::todo::TodoRepository::new();
+    let app = create_app(repository);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("Listening on {}", addr);
@@ -27,11 +28,10 @@ async fn main() {
         .unwrap();
 }
 
-fn create_app() -> Router {
+fn create_app<T: TodoRepository>(repositry: T) -> Router {
     return Router::new()
         .route("/", get(root))
-        .route("/users", post(api::user::create_user))
-        .route("/users", get(api::user::user_list));
+        .route("/todos", post(create_todo::<T>));
 }
 
 async fn root() -> &'static str {
