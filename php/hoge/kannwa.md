@@ -1,4 +1,13 @@
-# 第1問
+---
+pdf_options:
+  format: A4
+  margin: 20mm 20mm
+stylesheet: https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.10.0/github-markdown.min.css
+body_class: markdown-body
+---
+
+
+## 第1問
 
 ```php
 // show.php
@@ -7,45 +16,44 @@ echo $_POST["myname"];
 ?>
 ```
 
-# 第2問
+## 第2問
 
 ```php
 <?php
 $filename = './output.txt';
-// ファイルを開く（'w'は書き込みモード）
+
 $fp = fopen($filename, 'w');
-// ファイルに書き込む
 $data = "Hello World";
+
 fputs($fp, $data);
-// ファイルを閉じる
 fclose($fp);
 ?>
 ```
 
-# 第3問
+## 第3問
 
 ```php
 <?php
 $filename = './input.txt';
-// ファイルを開く（'w'は書き込みモード）
+
 $fp =  file_get_contents(  $filename);
 echo $fp;
 
 ?>
 ```
 
-# 第4問
+## 第4問
 
-`multipart/form-data`と記述する
+enctype 属性に`multipart/form-data`と記述する
 
-```php
+```html
 <form action="upload.php" method="POST" enctype="multipart/form-data">
   <input type="file" name="attachment" />
   <button type="submit">送信</button>
 </form>
 ```
 
-# 第5問
+## 第5問
 
 ```php
 <?php
