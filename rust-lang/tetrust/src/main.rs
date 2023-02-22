@@ -1,36 +1,8 @@
-enum BlockKind {
-    I,
-    O,
-    S,
-    Z,
-    J,
-    L,
-    T,
-}
+mod block;
+use std::{thread, time::Duration};
 
-type BlockShape = [[usize; 4]; 4];
+use crate::block::{Position, is_collision, BlockKind, BLOCKS, FIELD_HEIGHT, FIELD_WIDTH};
 
-const BLOCKS: [BlockShape; 7] = [
-    // I block
-    [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]],
-    // O block
-    [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
-    // S block
-    [[0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0]],
-    // Z block
-    [[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
-    // J block
-    [[0, 0, 0, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-    // Lブロック
-    [[0, 0, 0, 0], [0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-    // Tブロック
-    [[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-];
-
-struct Position {
-    x: usize,
-    y: usize,
-}
 
 fn main() {
     let field = [
@@ -58,8 +30,14 @@ fn main() {
     ];
     let mut pos = Position { x: 4, y: 0 };
 
-    for _ in 0..5 {
+    println!("\x1b[2J\x1b[H\x1b[?25l");
+    for _ in 0..30 {
         let mut field_buf = field;
+
+        // 当たり判定
+        if !is_collision(&field, &pos, BlockKind::I) {
+            pos.y += 1;
+        }
 
         for y in 0..4 {
             for x in 0..4 {
@@ -69,9 +47,10 @@ fn main() {
             }
         }
 
-        pos.y += 1;
-        for y in 0..21 {
-            for x in 0..13 {
+        // pos.y += 1;
+        println!("\x1b[H"); // カーソルを先頭に移動
+        for y in 0..FIELD_HEIGHT {
+            for x in 0..FIELD_WIDTH {
                 if field_buf[y][x] == 1 {
                     print!("[]");
                 } else {
@@ -80,7 +59,9 @@ fn main() {
                 {}
             }
 
-            println!() ;
+            println!();
         }
+        thread::sleep(Duration::from_millis(1000));
     }
+    println!("\x1b[?25h");
 }
