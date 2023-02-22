@@ -1,4 +1,4 @@
-enum BlockType {
+enum BlockKind {
     I,
     O,
     S,
@@ -8,9 +8,31 @@ enum BlockType {
     T,
 }
 
-fn main() {
-    let block = [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]];
+type BlockShape = [[usize; 4]; 4];
 
+const BLOCKS: [BlockShape; 7] = [
+    // I block
+    [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]],
+    // O block
+    [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+    // S block
+    [[0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0]],
+    // Z block
+    [[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+    // J block
+    [[0, 0, 0, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+    // Lブロック
+    [[0, 0, 0, 0], [0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+    // Tブロック
+    [[0, 0, 0, 0], [0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+];
+
+struct Position {
+    x: usize,
+    y: usize,
+}
+
+fn main() {
     let field = [
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -34,24 +56,31 @@ fn main() {
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
+    let mut pos = Position { x: 4, y: 0 };
 
-    let mut filed_buf = field;
-    for y in 0..4 {
-        for x in 0..4 {
-            if block[y][x] == 1 {
-                filed_buf[y + 8][x + 4] = 1;
+    for _ in 0..5 {
+        let mut field_buf = field;
+
+        for y in 0..4 {
+            for x in 0..4 {
+                if BLOCKS[BlockKind::I as usize][y][x] == 1 {
+                    field_buf[pos.y + y][pos.x + x] = 1;
+                }
             }
         }
-    }
 
-    for y in 0..21 {
-        for x in 0..13 {
-            if filed_buf[y][x] == 1 {
-                print!("[]");
-            } else {
-                print!(" .");
+        pos.y += 1;
+        for y in 0..21 {
+            for x in 0..13 {
+                if field_buf[y][x] == 1 {
+                    print!("[]");
+                } else {
+                    print!(" .");
+                }
+                {}
             }
+
+            println!() ;
         }
-        println!();
     }
 }
