@@ -37,11 +37,12 @@ pub struct Position {
     pub x: usize,
     pub y: usize,
 }
+// ブロックがフィールドに衝突したらtrueを返す
 
 pub fn is_collision(field: &Field, pos: &Position, block: BlockKind) -> bool {
     for y in 0..4 {
         for x in 0..4 {
-            if field[y + pos.y + 1][x + pos.x] & BLOCKS[block as usize][y][x] == 1 {
+            if field[y + pos.y][x + pos.x] & BLOCKS[block as usize][y][x] == 1 {
                 return true;
             }
         }
