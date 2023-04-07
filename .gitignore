@@ -7,3 +7,7 @@ nodejs-ts/**/node_modules
 deno/Ultra-react-twind/.ultra
 deno/test-twi/.env
 deno/test-twi/.env.development
+php/hoge/foods.sql
+php/hoge/foods_add.sql
+rust-lang/sqlite-app/sqlite.db
+rust-lang/sqlite-app/example_db.db3
