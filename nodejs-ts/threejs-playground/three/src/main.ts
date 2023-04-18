@@ -1,83 +1,68 @@
-import * as THREE from "three";
-import "./style.css";
+
+const appElement = document.querySelector<HTMLDivElement>('#appElement')!;
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
+
+
+//
+// ➊ three.jsセットアップ
+//
+
+// ライブラリの読み込み
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+// 座表軸
+const axes = new THREE.AxesHelper();
+
+// シーンを初期化
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000,
-);
+scene.add(axes);
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-let container = document.body.appendChild(renderer.domElement);
+const gltfLoader = new GLTFLoader();
+const url = './pdca_file_2.glb';
+// q: このオブジェクトをx軸方向に毎秒回転するようにして欲しい
+// a: このオブジェクトのrotationプロパティを毎フレーム更新する
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-let cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+gltfLoader.load(url, (gltf) => {
+  const root = gltf.scene;
+  // フレームが更新されるごとに実行する
+  setInterval(() => {
+    root.rotation.x += 0.002;
+    root.rotation.y += 0.005;
+    root.rotation.z += 0.02;
+  }, 1);
+  scene.add(root);
+});
 
-camera.position.z = 5;
 
-function animate() {
-  requestAnimationFrame(animate);
+// カメラを初期化
+const camera = new THREE.PerspectiveCamera(50, appElement.offsetWidth / appElement.offsetHeight);
+camera.position.set(1, 1, 1);
+camera.lookAt(scene.position);
 
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
+// レンダラーの初期化
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setClearColor(0xffffff, 1.0); // 背景色
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(appElement.offsetWidth, appElement.offsetHeight);
 
+// レンダラーをDOMに追加
+appElement.appendChild(renderer.domElement);
+
+// カメラコントローラー設定
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.maxPolarAngle = Math.PI * 0.5;
+orbitControls.minDistance = 0.1;
+orbitControls.maxDistance = 100;
+orbitControls.autoRotate = true;     // カメラの自動回転設定
+orbitControls.autoRotateSpeed = 0; // カメラの自動回転速度
+
+// ➋ 描画ループを開始
+renderer.setAnimationLoop(() => {
+  // カメラコントローラーを更新
+  orbitControls.update();
+
+  // 描画する
   renderer.render(scene, camera);
-}
+});
 
-// window resize event handler
-
-function onHover() {
-  console.log("hover");
-
-  cube.material.color.setHex(0x00ff00);
-}
-
-// マウスアウト時に実行される関数
-function onOut() {
-  console.log("out");
-  cube.material.color.setHex(0xff0000);
-}
-
-function onResize() {
-  console.log("resize");
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// マウス座標を取得するためのRaycasterを生成
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-
-// マウス座標を更新するための関数
-function onMouseMove(event: MouseEvent) {
-  event.preventDefault();
-
-  // マウスの座標を正規化
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  // Raycasterでマウス位置から光線を飛ばし、衝突するオブジェクトを取得
-  raycaster.setFromCamera(mouse, camera);
-  var intersects = raycaster.intersectObjects(scene.children);
-
-  if (intersects.length > 0 && intersects[0].object === cube) { // マウスがCubeにホバーした場合
-    cube.material.color.set(0x00ff00); // Cubeの色をグリーンにする
-  } else {
-    cube.material.color.set(0xff0000); // Cubeの色をレッドにする
-  }
-}
-container.addEventListener("mousemove", onMouseMove, false);
-
-window.addEventListener("resize", onResize);
-// レンダリング関数
-
-// マウスイベントリスナーを追加する
-container.addEventListener("mouseover", onHover);
-container.addEventListener("mouseout", onOut);
-
-animate();
