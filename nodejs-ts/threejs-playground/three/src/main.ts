@@ -1,6 +1,4 @@
 
-const appElement = document.querySelector<HTMLDivElement>('#appElement')!;
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 
 
 //
@@ -8,61 +6,47 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 //
 
 // ライブラリの読み込み
+//
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+let camera: THREE.PerspectiveCamera;
+let scene: THREE.Scene;
+let renderer: THREE.WebGLRenderer;
 
-// 座表軸
-const axes = new THREE.AxesHelper();
+let conatiner = document.body;
 
-// シーンを初期化
-const scene = new THREE.Scene();
-scene.add(axes);
-
-const gltfLoader = new GLTFLoader();
-const url = './pdca_file_2.glb';
-// q: このオブジェクトをx軸方向に毎秒回転するようにして欲しい
-// a: このオブジェクトのrotationプロパティを毎フレーム更新する
-
-gltfLoader.load(url, (gltf) => {
-  const root = gltf.scene;
-  // フレームが更新されるごとに実行する
-  setInterval(() => {
-    root.rotation.x += 0.002;
-    root.rotation.y += 0.005;
-    root.rotation.z += 0.02;
-  }, 1);
-  scene.add(root);
-});
+init();
+function init() {
+  // カメラの作成
+  camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 15000);
+  // シーンの作成
+  scene = new THREE.Scene();
 
 
-// カメラを初期化
-const camera = new THREE.PerspectiveCamera(50, appElement.offsetWidth / appElement.offsetHeight);
-camera.position.set(1, 1, 1);
-camera.lookAt(scene.position);
+  //geometry
+  const size = 250
+  const geometry = new THREE.BoxGeometry(size, size, size);
+  const material = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xffffff, shininess: 50 });
+  // for 2500 cubes
+  for (let i = 0; i < 2500; i++) {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.x = ((Math.random() * 2.0) - 1.0) * 8000;
+    mesh.position.y = ((Math.random() * 2.0) - 1.0) * 8000;
+    mesh.position.z = ((Math.random() * 2.0) - 1.0) * 8000;
 
-// レンダラーの初期化
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setClearColor(0xffffff, 1.0); // 背景色
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(appElement.offsetWidth, appElement.offsetHeight);
+    scene.add(mesh);
 
-// レンダラーをDOMに追加
-appElement.appendChild(renderer.domElement);
+  }
+  // ライトの作成
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  scene.add(directionalLight);
 
-// カメラコントローラー設定
-const orbitControls = new OrbitControls(camera, renderer.domElement);
-orbitControls.maxPolarAngle = Math.PI * 0.5;
-orbitControls.minDistance = 0.1;
-orbitControls.maxDistance = 100;
-orbitControls.autoRotate = true;     // カメラの自動回転設定
-orbitControls.autoRotateSpeed = 0; // カメラの自動回転速度
 
-// ➋ 描画ループを開始
-renderer.setAnimationLoop(() => {
-  // カメラコントローラーを更新
-  orbitControls.update();
+  // renderer
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  conatiner.appendChild(renderer.domElement);
 
-  // 描画する
   renderer.render(scene, camera);
-});
+
+}
 
