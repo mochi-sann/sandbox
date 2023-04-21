@@ -11,3 +11,8 @@ php/hoge/foods.sql
 php/hoge/foods_add.sql
 rust-lang/sqlite-app/sqlite.db
 rust-lang/sqlite-app/example_db.db3
+dart/hello-dart/bin/hello_dart.exe
+dart/hello-dart/bin/hello_dart.jit
+dart/hello-dart/out.js
+dart/hello-dart/out.js.deps
+dart/hello-dart/out.js.map
