@@ -1,9 +1,9 @@
 import { TestComponents } from "@/components/test/testComponents";
 
-export default function Home() {
+export default function Page() {
   return (
     <main className="">
-      <TestComponents name={"Mochi "} />
+      <TestComponents name={"hoge page "} />
       {/* <HookComponet /> */}
     </main>
   );
