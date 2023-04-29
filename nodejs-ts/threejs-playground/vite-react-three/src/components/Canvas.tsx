@@ -11,7 +11,7 @@ function Box(props: JSX.IntrinsicElements["mesh"]) {
     scale: [1, 1, 1],
     position: [0, 0, 0],
     rotation: [0, 0, 0],
-    visible: true
+    visible: false
   })
 
   // This reference will give us direct access to the mesh
@@ -44,8 +44,14 @@ export const Canvases = () => {
     characters: ' .:-+*=%@#',
     invert: true,
     color: false,
-    resolution: 0.15,
-    EnbleAsciiRenderer: true
+    resolution: 0.18,
+    EnbleAsciiRenderer: true,
+  }
+  )
+
+  const { rotation, scale, } = useControls('PDCA Model', {
+    rotation: { value: [1.5, 0, 0], step: 0.1 },
+    scale: [4, 4, 4]
   })
   return (
     <Canvas style={{
@@ -63,7 +69,7 @@ export const Canvases = () => {
 
       <Box position={[0, 0, 0]} scale={[0, 0, 0]} />
       <Suspense>
-        <Model />
+        <Model rotation={rotation} scale={scale} />
       </Suspense>
       {EnbleAsciiRenderer && <AsciiRenderer {...AsciiRendererOptions} />}
 
@@ -120,4 +126,5 @@ function AsciiRenderer({
   }, renderIndex)
 
   // This component returns nothing, it is a purely logical
+  return (<></>)
 }
