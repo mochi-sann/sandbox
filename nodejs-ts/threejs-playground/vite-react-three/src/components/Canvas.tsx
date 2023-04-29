@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { useControls } from 'leva'
-import { OrbitControls, useCursor } from '@react-three/drei'
+import { OrbitControls, Stats, Text } from '@react-three/drei'
 import { AsciiEffect } from 'three-stdlib'
 import { Model } from './Model'
 
@@ -44,20 +44,22 @@ export const Canvases = () => {
     characters: ' .:-+*=%@#',
     invert: true,
     color: false,
-    resolution: 0.18,
+    resolution: { value: 0.18, step: 0.01 },
     EnbleAsciiRenderer: true,
   }
   )
 
-  const { rotation, scale, } = useControls('PDCA Model', {
+  const { rotation, scale } = useControls('PDCA Model', {
     rotation: { value: [1.5, 0, 0], step: 0.1 },
-    scale: [4, 4, 4]
+    scale: [4, 4, 4],
+    text: "hello world"
   })
   return (
     <Canvas style={{
       backgroundColor: 'black',
       width: "100%", height: "100%"
     }}>
+      <Stats />
       <color attach="background" args={['black']} />
 
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
@@ -70,6 +72,18 @@ export const Canvases = () => {
       <Box position={[0, 0, 0]} scale={[0, 0, 0]} />
       <Suspense>
         <Model rotation={rotation} scale={scale} />
+      </Suspense>
+      <Suspense>
+        {/* <Text3D font={"/Inter-Bold.ttf"} > */}
+        {/*   Hello world! */}
+        {/* <meshNormalMaterial /> */}
+        {/* </Text3D> */}
+        {/* <Text3D smooth={1} font={"/Inter-VariableFont_slnt,wght.ttf"} lineHeight={0.5} letterSpacing={-0.025}>{`hello\nworld`}</Text3D> */}
+        {/* <Text color="white" anchorX="center" anchorY="middle"> */}
+        {/*   {text} */}
+        {/* </Text> */}
+
+
       </Suspense>
       {EnbleAsciiRenderer && <AsciiRenderer {...AsciiRendererOptions} />}
 
