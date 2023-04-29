@@ -1,9 +1,10 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { useControls } from 'leva'
-import { OrbitControls, Stats, Text } from '@react-three/drei'
+import { OrbitControls, Stats, Text, Text3D, useCamera } from '@react-three/drei'
 import { AsciiEffect } from 'three-stdlib'
 import { Model } from './Model'
+import { Vector3 } from 'three'
 
 
 function Box(props: JSX.IntrinsicElements["mesh"]) {
@@ -71,19 +72,7 @@ export const Canvases = () => {
 
       <Box position={[0, 0, 0]} scale={[0, 0, 0]} />
       <Suspense>
-        <Model rotation={rotation} scale={scale} />
-      </Suspense>
-      <Suspense>
-        {/* <Text3D font={"/Inter-Bold.ttf"} > */}
-        {/*   Hello world! */}
-        {/* <meshNormalMaterial /> */}
-        {/* </Text3D> */}
-        {/* <Text3D smooth={1} font={"/Inter-VariableFont_slnt,wght.ttf"} lineHeight={0.5} letterSpacing={-0.025}>{`hello\nworld`}</Text3D> */}
-        {/* <Text color="white" anchorX="center" anchorY="middle"> */}
-        {/*   {text} */}
-        {/* </Text> */}
-
-
+        <Model receiveShadow={false} rotation={rotation} scale={scale} />
       </Suspense>
       {EnbleAsciiRenderer && <AsciiRenderer {...AsciiRendererOptions} />}
 
