@@ -1,9 +1,8 @@
 import { LitElement, css, html } from "lit";
-import { customElement, property } from 'lit/decorators.js'
+import { customElement, property } from "lit/decorators.js";
 
-@customElement('hoge-element')
+@customElement("hoge-element")
 export class HogeElement extends LitElement {
-
   // Define scoped styles right with your component, in plain CSS
   static styles = css`
     :host {
@@ -13,16 +12,15 @@ export class HogeElement extends LitElement {
 
   // Declare reactive properties
   @property()
-  name?: string = 'World';
+  name?: string = "World";
 
   // Render the UI as a function of component state
   render() {
     return html`<p>Hello, ${this.name}!</p>`;
   }
-
 }
 declare global {
   interface HTMLElementTagNameMap {
-    'hoge-element': HogeElement
+    "hoge-element": HogeElement;
   }
 }
