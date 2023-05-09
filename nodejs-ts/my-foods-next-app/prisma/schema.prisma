@@ -17,3 +17,21 @@ model foods {
   CreatedAt DateTime @default(now())
   UpdatedAt DateTime @updatedAt
 }
+
+model clothers {
+  id        Int      @id @default(autoincrement())
+  name      String
+  img       Bytes?
+  price     Int
+  CreatedAt DateTime @default(now())
+  UpdatedAt DateTime @updatedAt
+  carts     carts[]
+}
+
+model carts {
+  cartId    Int      @id @default(autoincrement())
+  clothers  clothers @relation(fields: [clotherId], references: [id])
+  clotherId Int
+  CreatedAt DateTime @default(now())
+  UpdatedAt DateTime @updatedAt
+}
