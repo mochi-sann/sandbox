@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "foods" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "calories" INTEGER NOT NULL,
+    "CreatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" DATETIME NOT NULL
+);
