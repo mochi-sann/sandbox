@@ -9,7 +9,9 @@
     "lint": "next lint",
     "migrate:dev": "prisma migrate dev",
     "migrate:reset": "prisma migrate reset",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "generate": "prisma generate",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@prisma/client": "4.13.0",
@@ -25,7 +27,12 @@
     "prisma": "^4.13.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.43.9",
     "tailwindcss": "3.3.2",
     "typescript": "5.0.4"
-  }
+  },
+  "devDependencies": {
+    "prettier": "2.8.8"
+  },
+  "prettier": {}
 }

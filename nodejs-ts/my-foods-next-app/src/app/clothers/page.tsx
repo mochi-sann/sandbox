@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { Suspense } from "react";
 
 async function getData() {
   const clothes = await prisma.clothers.findMany();
@@ -8,9 +9,11 @@ async function getData() {
 
 export default async function NewFoodPage() {
   const { clothes } = await getData();
-  const clothes_keys = Object.keys(clothes[0]);
   return (
     <main>
+      <Link href={"/clothers/new"} className="link link-accent">
+        new
+      </Link>
       {/* tableにclothesを表示 */}
       <table className="table">
         <thead>
@@ -25,11 +28,13 @@ export default async function NewFoodPage() {
               <td>{clothe.id}</td>
               <td>{clothe.name}</td>
               <td>{clothe.price}</td>
-              <td><Link href={"/clothers/edit/" + clothe.id}>編集</Link></td>
+              <td>
+                <Link href={"/clothers/edit/" + clothe.id}>編集</Link>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </main >
+    </main>
   );
 }

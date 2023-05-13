@@ -3,7 +3,6 @@ import Link from "next/link";
 
 async function getData() {
   const foods = await prisma.foods.findMany();
-  console.log({ foods });
   return foods;
 }
 
@@ -12,7 +11,13 @@ export default async function Home() {
   return (
     <main>
       <p>hello world</p>
-      <Link href={"/foods/new"}></Link>
+      <Link href={"/foods/new"} className="link">
+        /foods/new
+      </Link>
+      <br />
+      <Link href={"/clothers"} className="link">
+        /clothers
+      </Link>
       <pre>{JSON.stringify(foods, null, 2)}</pre>
       <table></table>
     </main>
