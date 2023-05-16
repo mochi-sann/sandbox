@@ -22,4 +22,18 @@ export const ClothesRouter = createTRPCRouter({
       });
       return prismaData;
     }),
+
+
+  delete: publicProcedure.input(z.object({
+    id: z.number()
+  })).mutation(opts => {
+    const data = opts.input;
+    const prismaData = opts.ctx.prisma.clothers.delete({
+      where: {
+        id: data.id
+      }
+    })
+    return prismaData;
+  }
+  )
 });

@@ -7,6 +7,14 @@ import { api } from "@/utils/api";
 
 const Home: NextPage = () => {
   const ClothesData = api.clothes.getAll.useQuery();
+  const ClothesDelete = api.clothes.delete.useMutation();
+  const DeleteClothes = (id: number) => {
+    try {
+      ClothesDelete.mutate({ id });
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   return (
     <>
@@ -28,6 +36,7 @@ const Home: NextPage = () => {
             <th>price</th>
             <th>Date</th>
             <th>編集</th>
+            <th>削除</th>
           </thead>
           <tbody>
             {ClothesData.data &&
@@ -41,6 +50,13 @@ const Home: NextPage = () => {
                     <Link href={"/clothers/edit/" + String(clothe.id)}>
                       編集
                     </Link>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-error"
+                      onClick={() => {
+                        DeleteClothes(clothe.id);
+                      }}>削除</button>
                   </td>
                 </tr>
               ))}
