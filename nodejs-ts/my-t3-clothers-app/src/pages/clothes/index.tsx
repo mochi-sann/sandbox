@@ -1,4 +1,3 @@
-
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
@@ -17,9 +16,11 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="">
-      <Link href={"/clothes/new"} className="link">/clothes/new</Link>
+        <Link href={"/clothes/new"} className="link">
+          /clothes/new
+        </Link>
 
-        {/* tableにclothesを表示 */}
+        {/* tableにclothesを表jjj:示 */}
         <table className="table">
           <thead>
             <th>id</th>
@@ -29,20 +30,22 @@ const Home: NextPage = () => {
             <th>編集</th>
           </thead>
           <tbody>
-            {ClothesData.data && ClothesData.data.map((clothe) => (
-              <tr key={clothe.id}>
-                <td>{clothe.id}</td>
-                <td>{clothe.name}</td>
-                <td>{clothe.price}</td>
-                <td>{dayjs(clothe.CreatedAt).format()}</td>
-                <td>
-                  <Link href={"/clothers/edit/" + String(clothe.id)}>編集</Link>
-                </td>
-              </tr>
-            ))}
+            {ClothesData.data &&
+              ClothesData.data.map((clothe) => (
+                <tr key={clothe.id}>
+                  <td>{clothe.id}</td>
+                  <td>{clothe.name}</td>
+                  <td>{clothe.price}</td>
+                  <td>{dayjs(clothe.CreatedAt).format()}</td>
+                  <td>
+                    <Link href={"/clothers/edit/" + String(clothe.id)}>
+                      編集
+                    </Link>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
-
       </main>
     </>
   );

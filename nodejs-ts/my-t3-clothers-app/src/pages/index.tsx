@@ -5,7 +5,6 @@ import Link from "next/link";
 import { api } from "@/utils/api";
 
 const Home: NextPage = () => {
-
   return (
     <>
       <Head>
@@ -15,8 +14,9 @@ const Home: NextPage = () => {
       </Head>
       <main className="">
         {/* tableにclothesを表示 */}
-        <Link href={"/clothes/"} className="link">/clothes/</Link>
-
+        <Link href={"/clothes/"} className="link">
+          /clothes/
+        </Link>
       </main>
     </>
   );
