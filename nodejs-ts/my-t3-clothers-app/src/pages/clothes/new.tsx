@@ -5,37 +5,35 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/utils/api";
 
-import { useRouter } from 'next/router';
+import { useRouter } from "next/router";
 const ZFormValueSchema = z.object({
   name: z.string(),
   price: z.number(),
-  image_file : z.custom<FileList>().transform((file) => file[0]),
-
+  // image_file: z.custom<FileList>().transform((file) => file[0]),
 });
 const NewPage: NextPage = () => {
-  const ClothesMutation = api.clothes.new.useMutation()
-  const rounter = useRouter()
+  const ClothesMutation = api.clothes.new.useMutation();
+  const rounter = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<z.infer<typeof ZFormValueSchema>>({
     resolver: zodResolver(ZFormValueSchema),
   });
   const onSubmitForm = handleSubmit(async (formData) => {
     const Value = formData;
     try {
       await ClothesMutation.mutateAsync({
-        name: Value.name, price: Value.price
-      })
+        name: Value.name,
+        price: Value.price,
+      });
 
-      await rounter.push("/clothes")
+      await rounter.push("/clothes");
     } catch (error) {
-      alert(error)
-
+      alert(error);
     }
-
   });
 
   return (
@@ -53,7 +51,6 @@ const NewPage: NextPage = () => {
             {...register("name")}
           />
           {errors.name && JSON.stringify(errors.name)}
-
 
           <input
             type="number"

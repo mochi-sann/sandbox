@@ -47,16 +47,22 @@ const Home: NextPage = () => {
                   <td>{clothe.price}</td>
                   <td>{dayjs(clothe.CreatedAt).format()}</td>
                   <td>
-                    <Link href={"/clothers/edit/" + String(clothe.id)}>
+                    <Link
+                      href={"/clothes/edit/" + String(clothe.id)}
+                      className="btn-primary btn"
+                    >
                       編集
                     </Link>
                   </td>
                   <td>
                     <button
-                      className="btn btn-error"
+                      className="btn-error btn"
                       onClick={() => {
                         DeleteClothes(clothe.id);
-                      }}>削除</button>
+                      }}
+                    >
+                      削除
+                    </button>
                   </td>
                 </tr>
               ))}
