@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+
+import PlaygounrdVue from '../components/PlaygounrdVue.vue'
+app.Component('PlaygounrdVue', PlaygounrdVue)
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <PlaygounrdVue />
   </main>
 </template>

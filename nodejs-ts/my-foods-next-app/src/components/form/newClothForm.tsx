@@ -3,14 +3,22 @@ import React from "react"
 import { useForm } from "react-hook-form";
 
 export type newClothFormProps = {}
-type newClothFormData = {
-  name: String
-  price: Number
+export type newClothFormData = {
+  name: string
+  price: number
 }
 
 export const NewClothForm: React.FC<newClothFormProps> = () => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<newClothFormData>();
-  const onSubmit = handleSubmit(data => console.log(data));
+  const onSubmit = handleSubmit(data => {
+    const options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      json: data
+    }
+
+    fetch("/api/clothers", options)
+  })
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
