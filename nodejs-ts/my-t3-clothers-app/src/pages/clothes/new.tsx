@@ -1,10 +1,19 @@
+
+
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import dayjs from "dayjs";
 
 import { api } from "@/utils/api";
+import { z } from "zod";
 
-const Home: NextPage = () => {
+const ZFormValue = z.object({
+  name: z.string(),
+  price: z.number(),
+})
+const NewPage: NextPage = () => {
+  const ClothesData = api.clothes.getAll.useQuery();
 
   return (
     <>
@@ -14,12 +23,11 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="">
-        {/* tableにclothesを表示 */}
-        <Link href={"/clothes/"} className="link">/clothes/</Link>
+
 
       </main>
     </>
   );
 };
 
-export default Home;
+export default NewPage;
