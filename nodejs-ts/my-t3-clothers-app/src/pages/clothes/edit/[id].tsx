@@ -6,6 +6,8 @@ import { isConvertibleToNumber } from "@/utils/IsNumberString";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "@/utils/api";
+import { useRouter } from "next/router";
 
 const ZFormValueSchemaEdit = z.object({
   name: z.string(),
@@ -13,6 +15,8 @@ const ZFormValueSchemaEdit = z.object({
   // image_file: z.custom<FileList>().transform((file) => file[0]),
 });
 const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
+  const ClothesUpdateMutaion = api.clothes.update.useMutation();
+  const rounter = useRouter();
   const {
     register,
     handleSubmit,
@@ -21,8 +25,22 @@ const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
     resolver: zodResolver(ZFormValueSchemaEdit),
     defaultValues: { name: props.data?.name, price: props.data?.price },
   });
-  const onSubmitForm = handleSubmit((formData) => {
-    console.log(formData);
+
+
+
+
+  const onSubmitForm = handleSubmit(async (formData) => {
+    try {
+      await ClothesUpdateMutaion.mutateAsync({
+        name: formData.name,
+        price: formData.price,
+        id: props.data?.id as number,
+      })
+
+      await rounter.push("/clothes");
+    } catch (error) {
+      alert(error);
+    }
   });
 
   return (
@@ -33,6 +51,7 @@ const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
       <form onSubmit={onSubmitForm} className="flex flex-col gap-4">
         <input
           type="text"
+          placeholder={"name"}
           className="input-bordered input w-full"
           {...register("name")}
         />
@@ -40,10 +59,11 @@ const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
 
         <input
           type="number"
+          placeholder={"price"}
           className="input-bordered input w-full"
           {...register("price", { valueAsNumber: true })}
         />
-        <input type="submit" className="btn w-full" />
+        <input type="submit" className="btn w-full"  disabled={!ClothesUpdateMutaion.isIdle} />
       </form>
     </main>
   );

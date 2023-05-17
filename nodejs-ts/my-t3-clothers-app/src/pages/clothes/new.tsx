@@ -47,17 +47,19 @@ const NewPage: NextPage = () => {
         <form onSubmit={onSubmitForm} className="flex flex-col gap-4">
           <input
             type="text"
+            placeholder={"name"}
             className="input-bordered input w-full"
             {...register("name")}
           />
           {errors.name && JSON.stringify(errors.name)}
 
           <input
+            placeholder={"price"}
             type="number"
             className="input-bordered input w-full"
             {...register("price", { valueAsNumber: true })}
           />
-          <input type="submit" className="btn w-full" />
+          <input type="submit" className="btn w-full" disabled={!ClothesMutation.isIdle} />
         </form>
       </main>
     </>

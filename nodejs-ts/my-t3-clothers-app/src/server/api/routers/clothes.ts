@@ -1,8 +1,5 @@
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import z from "zod";
-import { Prisma, type clothers } from "@prisma/client";
-
-type hogehogheoType = clothers;
 
 export const ClothesRouter = createTRPCRouter({
   getAll: publicProcedure.query(({ ctx }) => {
@@ -63,6 +60,7 @@ export const ClothesRouter = createTRPCRouter({
       });
       return prismaData;
     }),
+
   getId: publicProcedure.input(z.object({ id: z.number() })).query((opts) => {
     const data = opts.input;
     const prismaData = opts.ctx.prisma.clothers.findUnique({
