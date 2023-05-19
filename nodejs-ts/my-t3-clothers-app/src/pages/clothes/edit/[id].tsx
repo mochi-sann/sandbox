@@ -26,16 +26,13 @@ const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
     defaultValues: { name: props.data?.name, price: props.data?.price },
   });
 
-
-
-
   const onSubmitForm = handleSubmit(async (formData) => {
     try {
       await ClothesUpdateMutaion.mutateAsync({
         name: formData.name,
         price: formData.price,
         id: props.data?.id as number,
-      })
+      });
 
       await rounter.push("/clothes");
     } catch (error) {
@@ -63,7 +60,11 @@ const ClotheEditPage: NextPage<{ data: clothers | null }> = (props) => {
           className="input-bordered input w-full"
           {...register("price", { valueAsNumber: true })}
         />
-        <input type="submit" className="btn w-full"  disabled={!ClothesUpdateMutaion.isIdle} />
+        <input
+          type="submit"
+          className="btn w-full"
+          disabled={!ClothesUpdateMutaion.isIdle}
+        />
       </form>
     </main>
   );

@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 const ZFormValueSchema = z.object({
   name: z.string(),
   price: z.number(),
-  // image_file: z.custom<FileList>().transform((file) => file[0]),
+  image_file: z.custom<FileList>().transform((file) => file[0]),
 });
 const NewPage: NextPage = () => {
   const ClothesMutation = api.clothes.new.useMutation();
@@ -24,10 +24,12 @@ const NewPage: NextPage = () => {
   });
   const onSubmitForm = handleSubmit(async (formData) => {
     const Value = formData;
+    console.log(Value)
     try {
       await ClothesMutation.mutateAsync({
         name: Value.name,
         price: Value.price,
+        image: Value.image_file || null
       });
 
       await rounter.push("/clothes");
@@ -58,6 +60,13 @@ const NewPage: NextPage = () => {
             type="number"
             className="input-bordered input w-full"
             {...register("price", { valueAsNumber: true })}
+          />
+          <input
+
+            placeholder={"image"}
+            type="file"
+            className="input-bordered input w-full"
+            {...register("image_file")}
           />
           <input type="submit" className="btn w-full" disabled={!ClothesMutation.isIdle} />
         </form>
