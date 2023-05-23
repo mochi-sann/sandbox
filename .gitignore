@@ -33,3 +33,4 @@ nodejs-ts/my-foods-next-app/prisma/dev.db
 nodejs-ts/my-foods-next-app/prisma/dev.db-journal
 scala/main-scala/project/target
 scala/main-scala/target
+python/hello-fastapi/__pycache__

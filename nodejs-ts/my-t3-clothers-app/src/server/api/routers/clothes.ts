@@ -1,4 +1,3 @@
-import { ZodFileType } from "@/utils/types";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import z from "zod";
 
@@ -18,11 +17,24 @@ export const ClothesRouter = createTRPCRouter({
     )
     .mutation((opts) => {
       const data = opts.input;
+
+      const file = data.image;
+      let buffer: Buffer | null = null;
+      if (file != null) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onloadend = () => {
+          buffer = Buffer.from(reader.result as ArrayBuffer);
+          // do something with the buffer
+        };
+      }
+
+
       const prismaData = opts.ctx.prisma.clothers.create({
         data: {
           price: data.price,
           name: data.name,
-          img: data.image,
+          img: buffer
         },
       });
       return prismaData;
