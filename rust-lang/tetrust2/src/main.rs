@@ -1,5 +1,7 @@
+mod settins;
+use settins::{BlockKind, Potision, BLOCKS};
+
 fn main() {
-    let blocks = [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]];
     let field = [
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -24,20 +26,20 @@ fn main() {
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
     let mut field_buf = field;
+    let mut pos: Potision = Potision { x: 4, y: 4 };
+
     for y in 0..4 {
         for x in 0..4 {
-            if blocks[y][x] == 1 {
-                field_buf[y + 8][x + 4] = 1;
-            }
+            field_buf[pos.y][pos.x] = BLOCKS[BlockKind::I as usize][y][x];
         }
-  }
+    }
 
     for i in 0..21 {
         for j in 0..13 {
-            if field[i][j] == 1 {
-                print!("[ ]");
+            if field_buf[i][j] == 1 {
+                print!("[]");
             } else {
-                print!("  .");
+                print!(" .");
             }
         }
         println!();
