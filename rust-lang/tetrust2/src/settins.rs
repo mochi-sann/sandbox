@@ -1,4 +1,5 @@
 // ブロックの種類
+#[derive(Clone, Copy)]
 pub enum BlockKind {
     I,
     O,
@@ -8,6 +9,10 @@ pub enum BlockKind {
     L,
     T,
 }
+
+pub const FIELD_WIDTH: usize = 11 + 2;
+pub const FIELD_HEIGHT: usize = 20 + 1;
+pub type Field = [[usize; FIELD_WIDTH]; FIELD_HEIGHT];
 
 // ブロックの形状
 pub type BlockShape = [[usize; 4]; 4];
@@ -30,4 +35,15 @@ pub const BLOCKS: [BlockShape; 7] = [
 pub struct Potision {
     pub x: usize,
     pub y: usize,
+}
+
+pub fn clear_console() {
+    print!("{}[2J", 27 as char);
+}
+pub fn move_cursor_top() {
+    print!("{}[0;0H", 27 as char);
+}
+
+pub fn show_cursor() {
+    println!("\x1b[?25h");
 }
