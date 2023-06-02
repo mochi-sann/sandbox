@@ -25,23 +25,28 @@ fn main() {
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
-    let mut field_buf = field;
-    let mut pos: Potision = Potision { x: 4, y: 4 };
+    let mut pos: Potision = Potision { x: 4, y: 0 };
+    for _ in 0..5 {
+        let mut field_buf = field;
 
-    for y in 0..4 {
-        for x in 0..4 {
-            field_buf[pos.y][pos.x] = BLOCKS[BlockKind::I as usize][y][x];
-        }
-    }
-
-    for i in 0..21 {
-        for j in 0..13 {
-            if field_buf[i][j] == 1 {
-                print!("[]");
-            } else {
-                print!(" .");
+        for y in 0..4 {
+            for x in 0..4 {
+                if BLOCKS[BlockKind::I as usize][y][x] == 1 {
+                    field_buf[pos.y + y][pos.x + x] = 1;
+                }
             }
         }
-        println!();
+        pos.y += 1;
+
+        for i in 0..21 {
+            for j in 0..13 {
+                if field_buf[i][j] == 1 {
+                    print!("[]");
+                } else {
+                    print!(" .");
+                }
+            }
+            println!();
+        }
     }
 }
