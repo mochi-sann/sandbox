@@ -1,0 +1,117 @@
+
+    <svg
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px"
+      y="0px"
+      viewBox="0 0 1024 1024"
+      style="enable-background: new 0 0 1024 1024"
+      xml:space="preserve"
+      width="1000"
+      heigth="1000"
+    >
+      <script>
+        const circle = document.querySelector(".st6");
+      </script>
+      <style type="text/css">
+        .st0 {
+          display: none;
+        }
+        .st1 {
+          display: inline;
+          opacity: 0.38;
+          fill: #ffffff;
+          stroke: #231815;
+          stroke-miterlimit: 10;
+        }
+        .st2 {
+          display: inline;
+          fill: #ffffff;
+          stroke: #231815;
+          stroke-miterlimit: 10;
+        }
+        .st3 {
+          display: none;
+          fill: #ffffff;
+        }
+        .st4 {
+          fill: #ffffff;
+        }
+        .st5 {
+          fill: #040000;
+        }
+        .st6 {
+          fill: #000000;
+          animation-name: circle-animation;
+          animation-duration: 2s;
+          animation-timing-function: cubic-bezier(0.67, 0, 0.38, 0.96);
+          animation-delay: 0s;
+          animation-iteration-count: infinite;
+          transform: scale(0);
+          transform-origin: center;
+        }
+        @keyframes circle-animation {
+          0% {
+            transform: scale(0);
+          }
+          33% {
+            transform: scale(0);
+          }
+
+          66% {
+            transform: scale(1);
+          }
+          80% {
+            transform: scale(1);
+          }
+          100% {
+            transform: scale(1);
+          }
+
+        }
+        .st6-white {
+          fill: #ffffff;
+          animation-name: circle-animation;
+          animation-duration: 2s;
+          animation-timing-function: cubic-bezier(0.67, 0, 0.38, 0.96);
+         animation-delay: 0.666s;
+          animation-iteration-count: infinite;
+          transform: scale(0);
+          transform-origin: center;
+        }
+
+        .st7 {
+          display: inline;
+          fill: #231815;
+        }
+      </style>
+      <g id="レイヤー_1" class="st0"></g>
+      <g id="レイヤー_3">
+        <rect x="4.252" class="st4" width="1019.748" height="1024" />
+      </g>
+      <g id="レイヤー_4">
+        <circle class="st6" cx="512" cy="512" r="257.1524" />
+        <circle class="st6-white" cx="512" cy="512" r="257.1524" />
+        <g>
+          <polygon
+            points="390.8455,410.948 507.3955,470.048 625.2854,411.318 507.3955,352.578 		"
+          />
+          <path
+            d="M-4.252-4.252V1028.252H1028.252V-4.252H-4.252z M544.2056,705.458c0,4.82-1.23,9.24-3.3401,13.03
+			c-4.7,8.45-13.78,13.82-23.49,13.82c-1.1101,0-2.22-0.07-3.3401-0.22c-2.1799-0.27-4.3699-0.83-6.53-1.69
+			c-0.75-0.3-1.5-0.64-2.24-1.02l-34.6399-17.5699l-44.04-22.33l-128.53-65.17c-9.01-4.57-14.6899-13.81-14.6899-23.91v-121.14
+			l71.3999,36.21v66.4l71.8201,36.42l44,22.31l2.23,1.13v-66.4c5.2,2.64,10.72,4.64,16.3901,6c5.72,1.38,11.6099,2.08,17.49,2.08
+			c11.5598,0,23.1499-2.73,33.5-7.89l1.78-0.89l2.23-1.11V705.458z M731.4255,605.398c0,10.1-5.6799,19.34-14.6899,23.91
+			l-128.53,65.17v-71.19l71.8198-36.42v-71.05l71.4001-35.58V605.398z M715.2056,439.168l-194.6301,96.97
+			c-1.6399,0.82-3.3298,1.48-5.0601,1.99c-0.5798,0.17-1.1599,0.32-1.74,0.46c-2.3298,0.55-4.7,0.82-7.0798,0.82
+			c-4.8301,0-9.6501-1.12-14.0701-3.37l-192.53-97.63c-22.79-11.56-22.7-44.14,0.1501-55.58l192.4299-96.35
+			c3.29-1.65,6.8-2.68,10.3599-3.09c0.5901-0.06,1.1902-0.11,1.78-0.15c0.6001-0.03,1.1899-0.05,1.79-0.05
+			c1.79,0,3.5701,0.15,5.3301,0.46c1.47,0.25,2.9199,0.62,4.3499,1.08c1.4302,0.47,2.8301,1.04,4.2002,1.72l194.72,97.02
+			C738.1855,394.918,738.1855,427.718,715.2056,439.168z"
+          />
+        </g>
+      </g>
+      <g id="レイヤー_5"></g>
+      <g id="レイヤー_2" class="st0"></g>
+    </svg>
