@@ -1,5 +1,5 @@
 mod settins;
-use settins::{clear_console, move_cursor_top, show_cursor, BlockKind, Field, Potision, BLOCKS};
+use settins::{clear_console, move_cursor_top, show_cursor, BlockKind, Field, Potision, BLOCKS , FIELD_HEIGHT , FIELD_WIDTH};
 use std::{thread, time};
 
 fn is_collision(field: &Field, pos: &Potision, block: BlockKind) -> bool {
@@ -40,9 +40,13 @@ fn main() {
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
     let mut pos: Potision = Potision { x: 4, y: 0 };
+    clear_console();
+
     for _ in 0..30 {
         let mut field_buf = field;
-        clear_console();
+        if !is_collision(&field_buf, &pos, BlockKind::I) {
+            pos.y += 1;
+        }
 
         for y in 0..4 {
             for x in 0..4 {
@@ -51,10 +55,9 @@ fn main() {
                 }
             }
         }
-        pos.y += 1;
         move_cursor_top();
-        for i in 0..21 {
-            for j in 0..13 {
+        for i in 0..FIELD_HEIGHT {
+            for j in 0..FIELD_WIDTH {
                 if field_buf[i][j] == 1 {
                     print!("[]");
                 } else {
@@ -63,7 +66,7 @@ fn main() {
             }
             println!();
         }
-        thread::sleep(time::Duration::from_millis(100));
+        thread::sleep(time::Duration::from_millis(500));
     }
     show_cursor();
 }
