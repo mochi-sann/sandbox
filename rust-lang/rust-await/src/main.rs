@@ -1,4 +1,4 @@
-use chrono::Local;
+use chrono::{DateTime, Local};
 use std::time::Duration;
 
 use tokio::time::sleep;
@@ -8,7 +8,7 @@ async fn await_fn() {
     println!("start {}", start_time);
 
     sleep(Duration::from_nanos(2)).await;
-    let end_time = Local::now();
+    let end_time: DateTime<Local> = Local::now();
 
     println!("end {}", end_time);
     let diff_time = end_time - start_time;
