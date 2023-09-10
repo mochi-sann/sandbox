@@ -3,6 +3,7 @@ use actix_web::{
 };
 
 mod api;
+use api::todo::{hello_user, hello_world};
 const PORT: u16 = 8080;
 
 #[get("/")]
@@ -30,6 +31,8 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
+            .service(hello_world)
+            .service(hello_user)
             .service(hello)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
