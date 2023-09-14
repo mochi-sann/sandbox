@@ -1,7 +1,6 @@
 use actix_web::{
-    get,
-    middleware::Logger,
-    post, web, App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
+    get, middleware::Logger, post, web, App, Either, HttpRequest, HttpResponse, HttpServer,
+    Responder,
 };
 
 mod api;
