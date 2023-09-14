@@ -1,5 +1,7 @@
 use actix_web::{
-    get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
+    get,
+    middleware::Logger,
+    post, web, App, Either, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
 mod api;
@@ -8,7 +10,6 @@ const PORT: u16 = 8080;
 
 #[get("/")]
 async fn hello(req: HttpRequest) -> impl Responder {
-    println!("REQ: {req:?}");
     HttpResponse::Ok().body("Hello world!")
 }
 
@@ -21,13 +22,18 @@ async fn manual_hello() -> impl Responder {
     HttpResponse::Ok().body("Hey there!")
 }
 
+async fn default_handler() -> impl Responder {
+    HttpResponse::NotFound().body("404 Not Found")
+}
+
 // access logs are printed with the INFO level so ensure it is enabled by default
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "actix_web=info");
+
     env_logger::init();
 
-    log::info!("starting HTTP server at http://localhost:8080");
+    log::info!("starting HTTP server at http://localhost:{}", PORT);
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
@@ -36,6 +42,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
+            .default_service(web::route().to(default_handler))
     })
     .bind(("127.0.0.1", PORT))?
     .run()
