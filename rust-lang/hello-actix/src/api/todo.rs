@@ -14,12 +14,12 @@ pub struct Todo {
 }
 
 #[get("/hello_world")]
-pub async fn hello_world(req: HttpRequest) -> impl Responder {
+pub async fn hello_world(_req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
 #[get("/hello_user")]
-pub async fn hello_user(req: HttpRequest) -> web::Json<User> {
+pub async fn hello_user(_req: HttpRequest) -> web::Json<User> {
     let user = User {
         name: "John".to_string(),
         age: 18,
@@ -27,7 +27,7 @@ pub async fn hello_user(req: HttpRequest) -> web::Json<User> {
     web::Json(user)
 }
 #[get("/todos")]
-pub async fn get_todos(req: HttpRequest) -> web::Json<Vec<Todo>> {
+pub async fn get_todos(_req: HttpRequest) -> web::Json<Vec<Todo>> {
     let todos = vec![Todo {
         text: "hoge".to_string(),
         id: 1,

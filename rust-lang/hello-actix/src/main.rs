@@ -1,5 +1,5 @@
 use actix_web::{
-    get, middleware::Logger, post, web, App, Either, HttpRequest, HttpResponse, HttpServer,
+    get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer,
     Responder,
 };
 
@@ -8,7 +8,7 @@ use api::todo::{hello_user, hello_world, get_todos};
 const PORT: u16 = 8080;
 
 #[get("/")]
-async fn hello(req: HttpRequest) -> impl Responder {
+async fn hello(_req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
 }
 
