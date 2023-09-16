@@ -6,6 +6,13 @@ pub struct User {
     age: u8,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct Todo {
+    id: u64,
+    text: String,
+    completed: bool,
+}
+
 #[get("/hello_world")]
 pub async fn hello_world(req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
@@ -18,6 +25,15 @@ pub async fn hello_user(req: HttpRequest) -> web::Json<User> {
         age: 18,
     };
     web::Json(user)
+}
+#[get("/todos")]
+pub async fn get_todos(req: HttpRequest) -> web::Json<Vec<Todo>> {
+    let todos = vec![Todo {
+        text: "hoge".to_string(),
+        id: 1,
+        completed: true,
+    }];
+    web::Json(todos)
 }
 #[cfg(test)]
 mod tests {
