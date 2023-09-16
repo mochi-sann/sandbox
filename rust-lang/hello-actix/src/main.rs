@@ -1,10 +1,9 @@
 use actix_web::{
-    get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer,
-    Responder,
+    get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
 mod api;
-use api::todo::{hello_user, hello_world, get_todos};
+use api::todo::{get_todos, hello_user, hello_world};
 const PORT: u16 = 8080;
 
 #[get("/")]

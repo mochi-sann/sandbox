@@ -11,6 +11,10 @@ services:
       - POSTGRES_DB=todo-db
       - TZ=Asia/Tokyo
     volumes:
-      - ./data:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_init:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:
+  postgres_init:
 
