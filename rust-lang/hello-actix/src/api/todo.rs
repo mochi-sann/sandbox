@@ -1,7 +1,7 @@
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder, post};
 use sqlx::PgPool;
 
-use crate::model::Todos;
+use crate::model::{Todos, NewTodo};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct User {
@@ -27,6 +27,17 @@ pub async fn get_todos(pool: web::Data<PgPool>) -> web::Json<Vec<Todos>> {
     let todos = Todos::all(&pool).await.unwrap();
     web::Json(todos)
 }
+#[post("/todos")]
+pub async fn create_todo(pool : web::Data<PgPool>, new_todo: web::Json<NewTodo>) -> impl Responder {
+    let new_todo = new_todo.into_inner();
+
+    let res = Todos::create(new_todo, &pool).await;
+    match res {
+        Ok(_) => HttpResponse::Ok().body("Todo created"),
+        Err(_) => HttpResponse::InternalServerError().body("Something went wrong"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use actix_web::{body::to_bytes, dev::Service, http, test, App, Error};

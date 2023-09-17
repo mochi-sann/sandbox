@@ -1,13 +1,17 @@
 use std::env;
 
 use actix_web::{
-    get, middleware::Logger, post, web::{self, Data}, App, HttpRequest, HttpResponse, HttpServer, Responder,
+    get,
+    middleware::Logger,
+    post,
+    web::{self, Data},
+    App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
 mod api;
 mod db;
 mod model;
-use api::todo::{get_todos, hello_user, hello_world};
+use api::todo::{get_todos, hello_user, hello_world , create_todo};
 use dotenv::dotenv;
 use sqlx::PgPool;
 
@@ -61,6 +65,7 @@ async fn main() -> std::io::Result<()> {
             .service(hello_user)
             .service(hello)
             .service(get_todos)
+            .service(create_todo)
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
             .default_service(web::route().to(default_handler))
