@@ -11,7 +11,7 @@ use actix_web::{
 mod api;
 mod db;
 mod model;
-use api::todo::{get_todos, hello_user, hello_world , create_todo};
+use api::todo::{create_todo, get_todos, hello_user, hello_world};
 use dotenv::dotenv;
 use sqlx::PgPool;
 
@@ -48,13 +48,13 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let port = get_port();
     std::env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
 
     let pool = PgPool::connect(&database_url)
         .await
         .expect("Failed to create pool");
-
-    env_logger::init();
 
     log::info!("starting HTTP server at http://localhost:{}", port);
     HttpServer::new(move || {

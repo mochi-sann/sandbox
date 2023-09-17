@@ -19,7 +19,7 @@ impl Todos {
             SELECT * 
             FROM todos
             ORDER BY id
-        "#,
+        "#
         )
         .fetch_all(connection)
         .await?;
