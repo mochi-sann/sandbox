@@ -1,16 +1,12 @@
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use sqlx::PgPool;
+
+use crate::model::Todos;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct User {
     name: String,
     age: u8,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
-pub struct Todo {
-    id: u64,
-    text: String,
-    completed: bool,
 }
 
 #[get("/hello_world")]
@@ -27,12 +23,8 @@ pub async fn hello_user(_req: HttpRequest) -> web::Json<User> {
     web::Json(user)
 }
 #[get("/todos")]
-pub async fn get_todos(_req: HttpRequest) -> web::Json<Vec<Todo>> {
-    let todos = vec![Todo {
-        text: "hoge".to_string(),
-        id: 1,
-        completed: true,
-    }];
+pub async fn get_todos(pool: web::Data<PgPool>) -> web::Json<Vec<Todos>> {
+    let todos = Todos::all(&pool).await.unwrap();
     web::Json(todos)
 }
 #[cfg(test)]
