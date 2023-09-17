@@ -19,6 +19,11 @@ command = "cargo"
 args = ["watch", "-x", "run"]
 dependencies = ["format"]
 
+[tasks.up]
+command = "docker"
+args = ["compose", "up", "-d" ,"--build"]
+dependencies = ["format"]
+
 [tasks.format]
 install_crate = "rustfmt"
 command = "cargo"
@@ -45,3 +50,8 @@ dependencies = [
     "test"
 ]
 
+[tasks.dev]
+dependencies = [
+    "up",
+    "watch"
+]

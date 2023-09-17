@@ -1,10 +1,12 @@
+use std::env;
+
 use actix_web::{
     get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 
 mod api;
 use api::todo::{get_todos, hello_user, hello_world};
-const PORT: u16 = 8080;
+use dotenv::dotenv;
 
 #[get("/")]
 async fn hello(_req: HttpRequest) -> impl Responder {
@@ -24,14 +26,25 @@ async fn default_handler() -> impl Responder {
     HttpResponse::NotFound().body("404 Not Found")
 }
 
+// get port from env or default to 8080
+fn get_port() -> u16 {
+    dotenv().ok();
+    let port = env::var("PORT");
+    match port {
+        Ok(p) => p.parse::<u16>().unwrap(),
+        Err(_) => 8000,
+    }
+}
 // access logs are printed with the INFO level so ensure it is enabled by default
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+    let port = get_port();
     std::env::set_var("RUST_LOG", "actix_web=info");
 
     env_logger::init();
 
-    log::info!("starting HTTP server at http://localhost:{}", PORT);
+    log::info!("starting HTTP server at http://localhost:{}", port);
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())
@@ -43,7 +56,7 @@ async fn main() -> std::io::Result<()> {
             .route("/hey", web::get().to(manual_hello))
             .default_service(web::route().to(default_handler))
     })
-    .bind(("127.0.0.1", PORT))?
+    .bind(("127.0.0.1", port))?
     .run()
     .await
 }
