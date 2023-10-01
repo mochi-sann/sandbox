@@ -1,7 +1,7 @@
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder, post};
+use actix_web::{get, post, web, Error, HttpRequest, HttpResponse, Responder};
 use sqlx::PgPool;
 
-use crate::model::{Todos, NewTodo};
+use crate::model::{NewTodo, Todos};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct User {
@@ -22,19 +22,30 @@ pub async fn hello_user(_req: HttpRequest) -> web::Json<User> {
     };
     web::Json(user)
 }
-#[get("/todos")]
 pub async fn get_todos(pool: web::Data<PgPool>) -> web::Json<Vec<Todos>> {
     let todos = Todos::all(&pool).await.unwrap();
     web::Json(todos)
 }
-#[post("/todos")]
-pub async fn create_todo(pool : web::Data<PgPool>, new_todo: web::Json<NewTodo>) -> impl Responder {
+
+pub async fn create_todo(pool: web::Data<PgPool>, new_todo: web::Json<NewTodo>) -> impl Responder {
     let new_todo = new_todo.into_inner();
 
     let res = Todos::create(new_todo, &pool).await;
     match res {
         Ok(_) => HttpResponse::Ok().body("Todo created"),
         Err(_) => HttpResponse::InternalServerError().body("Something went wrong"),
+    }
+}
+pub async fn get_todo_id(
+    pool: web::Data<PgPool>,
+    id: web::Path<i32>,
+) -> Result<web::Json<Todos>, Error> {
+    let id = id.into_inner();
+    let todo = Todos::find_id(id, &pool).await;
+
+    match todo {
+        Ok(todo) => Ok(web::Json(todo)),
+        Err(_) => HttpResponse::NotFound().body("Todo not found"),
     }
 }
 

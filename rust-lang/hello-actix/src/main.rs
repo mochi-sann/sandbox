@@ -9,9 +9,11 @@ use actix_web::{
 };
 
 mod api;
+mod app_config;
 mod db;
 mod model;
 use api::todo::{create_todo, get_todos, hello_user, hello_world};
+use app_config::config_app;
 use dotenv::dotenv;
 use sqlx::PgPool;
 
@@ -26,10 +28,10 @@ async fn echo(req_body: String) -> impl Responder {
 }
 
 async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
+    HttpResponse::Ok().body("konnnitihaoooooooooooooooooooooooooooo")
 }
 
-async fn default_handler() -> impl Responder {
+async fn default_notfound_handler() -> impl Responder {
     HttpResponse::NotFound().body("404 Not Found")
 }
 
@@ -51,7 +53,6 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-
     let pool = PgPool::connect(&database_url)
         .await
         .expect("Failed to create pool");
@@ -60,15 +61,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))
+            .configure(config_app)
             .wrap(Logger::default())
-            .service(hello_world)
-            .service(hello_user)
-            .service(hello)
-            .service(get_todos)
-            .service(create_todo)
-            .service(echo)
-            .route("/hey", web::get().to(manual_hello))
-            .default_service(web::route().to(default_handler))
+            .default_service(web::route().to(default_notfound_handler))
     })
     .bind(("127.0.0.1", port))?
     .run()
