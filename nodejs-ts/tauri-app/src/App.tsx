@@ -5,11 +5,18 @@ import "./App.css";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
+  const [fileList, setFileList] = useState<String[]>([]);
   const [name, setName] = useState("");
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
     setGreetMsg(await invoke("greet", { name }));
+  }
+  async function getFileLists() {
+    const fileListTemp: String[] = await invoke("get_file_list")
+    console.log(fileListTemp)
+    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+    setFileList(fileListTemp);
   }
 
   return (
@@ -27,8 +34,9 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
+      <pre>{JSON.stringify(fileList)}</pre>
 
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+      <p>Hello woarld</p>
 
       <form
         className="row"
@@ -45,6 +53,10 @@ function App() {
         <button type="submit">Greet</button>
       </form>
 
+      <button onClick={() => {
+        getFileLists()
+
+      }} type="submit">fileList</button>
       <p>{greetMsg}</p>
     </div>
   );
