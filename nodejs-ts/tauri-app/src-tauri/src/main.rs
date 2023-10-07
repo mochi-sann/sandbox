@@ -12,9 +12,9 @@ fn greet(name: &str) -> String {
     )
 }
 #[tauri::command]
-fn get_file_list() -> Vec<String> {
+fn get_file_list(get_dir_path: String) -> Vec<String> {
     let mut file_list: Vec<String> = Vec::new();
-    let paths = fs::read_dir("./").unwrap();
+    let paths = fs::read_dir(get_dir_path).unwrap();
     for path in paths {
         let path = path.unwrap().path();
         let file_name = path.file_name().unwrap().to_str().unwrap().to_string();
