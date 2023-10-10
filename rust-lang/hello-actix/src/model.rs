@@ -97,7 +97,7 @@ impl Todos {
         .await
         .map_err(|e| match e {
             sqlx::Error::RowNotFound => sqlx::Error::RowNotFound,
-            _ => sqlx::Error::RowNotFound,
+            _ => e,
         })?;
 
         println!("{:?}", rec);

@@ -9,6 +9,10 @@ pub struct User {
     age: u8,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+pub struct NotFoundBody {
+    error_status: String,
+}
 #[get("/hello_world")]
 pub async fn hello_world(_req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
@@ -39,16 +43,14 @@ pub async fn create_todo(pool: web::Data<PgPool>, new_todo: web::Json<NewTodo>) 
 pub async fn get_todo_id(
     pool: web::Data<PgPool>,
     id: web::Path<i32>,
-) -> Result<web::Json<Todos>, Error> {
-    let id = id.into_inner();
-    let todo = Todos::find_id(id, &pool).await;
+) -> impl Responder {
+    let todo = Todos::find_id(id.into_inner(), &pool).await;
 
     match todo {
-        Ok(todo) => Ok(web::Json(todo)),
-        Err(_) => HttpResponse::NotFound().body("Todo not found"),
+        Ok(todo) => HttpResponse::Ok().json(todo),
+        Err(_) => HttpResponse::NotFound().body("Not found"),
     }
 }
-
 #[cfg(test)]
 mod tests {
     use actix_web::{body::to_bytes, dev::Service, http, test, App, Error};
