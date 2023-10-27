@@ -216,6 +216,15 @@ CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
 //Value Computed by CMake
+HelloWorldProject_BINARY_DIR:STATIC=/home/mochi/codespace/github.com/mochi-sann/sandbox/cpp/sdl
+
+//Value Computed by CMake
+HelloWorldProject_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+HelloWorldProject_SOURCE_DIR:STATIC=/home/mochi/codespace/github.com/mochi-sann/sandbox/cpp/sdl
+
+//Value Computed by CMake
 HelloWorld_BINARY_DIR:STATIC=/home/mochi/codespace/github.com/mochi-sann/sandbox/cpp/sdl
 
 //Value Computed by CMake

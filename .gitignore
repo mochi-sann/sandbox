@@ -35,3 +35,5 @@ scala/main-scala/project/target
 scala/main-scala/target
 python/hello-fastapi/__pycache__
 cpp/sdl/CMakeFiles
+cpp/sdl/HelloWorld
+cpp/sdl/HelloWorldProject
