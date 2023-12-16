@@ -40,10 +40,7 @@ pub async fn create_todo(pool: web::Data<PgPool>, new_todo: web::Json<NewTodo>) 
         Err(_) => HttpResponse::InternalServerError().body("Something went wrong"),
     }
 }
-pub async fn get_todo_id(
-    pool: web::Data<PgPool>,
-    id: web::Path<i32>,
-) -> impl Responder {
+pub async fn get_todo_id(pool: web::Data<PgPool>, id: web::Path<i32>) -> impl Responder {
     let todo = Todos::find_id(id.into_inner(), &pool).await;
 
     match todo {
@@ -66,7 +63,12 @@ mod tests {
         assert_eq!(resp.status(), http::StatusCode::OK);
 
         let body = to_bytes(resp.into_body()).await?;
-        assert_eq!(body, "Hello world!");
+        let user = User {
+            name: "John".to_string(),
+            age: 18,
+        };
+        let body = String::from_utf8(body.to_vec()).unwrap();
+        assert_eq!(body, user);
 
         Ok(())
     }
