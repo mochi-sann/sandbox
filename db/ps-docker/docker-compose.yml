@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: ps-db
+    image: postgres:15
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_USER: "misskey"
+      POSTGRES_PASSWORD: "docker"
+
