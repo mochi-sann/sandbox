@@ -2,10 +2,11 @@ import React, { useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { Mesh } from "three";
+import { Model } from "./Anim";
 
 function Box(props: JSX.IntrinsicElements["mesh"]) {
   // This reference will give us direct access to the mesh
-  const { speed , scale } = useControls({ speed: 1  , scale : 1});
+  const { speed, scale } = useControls({ speed: 1, scale: 1 });
   const meshRef = useRef<Mesh>(null);
   // Set up state for the hovered and active state
   const [hovered, setHover] = useState(false);
@@ -32,7 +33,7 @@ export const CanvasTest: React.FC = () => {
   return (
     <div>
       {" "}
-      <Canvas>
+      <Canvas height="100%" width="100%">
         <ambientLight intensity={Math.PI / 2} />
         <spotLight
           position={[10, 10, 10]}
@@ -42,6 +43,7 @@ export const CanvasTest: React.FC = () => {
           intensity={Math.PI}
         />
         <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+        <Model ></Model>
         <Box position={[-1.2, 0, 0]} />
         <Box position={[1.2, 0, 0]} />
       </Canvas>
