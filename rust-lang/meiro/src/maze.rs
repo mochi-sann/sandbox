@@ -13,25 +13,29 @@ impl Maze {
             stack: Vec::new(),
         }
     }
+    pub fn get_directions(&self, x: usize, y: usize) -> Vec<Direction> {
+        let mut directions: Vec<Direction> = Vec::new();
+        if x > 2 && self.tile[y][x - 2] == TileType::Wall {
+            directions.push(Direction::Left);
+        }
+        if x < MAP_WIDTH - 2 && self.tile[y][x + 2] == TileType::Wall {
+            directions.push(Direction::Right);
+        }
+        if y > 2 && self.tile[y - 2][x] == TileType::Wall {
+            directions.push(Direction::Up);
+        }
+        if y < MAP_HEIGHT - 2 && self.tile[y + 2][x] == TileType::Wall {
+            directions.push(Direction::Down);
+        }
+        directions
+    }
 
     pub fn dig(&mut self, x: usize, y: usize) {
         let mut x = x as usize;
         let mut y = y as usize;
         self.tile[y][x] = TileType::Floor;
         loop {
-            let mut directions: Vec<Direction> = Vec::new();
-            if x > 2 && self.tile[y][x - 2] == TileType::Wall {
-                directions.push(Direction::Left);
-            }
-            if x < MAP_WIDTH - 2 && self.tile[y][x + 2] == TileType::Wall {
-                directions.push(Direction::Right);
-            }
-            if y > 2 && self.tile[y - 2][x] == TileType::Wall {
-                directions.push(Direction::Up);
-            }
-            if y < MAP_HEIGHT - 2 && self.tile[y + 2][x] == TileType::Wall {
-                directions.push(Direction::Down);
-            }
+            let directions: Vec<Direction> = self.get_directions(x, y);
             // println!("directions {:?}", directions);
             // println!("stack {:?}", self.stack);
             if directions.is_empty() {
@@ -40,6 +44,10 @@ impl Maze {
                     // println!("pop {:?}", (x, y));
                     self.dig(x, y);
                 }
+                // if self.stack.is_empty() {
+                //     self.set_tile(x, y, TileType::Goal)
+                // }
+
                 return;
             } else {
                 self.stack.push((x, y));
@@ -78,7 +86,9 @@ impl Maze {
             for x in 0..MAP_WIDTH {
                 match self.tile[y][x] {
                     TileType::Wall => print!("##"),
-                    TileType::Floor => print!(". "),
+                    TileType::Floor => print!("  "),
+                    TileType::Goal => print!("G."),
+                    TileType::Start => print!("S."),
                 }
             }
             println!();
