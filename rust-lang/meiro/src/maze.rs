@@ -43,17 +43,15 @@ impl Maze {
                     // println!("stack 2 {:?}", self.stack);
                     // println!("pop {:?}", (x, y));
                     self.dig(x, y);
+                    println!("stack {:?}", self.stack);
                 }
-                // if self.stack.is_empty() {
-                //     self.set_tile(x, y, TileType::Goal)
-                // }
 
                 return;
             } else {
                 self.stack.push((x, y));
             }
             let dir = directions[rand::random::<usize>() % directions.len()];
-            println!("dir {:?}", dir);
+            // println!("dir {:?}", dir);
             if dir == Direction::Left {
                 self.set_tile(x - 2, y, TileType::Floor);
                 self.set_tile(x - 1, y, TileType::Floor);
@@ -77,6 +75,9 @@ impl Maze {
     }
     pub fn set_tile(&mut self, x: usize, y: usize, tile: TileType) {
         self.tile[y][x] = tile;
+    }
+    pub fn set_start(&mut self, x: usize, y: usize) {
+        self.set_tile(x, y, TileType::Start);
     }
     pub fn get_tile(&self, x: usize, y: usize) -> TileType {
         self.tile[y][x]
