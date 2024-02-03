@@ -5,6 +5,8 @@ mod maze;
 enum TileType {
     Wall,
     Floor,
+    Start, // スタート地点
+    Goal,  // ゴール地点
 }
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Direction {
@@ -13,11 +15,11 @@ enum Direction {
     Left,
     Right,
 }
-const MAP_WIDTH: usize = 11;
-const MAP_HEIGHT: usize = 11;
+const MAP_WIDTH: usize = 21;
+const MAP_HEIGHT: usize = 21;
 fn main() {
     let mut maze = Maze::new();
-    maze.dig(5, 5);
+    maze.dig(1, 1);
 
     maze.render()
     // println!("Hello, world!");

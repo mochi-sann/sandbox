@@ -15,42 +15,56 @@ impl Maze {
     }
 
     pub fn dig(&mut self, x: usize, y: usize) {
-        let mut postions: (usize, usize) = (x, y);
+        let mut x = x as usize;
+        let mut y = y as usize;
         self.tile[y][x] = TileType::Floor;
-        let mut directions: Vec<Direction> = Vec::new();
-        if self.tile[y][x - 2] == TileType::Wall {
-            directions.push(Direction::Left);
-        }
-        if self.tile[y][x + 2] == TileType::Wall {
-            directions.push(Direction::Right);
-        }
-        if self.tile[y - 2][x] == TileType::Wall {
-            directions.push(Direction::Up);
-        }
-        if self.tile[y + 2][x] == TileType::Wall {
-            directions.push(Direction::Down);
-        }
-        println!("directions {:?}", directions);
-        if directions.is_empty() {
-            return;
-        }
-        let dir = directions[rand::random::<usize>() % directions.len()];
-        if dir == Direction::Left {
-            self.set_tile(x - 2, y, TileType::Floor);
-            self.set_tile(x - 1, y, TileType::Floor);
-            self.dig(x - 2, y);
-        } else if dir == Direction::Right {
-            self.set_tile(x + 2, y, TileType::Floor);
-            self.set_tile(x + 1, y, TileType::Floor);
-            self.dig(x + 2, y);
-        } else if dir == Direction::Up {
-            self.set_tile(x, y - 2, TileType::Floor);
-            self.set_tile(x, y - 1, TileType::Floor);
-            self.dig(x, y - 2);
-        } else if dir == Direction::Down {
-            self.set_tile(x, y + 2, TileType::Floor);
-            self.set_tile(x, y + 1, TileType::Floor);
-            self.dig(x, y + 2);
+        loop {
+            let mut directions: Vec<Direction> = Vec::new();
+            if x > 2 && self.tile[y][x - 2] == TileType::Wall {
+                directions.push(Direction::Left);
+            }
+            if x < MAP_WIDTH - 2 && self.tile[y][x + 2] == TileType::Wall {
+                directions.push(Direction::Right);
+            }
+            if y > 2 && self.tile[y - 2][x] == TileType::Wall {
+                directions.push(Direction::Up);
+            }
+            if y < MAP_HEIGHT - 2 && self.tile[y + 2][x] == TileType::Wall {
+                directions.push(Direction::Down);
+            }
+            // println!("directions {:?}", directions);
+            // println!("stack {:?}", self.stack);
+            if directions.is_empty() {
+                if let Some((x, y)) = self.stack.pop() {
+                    // println!("stack 2 {:?}", self.stack);
+                    // println!("pop {:?}", (x, y));
+                    self.dig(x, y);
+                }
+                return;
+            } else {
+                self.stack.push((x, y));
+            }
+            let dir = directions[rand::random::<usize>() % directions.len()];
+            println!("dir {:?}", dir);
+            if dir == Direction::Left {
+                self.set_tile(x - 2, y, TileType::Floor);
+                self.set_tile(x - 1, y, TileType::Floor);
+                x -= 2;
+            } else if dir == Direction::Right {
+                self.set_tile(x + 2, y, TileType::Floor);
+                self.set_tile(x + 1, y, TileType::Floor);
+                x += 2;
+            } else if dir == Direction::Up {
+                self.set_tile(x, y - 2, TileType::Floor);
+                self.set_tile(x, y - 1, TileType::Floor);
+                y -= 2;
+            } else if dir == Direction::Down {
+                self.set_tile(x, y + 2, TileType::Floor);
+                self.set_tile(x, y + 1, TileType::Floor);
+                y += 2;
+            }
+
+            // self.render()
         }
     }
     pub fn set_tile(&mut self, x: usize, y: usize, tile: TileType) {
