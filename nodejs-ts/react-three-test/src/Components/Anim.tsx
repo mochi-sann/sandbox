@@ -20,8 +20,8 @@ type GLTFResult = GLTF & {
 };
 
 export function Model(props: JSX.IntrinsicElements["group"]) {
-  const { nodes, materials, animations } = useGLTF("/anime.glb") as GLTFResult;
-  const clip = animations[0];
+  const { nodes, materials  } = useGLTF("/anime.glb") as GLTFResult;
+  const anim = userAnimation();
   return (
     <group {...props} dispose={null}>
       <group name="Scene">
