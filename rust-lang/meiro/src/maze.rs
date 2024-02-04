@@ -39,11 +39,17 @@ impl Maze {
             // println!("directions {:?}", directions);
             // println!("stack {:?}", self.stack);
             if directions.is_empty() {
+                println!("stack {:?}", self.stack);
+                self.stack.reverse();
+                if self.stack.len() == 0 {
+                    self.set_tile(x, y, TileType::Goal);
+                    // self.render();
+                    return;
+                }
                 if let Some((x, y)) = self.stack.pop() {
                     // println!("stack 2 {:?}", self.stack);
                     // println!("pop {:?}", (x, y));
                     self.dig(x, y);
-                    println!("stack {:?}", self.stack);
                 }
 
                 return;
