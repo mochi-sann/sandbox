@@ -15,10 +15,10 @@ enum Direction {
     Left,
     Right,
 }
-const MAP_WIDTH: usize = 51;
-const MAP_HEIGHT: usize = 51;
+const MAP_WIDTH: usize = 21;
+const MAP_HEIGHT: usize = 21;
 fn main() {
-    let mut maze = Maze::new();
+    let mut maze = Maze::new(1, 1);
     maze.dig(1, 1);
     maze.set_start(1, 1);
 
