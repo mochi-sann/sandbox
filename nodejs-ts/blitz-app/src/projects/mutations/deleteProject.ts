@@ -10,5 +10,5 @@ export default resolver.pipe(
     const project = await db.project.deleteMany({ where: { id } })
 
     return project
-  }
+  },
 )

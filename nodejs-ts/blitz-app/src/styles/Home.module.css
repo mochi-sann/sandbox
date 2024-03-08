@@ -118,8 +118,15 @@
   font-size: 0.86em;
   font-weight: bold;
   color: rgb(124, 58, 237);
-  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
-    Bitstream Vera Sans Mono, Courier New, monospace;
+  font-family:
+    Menlo,
+    Monaco,
+    Lucida Console,
+    Liberation Mono,
+    DejaVu Sans Mono,
+    Bitstream Vera Sans Mono,
+    Courier New,
+    monospace;
 }
 
 .toastContainer {
@@ -138,8 +145,12 @@
   color: rgb(124, 58, 237);
   background: linear-gradient(to right, rgba(231, 216, 246, 1), rgba(231, 216, 246, 1)),
     linear-gradient(to right, rgba(99, 1, 235, 1), rgba(124, 58, 237, 1), rgba(231, 216, 246, 1));
-  background-size: 100% 1px, 0 1px;
-  background-position: 100% 100%, 0 100%;
+  background-size:
+    100% 1px,
+    0 1px;
+  background-position:
+    100% 100%,
+    0 100%;
   background-repeat: no-repeat;
   transition: background-size 400ms;
 }
@@ -147,7 +158,9 @@
 .textLink:hover,
 .textLink:focus,
 .textLink:active {
-  background-size: 0 1px, 100% 1px;
+  background-size:
+    0 1px,
+    100% 1px;
 }
 
 .arrowIcon {
@@ -247,7 +260,9 @@
   text-decoration: none;
   border-radius: 10px;
   border-bottom-left-radius: 0px;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
   max-width: 200px;
   min-width: 200px;
   display: flex;

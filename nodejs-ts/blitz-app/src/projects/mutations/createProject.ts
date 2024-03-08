@@ -10,5 +10,5 @@ export default resolver.pipe(
     const project = await db.project.create({ data: input })
 
     return project
-  }
+  },
 )
