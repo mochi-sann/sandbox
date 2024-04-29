@@ -5,7 +5,7 @@ port = 10007
 
 
 
-soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 while True : 
     data = input(" > ")
