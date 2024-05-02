@@ -18,7 +18,9 @@ export default function VideoView() {
       // 音声なし
       audio: false,
     });
-    videoRef.current.srcObject = stream;
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
   };
 
   return (
