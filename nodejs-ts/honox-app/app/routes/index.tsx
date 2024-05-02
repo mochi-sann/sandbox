@@ -1,6 +1,6 @@
 import { css } from "hono/css";
 import { createRoute } from "honox/factory";
-import Counter from "../islands/counter";
+import VideoView from "../islands/VideoViwe";
 
 const className = css`
   font-family: sans-serif;
@@ -12,7 +12,7 @@ export default createRoute((c) => {
   return c.render(
     <div class={className}>
       <h1>Hello, {name}!</h1>
-      <Counter />
+      <VideoView />
     </div>,
     { title: name },
   );
