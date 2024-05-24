@@ -1,0 +1,2 @@
+echo "hello world!"
+let list ["hello" , "hoge" , "my " ]
