@@ -1,0 +1,8 @@
+
+name = "waku-project"
+main = "dist/serve.js"
+compatibility_date = "2023-12-06"
+compatibility_flags = [ "nodejs_als" ]
+
+[site]
+bucket = "./dist/public"

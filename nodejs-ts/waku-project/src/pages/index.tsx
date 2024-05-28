@@ -1,6 +1,7 @@
 import { Link } from "waku";
 
 import { Counter } from "../components/counter";
+import { TextInput } from "../components/input";
 
 export default async function HomePage() {
   const data = await getData();
@@ -12,6 +13,7 @@ export default async function HomePage() {
       <p>{data.body}</p>
       <button className="btn btn-primary">Button</button>
       <Counter />
+      <TextInput />
       <Link to="/about" className="mt-4 inline-block underline">
         About page
       </Link>
