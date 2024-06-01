@@ -13,6 +13,9 @@ dependencies:
     version: 0.164.1
 
 devDependencies:
+  '@types/dat.gui':
+    specifier: ^0.7.13
+    version: 0.7.13
   '@types/three':
     specifier: ^0.164.1
     version: 0.164.1
@@ -362,6 +365,10 @@ packages:
 
   /@tweenjs/tween.js@23.1.2:
     resolution: {integrity: sha512-kMCNaZCJugWI86xiEHaY338CU5JpD0B97p1j1IKNn/Zto8PgACjQx0UxbHjmOcLl/dDOBnItwD07KmCs75pxtQ==}
+    dev: true
+
+  /@types/dat.gui@0.7.13:
+    resolution: {integrity: sha512-LmG4Pr0mbsB/1WVttf8xaHx45BvSBDGY5D9+0/9AZCbI4vvOguwBHZdKyJMxt5Yst8+icRSHKmr7ClV2u5ZtDA==}
     dev: true
 
   /@types/estree@1.0.5:
