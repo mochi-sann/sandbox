@@ -5,6 +5,7 @@ services:
     environment:
       TZ: Asia/Tokyo
       # 作成するデータベースの「ユーザー名」と「パスワード」を設定する
+      MYSQL_USER: user
       MYSQL_DATABASE: root
       MYSQL_ROOT_PASSWORD: password
     volumes:
