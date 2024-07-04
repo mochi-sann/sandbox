@@ -17,7 +17,7 @@ for (const el of img_btns) {
     name: name || "",
     tags: tags,
   };
-  
+
   emoji_list.push(newEmoji);
 }
 
