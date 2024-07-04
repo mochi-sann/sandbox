@@ -1,5 +1,5 @@
 # ベースとなるDockerイメージを選択(ruby 3.1.4を使用する)
-ARG RUBY_VERSION=ruby:3.1.4
+ARG RUBY_VERSION=ruby:3
 ARG NODE_VERSION=20
 
 FROM $RUBY_VERSION
