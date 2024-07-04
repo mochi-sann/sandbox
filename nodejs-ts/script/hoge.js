@@ -21,4 +21,4 @@ for (const el of img_btns) {
   emoji_list.push(newEmoji);
 }
 
-console.table(emoji_list);
+console.log(JSON.stringify(emoji_list));
