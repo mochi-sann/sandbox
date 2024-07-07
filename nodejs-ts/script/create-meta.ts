@@ -46,7 +46,8 @@ const emojis = files.map(
     fileName: file.name,
     emoji: {
       name: get_name(file.name),
-      category: "blobs_2",
+      category: "logos",
+
       aliases: get_aliases_texts(get_name(file.name)),
     },
   }),
