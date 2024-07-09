@@ -12,11 +12,18 @@ class ArticlesController < ApplicationController
   end
 
   def create
-    @articles = Article.new(title: 'title', body: 'body')
+    @article = Article.new(article_params)
+
     if @article.save
       redirect_to @article
     else
-      render :new, status: unprocessable_entity
+      render :new, status: :unprocessable_entity
     end
   end
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :body)
+    end
 end
+
