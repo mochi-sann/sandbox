@@ -2,3 +2,14 @@
 <a href="/articles">/articles <a>
 <h1>   <%= @article.title%> </h1>
 <p>   <%= @article.body%> </p>
+<ul>
+  <li>
+<%= link_to "edit article" , edit_article_path(@article) %>
+  </li>
+  <li>
+    <%= link_to "Destory" , article_path(@article) , data: {
+      turbo_method: :delete ,
+      turbo_confirm: "are yo sure? "
+    } %>
+  </li>
+</ul>
