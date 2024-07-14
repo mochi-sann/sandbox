@@ -22,3 +22,14 @@ Things you may want to cover:
 - Deployment instructions
 
 - ...
+
+
+
+# dev
+
+
+```bash 
+docker compose run web bin/rails db:create
+
+docker compose run web bin/rails db:migrate
+```

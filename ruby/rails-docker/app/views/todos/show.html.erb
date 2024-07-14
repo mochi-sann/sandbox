@@ -9,7 +9,7 @@
   <%= button_to "Destroy this todo", @todo, method: :delete %>
 </div>
 
-  <h2>add a commetns</h2>
+      <h2>add a commetns</h2>
       <%= form_with model: [ @article, @article.comments.build ] do |form| %>
   <p>
     <%= form.label :commenter %><br>
