@@ -1,0 +1,17 @@
+
+services:
+  mysql:
+    image: mysql:8.0.28
+    platform: linux/amd64
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    volumes:
+     - ./mysql/DB:/docker-entrypoint-initdb.d  #初期データをマウントする場所
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+      TZ: "Asia/Tokyo"
+    # volumes:
+      # - ./my.cnf:/etc/mysql/conf.d/my.cnf

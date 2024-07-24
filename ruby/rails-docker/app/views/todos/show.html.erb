@@ -10,7 +10,6 @@
 </div>
 
       <h2>add a commetns</h2>
-      <%= form_with model: [ @article, @article.comments.build ] do |form| %>
   <p>
     <%= form.label :commenter %><br>
     <%= form.text_field :commenter %>
@@ -24,3 +23,4 @@
   </p>
 <% end %>
 
+for letter in {1..30000}; do  curl http://localhost:3000/todos ; done
