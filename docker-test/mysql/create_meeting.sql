@@ -15,22 +15,18 @@ CREATE TABLE meeting_rooms (
  ); 
 );
 
-CREATE TABLE meeting_scadules (
 
-  id INT not null AUTO_INCREMENT, 
-  date DATE not null , 
-  start_time DATETIME  not null , 
-  end_time DATETIME  not null , 
-  meeting_room_id INT not null , 
-  meeting_name TEXT not null , 
-  join_members TEXT not null  , 
-  memos TEXT,
-  user_id INT not null , 
-
-
-
-
-  foreign key user_id_foreign_key (user_id) references users (id),
-  foreign key meeting_room_id_foreign_key (meeting_room_id) references meeting_rooms (id), 
-  PRIMARY KEY (id)
-) ;
+CREATE TABLE meeting_schedules (
+    id INT NOT NULL AUTO_INCREMENT,
+    meeting_date DATE NOT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    meeting_room_id INT NOT NULL,
+    meeting_name TEXT NOT NULL,
+    join_members TEXT NOT NULL,
+    memos TEXT,
+    user_id INT NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT user_id_foreign_key FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT meeting_room_id_foreign_key FOREIGN KEY (meeting_room_id) REFERENCES meeting_rooms (id)
+);
