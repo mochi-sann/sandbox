@@ -9,7 +9,6 @@ import Starter from "../components/starter/next-steps/next-steps";
 export default component$(() => {
   return (
     <>
-      <Hero />
       <Starter />
 
       <div role="presentation" class="ellipsis"></div>
