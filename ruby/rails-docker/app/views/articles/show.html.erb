@@ -4,15 +4,34 @@
 <p>   <%= @article.body%> </p>
 <ul>
   <li>
-<%= link_to "edit article" , edit_article_path(@article) %>
+<%= link_to "edit" , edit_article_path(@article) %>
   </li>
   <li>
-    <%= link_to "Destory" , article_path(@article) , data: {
+    <%= link_to "delete" , article_path(@article) , data: {
       turbo_method: :delete ,
       turbo_confirm: "are yo sure? "
     } %>
   </li>
 </ul>
+
+
+<h2>Comments</h2>
+<ul>
+<% @article.comments.each do |comment| %>
+  <li>
+    <p>
+      <strong>Commenter:</strong>
+      <%= comment.commenter %>
+    </p>
+
+    <p>
+      <strong>Comment:</strong>
+      <%= comment.body %>
+    </p>
+  </li
+<% end %>
+</ul>
+
 <h2>Add a comment:</h2>
 <%= form_with model: [ @article, @article.comments.build ] do |form| %>
   <p>

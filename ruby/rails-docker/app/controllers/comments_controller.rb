@@ -1,8 +1,14 @@
 class CommentsController < ApplicationController
-  def create 
-    @artcile = Article.find(prams[:article_id])
+  def create
+    @artcile = Article.find(params[:article_id])
+    if @article.nil?
+      flash[:alert] = "記事が見つかりませんでした。"
+      redirect_to artcile_path
+      return
+    end
+
     @comment = @article.comments.create(comment_params)
-     respond_to? artcile_path(@artcile)
+   respond_to? artcile_path(@artcile)
   end
 
   private
