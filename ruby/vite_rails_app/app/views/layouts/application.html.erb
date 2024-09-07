@@ -9,7 +9,9 @@
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
     <%= vite_client_tag %>
-    <%= vite_javascript_tag 'application' %>
+    <%= vite_javascript_tag 'application.jsx' %>
+    <%= vite_stylesheet_tag 'application' %>
+
     <!--
       If using a TypeScript entrypoint file:
         vite_typescript_tag 'application'
@@ -24,5 +26,8 @@
 
   <body>
     <%= yield %>
+        <div id="root"></div>
+            <script type="module" src="/application.jsx"></script>
+
   </body>
 </html>
