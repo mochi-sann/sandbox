@@ -43,3 +43,9 @@ nodejs-ts/scala-js-vite/project/project/target/config-classes
 nodejs-ts/scala-js-vite/project/target
 nodejs-ts/scala-js-vite/project
 ruby/rails-docker/vendor/ruby/3.2.0
+ruby/hello/bin
+ruby/hello/cache
+ruby/hello/extensions/x86_64-linux/3.1.0
+ruby/hello/gems
+ruby/hello/node_modules
+ruby/hello/specifications
