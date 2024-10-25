@@ -49,3 +49,5 @@ ruby/hello/extensions/x86_64-linux/3.1.0
 ruby/hello/gems
 ruby/hello/node_modules
 ruby/hello/specifications
+nodejs-ts/my-hono-typed-sql/prisma/dev.db-journal
+nodejs-ts/my-hono-typed-sql/prisma/dev.db
