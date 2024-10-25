@@ -2,8 +2,10 @@ import { serve } from "@hono/node-server";
 import { PrismaClient } from "@prisma/client";
 import { get_users, getUsersWithPosts } from "@prisma/client/sql";
 import { Hono } from "hono";
+import { logger } from "hono/logger";
 
 const app = new Hono();
+app.use(logger())
 const prisma = new PrismaClient({
 	log: ["info", "warn", "query", "error"],
 });
@@ -23,7 +25,6 @@ app.get("/users/postCount", async (c) => {
 		name: value.name,
 		id: value.id,
 	}));
-	console.log(...[users, "👀 [index.ts:19]: users"].reverse());
 
 	return c.json(users);
 });

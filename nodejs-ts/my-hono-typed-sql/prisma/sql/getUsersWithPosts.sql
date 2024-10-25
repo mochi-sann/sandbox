@@ -9,3 +9,5 @@ LEFT JOIN "posts" p
 GROUP BY
   u.id,
   u.name
+ORDER BY
+  postCount desc;
