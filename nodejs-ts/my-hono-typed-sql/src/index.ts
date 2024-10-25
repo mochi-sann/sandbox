@@ -46,19 +46,6 @@ app.get("/users/postCount/prisma", async (c) => {
 			},
 		},
 
-		// include: {
-		//
-		// 	// posts: {
-		// 	// 	select: {
-		// 	// 		title: true,
-		// 	// 	},
-		// 	// },
-		// 	_count: {
-		// 		select: {
-		// 			posts: true,
-		// 		},
-		// 	},
-		// },
 	});
 
 	return c.json(usersWithPostCounts);
