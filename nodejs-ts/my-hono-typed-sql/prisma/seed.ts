@@ -4,10 +4,11 @@ import { faker } from '@faker-js/faker';
 const prisma = new PrismaClient();
 
 async function main() {
+
   // Create 10 users with random data
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 10; i++) {
     const posts = []
-    const randomTimes = Math.floor(Math.random() * (100 + 1));
+    const randomTimes = Math.floor(Math.random() * (10000 + 1));
 
     console.log(`Looping ${randomTimes} times`);
 
