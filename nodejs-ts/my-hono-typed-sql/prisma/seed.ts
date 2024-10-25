@@ -3,6 +3,11 @@ import { faker, fakerJA } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
+const seed = process.env.FAKER_SEED
+	? faker.seed(+process.env.FAKER_SEED)
+	: faker.seed();
+console.log(`faker's seed: ${seed}`);
+
 async function main() {
 	// Create 10 users with random data
 	for (let i = 0; i < 100; i++) {
