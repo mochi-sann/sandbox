@@ -1,0 +1,3 @@
+SELECT `main`.`users`.`id`, `main`.`users`.`name`, COALESCE(`aggr_selection_0_Post`.`_aggr_count_posts`, 0) AS `_aggr_count_posts` FROM `main`.`users` LEFT JOIN (SELECT `main`.`posts`.`authorId`, COUNT(*) AS `orderby_aggregator` FROM `main
+`.`posts` WHERE 1=1 GROUP BY `main`.`posts`.`authorId`) AS `orderby_1_Post` ON (`main`.`users`.`id` = `orderby_1_Post`.`authorId`) LEFT JOIN (SELECT `main`.`posts`.`authorId`, COUNT(*) AS `_aggr_count_posts` FROM `main`.`posts` WHERE 1=1 GROUP BY `main
+`.`posts`.`authorId`) AS `aggr_selection_0_Post` ON (`main`.`users`.`id` = `aggr_selection_0_Post`.`authorId`) WHERE 1=1 ORDER BY COALESCE(`orderby_1_Post`.`orderby_aggregator`, ?) DESC LIMIT ? OFFSET ?
