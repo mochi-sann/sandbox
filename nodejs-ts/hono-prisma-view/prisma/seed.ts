@@ -9,6 +9,19 @@ const seed = process.env.FAKER_SEED
 console.log(`faker's seed: ${seed}`);
 
 async function main() {
+  for (let index = 0; index < 10; index++) {
+    const tag = await prisma.tag.create({
+      data: {
+        name: fakerJA.word.words(),
+
+      },
+    });
+
+    console.log('Tag Created:', tag);
+  }
+
+
+  // 既存のToDoにタグを関連付け
   const users: User[] = [];
   // Create 10 users with random data
   for (let i = 0; i < 10; i++) {
@@ -22,8 +35,9 @@ async function main() {
       const post = await prisma.todo.create({
         data: {
           title: fakerJA.word.sample(),
-          description : fakerJA.lorem.lines(),
-          isCompleted : fakerJA.datatype.boolean(),
+          description: fakerJA.lorem.lines(),
+          isCompleted: fakerJA.datatype.boolean(),
+
           user: {
             connect: {
               id: user.id,
@@ -31,7 +45,8 @@ async function main() {
           },
         },
       });
-      console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
+
+      // console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
     }
   }
 }
