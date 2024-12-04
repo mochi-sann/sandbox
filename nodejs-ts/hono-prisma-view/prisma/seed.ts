@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 const seed = process.env.FAKER_SEED
   ? faker.seed(+process.env.FAKER_SEED)
-  : faker.seed();
+  : faker.seed(100);
 console.log(`faker's seed: ${seed}`);
 
 async function main() {
@@ -22,6 +22,8 @@ async function main() {
       const post = await prisma.todo.create({
         data: {
           title: fakerJA.word.sample(),
+          description : fakerJA.lorem.lines(),
+          isCompleted : fakerJA.datatype.boolean(),
           user: {
             connect: {
               id: user.id,
