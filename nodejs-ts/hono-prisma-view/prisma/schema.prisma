@@ -12,3 +12,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement()) // 主キー
+  name      String // ユーザー名
+  email     String   @unique // ユニークなメールアドレス
+  todos     Todo[] // 1対多のリレーション
+  createdAt DateTime @default(now()) // 作成日時
+}
+
+model Todo {
+  id          Int       @id @default(autoincrement()) // 主キー
+  title       String // ToDoのタイトル
+  description String? // 詳細 (オプション)
+  isCompleted Boolean   @default(false) // 完了状態
+  userId      Int // 外部キー (Userとのリレーション)
+  user        User      @relation(fields: [userId], references: [id])
+  tags        TodoTag[] // 中間テーブル経由でTagと多対多リレーション
+  createdAt   DateTime  @default(now()) // 作成日時
+  updatedAt   DateTime  @updatedAt // 更新日時
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement()) // 主キー
+  name  String    @unique // ユニークなタグ名
+  todos TodoTag[] // 中間テーブル経由でTodoと多対多リレーション
+}
+
+model TodoTag {
+  id     Int  @id @default(autoincrement()) // 主キー
+  todoId Int // 外部キー (Todoとのリレーション)
+  tagId  Int // 外部キー (Tagとのリレーション)
+  todo   Todo @relation(fields: [todoId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@unique([todoId, tagId]) // 重複を防ぐ制約
+}
