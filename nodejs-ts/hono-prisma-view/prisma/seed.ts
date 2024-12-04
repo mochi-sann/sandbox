@@ -1,0 +1,45 @@
+import { PrismaClient, type User } from "@prisma/client";
+import { faker, fakerJA } from "@faker-js/faker";
+
+const prisma = new PrismaClient();
+
+const seed = process.env.FAKER_SEED
+  ? faker.seed(+process.env.FAKER_SEED)
+  : faker.seed();
+console.log(`faker's seed: ${seed}`);
+
+async function main() {
+  const users: User[] = [];
+  // Create 10 users with random data
+  for (let i = 0; i < 10; i++) {
+    const user = await prisma.user.create({
+      data: {
+        email: faker.internet.email(),
+        name: fakerJA.person.firstName(),
+      },
+    });
+    for (let j = 0; j < 10; j++) {
+      const post = await prisma.todo.create({
+        data: {
+          title: fakerJA.word.sample(),
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+      console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
+    }
+  }
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
