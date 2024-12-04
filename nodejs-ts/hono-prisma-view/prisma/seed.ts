@@ -13,13 +13,11 @@ async function main() {
     const tag = await prisma.tag.create({
       data: {
         name: fakerJA.word.words(),
-
       },
     });
 
-    console.log('Tag Created:', tag);
+    console.log("Tag Created:", tag);
   }
-
 
   // 既存のToDoにタグを関連付け
   const users: User[] = [];
@@ -45,6 +43,8 @@ async function main() {
           },
         },
       });
+      const newTodoTag = await prisma.todoTag.create({ data: { todoId: post.id, tagId: 1 } });
+      console.log(...[newTodoTag, '👀 [seed.ts:47]: newTodoTab'].reverse());
 
       // console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
     }
