@@ -53,16 +53,14 @@ model TodoTag {
 
 /// The underlying view does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 view todo_list_with_user {
-  todo_id          Int?
-  todo_title       String?
-  todo_description String?
-  is_completed     Boolean?
-  created_at       DateTime?
-  updated_at       DateTime?
-  user_id          Int?
-  user_name        String?
-  user_email       String?
-  tag_count        BigInt?
-
-  @@ignore
+  todo_id          Int      @id
+  todo_title       String
+  todo_description String
+  is_completed     Boolean
+  created_at       DateTime
+  updated_at       DateTime
+  user_id          Int
+  user_name        String
+  user_email       String
+  tag_count        Int
 }
