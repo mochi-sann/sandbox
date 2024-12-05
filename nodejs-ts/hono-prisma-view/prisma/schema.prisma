@@ -19,33 +19,40 @@ model User {
   name      String
   email     String   @unique
   todos     Todo[]
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user")
 }
 
 model Todo {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
-  isCompleted Boolean   @default(false)
-  userId      Int
+  isCompleted Boolean   @default(false) @map("is_completed")
+  userId      Int       @map("user_id")
   user        User      @relation(fields: [userId], references: [id])
   tags        TodoTag[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("todo")
 }
 
 model Tag {
   id    Int       @id @default(autoincrement())
   name  String    @unique
   todos TodoTag[]
+
+  @@map("tag")
 }
 
 model TodoTag {
   id     Int  @id @default(autoincrement())
-  todoId Int
-  tagId  Int
+  todoId Int  @map("todo_id")
+  tagId  Int  @map("tag_id")
   todo   Todo @relation(fields: [todoId], references: [id])
   tag    Tag  @relation(fields: [tagId], references: [id])
 
   @@unique([todoId, tagId])
+  @@map("todo_tag")
 }
