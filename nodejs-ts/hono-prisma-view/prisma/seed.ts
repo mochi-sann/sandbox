@@ -34,6 +34,7 @@ async function main() {
         }),
       },
     });
+    console.log(...[user, '👀 [seed.ts:37]: user'].reverse());
     for (let j = 0; j < 10; j++) {
       const post = await prisma.todo.create({
         data: {
@@ -56,6 +57,7 @@ async function main() {
           },
         },
       });
+      console.log(...[post, '👀 [seed.ts:60]: post'].reverse());
       const newTodoTag = await prisma.todoTag.create({
         data: {
           todoId: post.id,
