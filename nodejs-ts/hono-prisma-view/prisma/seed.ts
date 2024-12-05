@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 const seed = process.env.FAKER_SEED
   ? faker.seed(+process.env.FAKER_SEED)
   : faker.seed(100);
+
 console.log(`faker's seed: ${seed}`);
 
 async function main() {
@@ -27,6 +28,10 @@ async function main() {
       data: {
         email: faker.internet.email(),
         name: fakerJA.person.firstName(),
+        createdAt: faker.date.between({
+          from: "2019-01-01T00:00:00.000Z",
+          to: "2030-01-01T00:00:00.000Z",
+        }),
       },
     });
     for (let j = 0; j < 10; j++) {
@@ -35,6 +40,14 @@ async function main() {
           title: fakerJA.word.sample(),
           description: fakerJA.lorem.lines(),
           isCompleted: fakerJA.datatype.boolean(),
+          createdAt: faker.date.between({
+            from: "2019-01-01T00:00:00.000Z",
+            to: "2030-01-01T00:00:00.000Z",
+          }),
+          updatedAt: faker.date.between({
+            from: "2019-01-01T00:00:00.000Z",
+            to: "2030-01-01T00:00:00.000Z",
+          }),
 
           user: {
             connect: {
@@ -43,8 +56,13 @@ async function main() {
           },
         },
       });
-      const newTodoTag = await prisma.todoTag.create({ data: { todoId: post.id, tagId: 1 } });
-      console.log(...[newTodoTag, '👀 [seed.ts:47]: newTodoTab'].reverse());
+      const newTodoTag = await prisma.todoTag.create({
+        data: {
+          todoId: post.id,
+          tagId: 1,
+        },
+      });
+      console.log(...[newTodoTag, "👀 [seed.ts:47]: newTodoTab"].reverse());
 
       // console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
     }
