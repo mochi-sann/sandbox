@@ -1,22 +1,37 @@
 {
-	"compilerOptions": {
-
-		// Treat files as modules even if it doesn't use import/export
-		"moduleDetection": "force",
-
-		// Ignore module structure
-		"module": "Preserve",
-
-		// Allow JSON modules to be imported
-		"resolveJsonModule": true,
-
-		// Allow JS files to be imported from TS and vice versa
-		"allowJs": true,
-
-		// Use correct ESM import behavior
-		"esModuleInterop": true,
-
-		// Disallow features that require cross-file awareness
-		"isolatedModules": true,
-	},
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+    "resolveJsonModule": true,
+    // Allow JS files to be imported from TS and vice versa
+    // Use correct ESM import behavior
+    "esModuleInterop": true,
+    // Disallow features that require cross-file awareness
+    "isolatedModules": true,
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "cdk.out"
+  ]
 }

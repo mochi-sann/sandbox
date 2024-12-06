@@ -1,5 +1,6 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fs from "fs";
+import { deleteImage } from "./deleteImage";
 
 const main = async () => {
   const pdfDoc = await PDFDocument.create();
@@ -36,5 +37,6 @@ const main = async () => {
   // ファイルに書き出し
   fs.writeFileSync("output_with_image.pdf", pdfBytes);
   console.log("PDF saved as output_with_image.pdf");
+   deleteImage();
 };
 main();
