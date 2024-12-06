@@ -43,6 +43,6 @@ const main = async () => {
   // ファイルに書き出し
   fs.writeFileSync("output_with_image.pdf", pdfBytes);
   console.log("PDF saved as output_with_image.pdf");
-   deleteImage();
+   deleteImage(pdfBytes);
 };
 main();
