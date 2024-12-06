@@ -1,7 +1,9 @@
 import { PrismaClient, type User } from "@prisma/client";
 import { faker, fakerJA } from "@faker-js/faker";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ["query", "info", "warn"],
+});
 
 const seed = process.env.FAKER_SEED
   ? faker.seed(+process.env.FAKER_SEED)
@@ -34,7 +36,7 @@ async function main() {
         }),
       },
     });
-    console.log(...[user, '👀 [seed.ts:37]: user'].reverse());
+    // console.log(...[user, "👀 [seed.ts:37]: user"].reverse());
     for (let j = 0; j < 10; j++) {
       const post = await prisma.todo.create({
         data: {
@@ -57,14 +59,20 @@ async function main() {
           },
         },
       });
-      console.log(...[post, '👀 [seed.ts:60]: post'].reverse());
-      const newTodoTag = await prisma.todoTag.create({
-        data: {
-          todoId: post.id,
-          tagId: 1,
-        },
+      // console.log(...[post, "👀 [seed.ts:60]: post"].reverse());
+      const newTodoTag = await prisma.todoTag.createMany({
+        data: [
+          {
+            todoId: post.id,
+            tagId: 2,
+          },
+          {
+            todoId: post.id,
+            tagId: 1,
+          },
+        ],
       });
-      console.log(...[newTodoTag, "👀 [seed.ts:47]: newTodoTab"].reverse());
+      // console.log(...[newTodoTag, "👀 [seed.ts:47]: newTodoTab"].reverse());
 
       // console.log(...[post, "👀 [seed.ts:35]: post"].reverse());
     }
