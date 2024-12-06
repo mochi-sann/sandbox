@@ -1,4 +1,4 @@
 export function deleteImage() {
-  console.log('hello world')
+  console.log('hoge world')
   
 }

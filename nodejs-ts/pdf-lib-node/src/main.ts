@@ -6,7 +6,7 @@ const main = async () => {
   const pdfDoc = await PDFDocument.create();
 
   // ページを追加
-  const page = pdfDoc.addPage([600, 400]);
+  const page = pdfDoc.addPage([600, 1000]);
 
   const pngImageBytes = fs.readFileSync("./src/test.png");
   // 画像を読み込む（JPEGやPNG形式をサポート）
@@ -27,6 +27,12 @@ const main = async () => {
   page.drawImage(pngImage, {
     x: 50,
     y: 200,
+    width: width / 2,
+    height: height / 2,
+  });
+  page.drawImage(pngImage, {
+    x: 50,
+    y: 500,
     width: width / 2,
     height: height / 2,
   });
