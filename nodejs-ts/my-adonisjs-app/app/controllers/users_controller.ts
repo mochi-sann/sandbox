@@ -1,4 +1,4 @@
-// import type { HttpContext } from '@adonisjs/core/http'
+import type { HttpContext } from '@adonisjs/core/http'
 
 export default class UsersController {
   index() {
@@ -12,5 +12,12 @@ export default class UsersController {
         username: 'romain',
       },
     ]
+  }
+  login({ request }: HttpContext) {
+    const { username, password } = request.all()
+    return {
+      username,
+      password,
+    }
   }
 }
