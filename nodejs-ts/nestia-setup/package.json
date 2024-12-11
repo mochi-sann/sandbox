@@ -1,0 +1,27 @@
+{
+  "name": "nestia-setup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "ts-patch install && typia patch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nestia/core": "^4.2.0",
+    "@nestia/e2e": "^0.7.0",
+    "@nestia/fetcher": "^4.2.0",
+    "@nestia/sdk": "^4.2.0",
+    "typia": "^7.2.0"
+  },
+  "devDependencies": {
+    "@nestia/benchmark": "^0.3.0",
+    "nestia": "^6.3.1",
+    "ts-node": "^10.9.2",
+    "ts-patch": "^3.3.0",
+    "typescript": "~5.7.2"
+  }
+}
