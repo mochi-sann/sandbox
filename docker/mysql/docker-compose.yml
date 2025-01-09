@@ -1,0 +1,18 @@
+version: "3.9"
+
+
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8.0.33
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MYSQL_DATABASE: volume_test
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mysql_data:
+    container_name: mysql_data_volume  # コンテナ名はあくまでも便宜上のもの、ボリュームとして機能
+    volumes:
+      mysql_data: # Named Volume の設定、`volumes` の定義のみでOK、イメージ構築は不要
