@@ -51,3 +51,4 @@ ruby/hello/node_modules
 ruby/hello/specifications
 nodejs-ts/my-hono-typed-sql/prisma/dev.db-journal
 nodejs-ts/my-hono-typed-sql/prisma/dev.db
+go/web-todo/todo.db
