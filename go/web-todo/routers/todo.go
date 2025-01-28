@@ -101,7 +101,7 @@ func updateTodo(c *gin.Context) {
 // @Router			/ping [get]
 func ping(c *gin.Context) {
   c.JSON(http.StatusOK, gin.H{
-    "message": "pong",
+    "message": "pong!!!!!!!!!!!",
   })
 
 }
