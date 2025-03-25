@@ -7,8 +7,8 @@ services:
       # 作成するデータベースの「ユーザー名」と「パスワード」を設定する
       MYSQL_DATABASE: root
       MYSQL_ROOT_PASSWORD: password
-    volumes:
-      - mysql_data:/var/lib/mysql
+    # volumes:
+      # - mysql_data:/var/lib/mysql
     ports:
       - 3306:3306
   web:
@@ -18,8 +18,8 @@ services:
     stdin_open: true
     volumes:
       - .:/sample_app
-      - bundle_data:/usr/local/bundle:cached
-      - node_modules:/sample_app/node_modules
+      # - bundle_data:/usr/local/bundle:cached
+      # - node_modules:/sample_app/node_modules
     environment:
       TZ: Asia/Tokyo
     ports:
