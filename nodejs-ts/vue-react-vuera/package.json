@@ -10,8 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@primeuix/themes": "^1.0.3",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "@vitejs/plugin-vue-jsx": "^4.1.2",
+    "primevue": "^4.3.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "veaury": "^2.6.2",
+    "vue": "^3.5.13",
+    "vuetify": "^3.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
