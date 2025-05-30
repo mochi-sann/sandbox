@@ -1,8 +1,8 @@
 import { applyVueInReact } from "veaury";
 import { useState } from "react";
-import Button from "primevue/button";
-import { applyPureVueInReact } from "veaury";
-const VueButton = applyPureVueInReact(Button);
+import Button from "./Button.vue";
+const VueButton = applyVueInReact(Button);
+
 export function BasicReact() {
   const [state, setState] = useState({
     foo: Math.random(),

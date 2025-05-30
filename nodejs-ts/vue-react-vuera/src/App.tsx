@@ -2,7 +2,7 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { BasicReact } from "./Component/vue/BasicReact";
+import { BasicReact } from "./src/Component/vue/BasicReact.jsx";
 
 function App() {
   const [count, setCount] = useState(0);
