@@ -30,5 +30,30 @@ class TodoResponse(TodoBase):
     id: int = Field(..., description="Todo ID")
     created_at: datetime = Field(..., description="Creation timestamp")
     updated_at: datetime = Field(..., description="Last update timestamp")
+    owner_id: int
 
     model_config = {"from_attributes": True}
+
+class UserBase(BaseModel):
+    username: str
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: int
+    is_active: bool
+    todos: list[TodoResponse] = []
+
+    model_config = {"from_attributes": True}
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None

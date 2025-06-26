@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from datetime import datetime
 import os
@@ -16,6 +16,16 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 Base = declarative_base()
 
 
+class UserDB(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+
+    todos = relationship("TodoDB", back_populates="owner")
+
 class TodoDB(Base):
     """SQLAlchemy model for Todo table"""
     __tablename__ = "todos"
@@ -26,6 +36,9 @@ class TodoDB(Base):
     status = Column(String(20), nullable=False, default="todo", index=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+
+    owner = relationship("UserDB", back_populates="todos")
 
 
 async def create_tables():
