@@ -3,7 +3,9 @@
     "allow": [
       "Bash(uv sync:*)",
       "Bash(uv run pytest:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(chmod:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

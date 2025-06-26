@@ -53,3 +53,5 @@ nodejs-ts/my-hono-typed-sql/prisma/dev.db-journal
 nodejs-ts/my-hono-typed-sql/prisma/dev.db
 go/web-todo/todo.db
 .aider*
+python/fast-api-test-uv/build/todo-api
+python/fast-api-test-uv/dist
