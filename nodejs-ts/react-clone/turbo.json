@@ -4,11 +4,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "env": ["NODE_ENV"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^build"]
     },
     "clean": {
       "cache": false
@@ -19,5 +21,7 @@
     "type-check": {
       "dependsOn": ["^build"]
     }
-  }
+  },
+  "globalEnv": ["NODE_ENV"],
+  "globalDependencies": ["package.json", "pnpm-lock.yaml"]
 }
