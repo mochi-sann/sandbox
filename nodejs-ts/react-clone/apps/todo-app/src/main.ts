@@ -69,14 +69,17 @@ function App() {
 
   const addTodo = () => {
     console.log("Adding todo:", inputValue);
-    if (inputValue.trim()) {
+    const trimmedValue = inputValue.trim();
+    if (trimmedValue) {
       const newTodo = {
         id: Date.now(),
-        text: inputValue,
+        text: trimmedValue,
         completed: false,
       };
       setTodos([...todos, newTodo]);
       setInputValue("");
+    } else {
+      console.log("Empty input, not adding todo");
     }
   };
 
@@ -108,10 +111,18 @@ function App() {
         type: "text",
         value: inputValue,
         placeholder: "新しいタスクを入力...",
-        onInput: (e) => setInputValue(e.target.value),
-        onKeyPress: (e) => {
-          console.log(e.key);
+        onInput: (e) => {
+          console.log("Input event:", e.target.value);
+          setInputValue(e.target.value);
+        },
+        onChange: (e) => {
+          console.log("Change event:", e.target.value);
+          setInputValue(e.target.value);
+        },
+        onKeyDown: (e) => {
+          console.log("Key down:", e.key);
           if (e.key === "Enter") {
+            e.preventDefault();
             addTodo();
           }
         },

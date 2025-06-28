@@ -37,9 +37,17 @@ export function render(vnode: VNode | string, container: Element): void {
   Object.keys(vnode.props).forEach((key) => {
     if (key.startsWith("on") && typeof vnode.props[key] === "function") {
       const eventType = key.slice(2).toLowerCase();
-      element.addEventListener(eventType, vnode.props[key]);
+      // Map keypress to keydown for better compatibility
+      const actualEventType = eventType === "keypress" ? "keydown" : eventType;
+      element.addEventListener(actualEventType, vnode.props[key]);
     } else if (key === "className") {
       element.className = vnode.props[key];
+    } else if (key === "value" && element instanceof HTMLInputElement) {
+      // Special handling for input value
+      element.value = vnode.props[key] || "";
+    } else if (key === "checked" && element instanceof HTMLInputElement) {
+      // Special handling for checkbox checked
+      element.checked = Boolean(vnode.props[key]);
     } else if (key !== "children") {
       element.setAttribute(key, vnode.props[key]);
     }
