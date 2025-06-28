@@ -56,3 +56,4 @@ go/web-todo/todo.db
 python/fast-api-test-uv/build/todo-api
 python/fast-api-test-uv/dist
 python/fast-api-test-uv/todos.db
+nodejs-ts/react-clone/.turbo

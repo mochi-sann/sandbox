@@ -1,5 +1,5 @@
-import { VNode, ComponentInstance } from '../types/index.js';
-import { render } from './vdom.js';
+import { ComponentInstance, VNode } from "../types/index.js";
+import { render } from "./vdom.js";
 
 let currentInstance: ComponentInstance | null = null;
 let componentInstances: Map<Element, ComponentInstance> = new Map();
@@ -8,7 +8,7 @@ export function createComponentInstance(vnode: VNode): ComponentInstance {
   return {
     vnode,
     hooks: [],
-    hookIndex: 0
+    hookIndex: 0,
   };
 }
 
@@ -21,25 +21,25 @@ export function getCurrentInstance(): ComponentInstance | null {
 }
 
 export function renderComponent(vnode: VNode, container: Element): void {
-  if (typeof vnode.type !== 'function') {
-    throw new Error('Expected function component');
+  if (typeof vnode.type !== "function") {
+    throw new Error("Expected function component");
   }
 
   let instance = componentInstances.get(container);
-  
+
   if (!instance) {
     instance = createComponentInstance(vnode);
     componentInstances.set(container, instance);
   }
-  
+
   instance.vnode = vnode;
   instance.hookIndex = 0;
-  
+
   setCurrentInstance(instance);
-  
+
   try {
     const result = vnode.type(vnode.props);
-    container.innerHTML = '';
+    container.innerHTML = "";
     render(result, container);
   } finally {
     setCurrentInstance(null);
