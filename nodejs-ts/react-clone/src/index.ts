@@ -1,3 +1,5 @@
+import { createElement } from './core/vdom.js';
+
 export { createElement, render } from './core/vdom.js';
 export { renderComponent } from './core/component.js';
 export { useState } from './hooks/useState.js';

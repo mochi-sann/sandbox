@@ -57,7 +57,7 @@ export function diff(oldVNode: VNode | string, newVNode: VNode | string): boolea
     return oldVNode === newVNode;
   }
   
-  if (oldVNode.type !== newVNode.type) {
+  if ((oldVNode as VNode).type !== (newVNode as VNode).type) {
     return false;
   }
   
