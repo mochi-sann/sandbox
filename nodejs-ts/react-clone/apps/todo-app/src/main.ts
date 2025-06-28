@@ -103,6 +103,7 @@ function App() {
     h("h1", {}, "React Clone - Todo App"),
     // Counter section
     h(Counter),
+    h("div",{className: "divider"}, inputValue),
     // Input section
     h(
       "div",
@@ -114,6 +115,7 @@ function App() {
         onInput: (e) => {
           console.log("Input event:", e.target.value);
           setInputValue(e.target.value);
+          console.log(inputValue);
         },
         onChange: (e) => {
           console.log("Change event:", e.target.value);

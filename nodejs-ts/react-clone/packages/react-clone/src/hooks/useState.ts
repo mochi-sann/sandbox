@@ -36,15 +36,30 @@ export function useState<T>(
       ? (newValue as (prev: T) => T)(hook.value)
       : newValue;
 
+    console.log("setValue called:", { current: hook.value, next: nextValue });
+
     if (nextValue !== hook.value) {
       hook.value = nextValue;
+      console.log("State updated, triggering rerender");
 
       // Get container from instance mapping
       const container = instanceContainerMap.get(instance);
+      console.log("Container found:", !!container, "Rerender function:", !!rerenderFunction);
+      
       if (container && rerenderFunction) {
-        // Schedule re-render asynchronously
-        setTimeout(() => rerenderFunction!(container), 0);
+        // Immediate re-render instead of setTimeout
+        try {
+          rerenderFunction(container);
+        } catch (error) {
+          console.error("Rerender failed:", error);
+          // Fallback to async if synchronous fails
+          setTimeout(() => rerenderFunction!(container), 0);
+        }
+      } else {
+        console.warn("Cannot rerender - missing container or rerender function");
       }
+    } else {
+      console.log("No change in value, skipping rerender");
     }
   };
 

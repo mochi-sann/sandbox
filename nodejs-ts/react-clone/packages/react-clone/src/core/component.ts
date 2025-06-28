@@ -22,13 +22,19 @@ export function getCurrentInstance(): ComponentInstance | null {
 }
 
 export function rerender(container: Element): void {
+  console.log("Rerender called for container:", container);
   const instance = componentInstances.get(container);
   if (instance) {
+    console.log("Found instance, calling renderComponent");
     renderComponent(instance.vnode, container);
+  } else {
+    console.warn("No instance found for container");
   }
 }
 
 export function renderComponent(vnode: VNode, container: Element): void {
+  console.log("renderComponent called");
+  
   if (typeof vnode.type !== "function") {
     throw new Error("Expected function component");
   }
@@ -36,8 +42,11 @@ export function renderComponent(vnode: VNode, container: Element): void {
   let instance = componentInstances.get(container);
 
   if (!instance) {
+    console.log("Creating new instance");
     instance = createComponentInstance(vnode);
     componentInstances.set(container, instance);
+  } else {
+    console.log("Reusing existing instance");
   }
 
   // Register instance-container mapping for useState
@@ -52,9 +61,13 @@ export function renderComponent(vnode: VNode, container: Element): void {
   setCurrentInstance(instance);
 
   try {
+    console.log("Calling component function");
     const result = vnode.type(vnode.props);
+    console.log("Component function returned result, clearing container");
     container.innerHTML = "";
+    console.log("Rendering result to DOM");
     render(result, container);
+    console.log("Render complete");
   } finally {
     setCurrentInstance(null);
   }
