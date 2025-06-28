@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   resolve: {
     alias: {
-      'react-clone': '../../src/index.ts'
+      '@react-clone/core': '../../packages/react-clone/src/index.ts'
     }
   },
   server: {

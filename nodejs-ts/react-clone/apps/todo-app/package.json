@@ -1,17 +1,25 @@
 {
-  "name": "todo-app",
+  "name": "@react-clone/todo-app",
   "version": "1.0.0",
   "description": "React Clone Todo App Example",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rm -rf dist"
   },
-  "keywords": ["react-clone", "example", "todo"],
+  "keywords": [
+    "react-clone",
+    "example",
+    "todo"
+  ],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.12.1",
+  "dependencies": {
+    "@react-clone/core": "workspace:*"
+  },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.10.2",
     "typescript": "^5.8.3",

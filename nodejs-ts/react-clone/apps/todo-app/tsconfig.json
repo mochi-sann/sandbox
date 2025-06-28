@@ -14,7 +14,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "react-clone": ["../../src/index.ts"]
+      "@react-clone/core": ["../../packages/react-clone/src/index.ts"]
     }
   },
   "include": ["src/**/*", "vite.config.js"],

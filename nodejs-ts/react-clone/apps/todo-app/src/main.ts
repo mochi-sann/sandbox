@@ -1,7 +1,7 @@
-import { h, renderComponent, useState, useEffect } from 'react-clone';
+import { h, renderComponent, useState, useEffect } from '@react-clone/core';
 
 // Todo Item Component
-function TodoItem({ todo, onToggle, onDelete }: any) {
+function TodoItem({ todo, onToggle, onDelete }) {
   return h('div', 
     { 
       className: `todo-item ${todo.completed ? 'completed' : ''}` 
@@ -63,17 +63,17 @@ function App() {
     }
   };
   
-  const toggleTodo = (id: number) => {
-    setTodos(todos.map((todo: any) => 
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo => 
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
   
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo: any) => todo.id !== id));
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
   };
   
-  const completedCount = todos.filter((todo: any) => todo.completed).length;
+  const completedCount = todos.filter(todo => todo.completed).length;
   
   return h('div', { className: 'container' },
     h('h1', {}, 'React Clone - Todo App'),
@@ -87,8 +87,8 @@ function App() {
         type: 'text',
         value: inputValue,
         placeholder: '新しいタスクを入力...',
-        onInput: (e: any) => setInputValue(e.target.value),
-        onKeyPress: (e: any) => {
+        onInput: (e) => setInputValue(e.target.value),
+        onKeyPress: (e) => {
           if (e.key === 'Enter') {
             addTodo();
           }
@@ -107,7 +107,7 @@ function App() {
     
     // Todo list
     h('div', {},
-      ...todos.map((todo: any) => 
+      ...todos.map(todo => 
         h(TodoItem, {
           key: todo.id,
           todo,
@@ -121,6 +121,4 @@ function App() {
 
 // Mount the app
 const container = document.getElementById('app');
-if (container) {
-  renderComponent(h(App), container);
-}
+renderComponent(h(App), container);

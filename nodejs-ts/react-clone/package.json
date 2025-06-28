@@ -1,30 +1,22 @@
 {
-  "name": "react-clone",
+  "name": "react-clone-monorepo",
   "version": "1.0.0",
-  "description": "A React-like SPA library",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "A React-like SPA library monorepo",
+  "private": true,
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "jest",
-    "example": "cd examples/todo-app && npx http-server -p 3000"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean",
+    "example": "turbo run dev --filter=@react-clone/todo-app",
+    "core:build": "turbo run build --filter=@react-clone/core",
+    "core:dev": "turbo run dev --filter=@react-clone/core"
   },
-  "keywords": [
-    "react",
-    "spa",
-    "virtual-dom",
-    "components"
-  ],
+  "keywords": ["react", "spa", "virtual-dom", "components", "monorepo"],
   "author": "Your Name",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0",
-    "jest": "^29.0.0",
-    "@types/jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
-    "http-server": "^14.0.0"
+    "turbo": "^2.5.4",
+    "typescript": "^5.0.0"
   },
-  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
+  "packageManager": "pnpm@10.12.1"
 }
