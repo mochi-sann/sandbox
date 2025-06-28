@@ -1,5 +1,17 @@
 import { getCurrentInstance } from "../core/component.js";
 
+// Global registry for component instances and their containers
+const instanceContainerMap = new WeakMap();
+let rerenderFunction: ((container: Element) => void) | null = null;
+
+export function registerInstanceContainer(instance: any, container: Element): void {
+  instanceContainerMap.set(instance, container);
+}
+
+export function setRerenderFunction(fn: (container: Element) => void): void {
+  rerenderFunction = fn;
+}
+
 export function useState<T>(
   initialValue: T,
 ): [T, (newValue: T | ((prev: T) => T)) => void] {
@@ -27,21 +39,14 @@ export function useState<T>(
     if (nextValue !== hook.value) {
       hook.value = nextValue;
 
-      const container = findContainerForInstance(instance);
-      if (container) {
-        import("../core/component.js").then(({ rerender }) => {
-          rerender(container);
-        });
+      // Get container from instance mapping
+      const container = instanceContainerMap.get(instance);
+      if (container && rerenderFunction) {
+        // Schedule re-render asynchronously
+        setTimeout(() => rerenderFunction!(container), 0);
       }
     }
   };
 
   return [hook.value, setValue];
-}
-
-function findContainerForInstance(targetInstance: any): Element | null {
-  // This is a simplified approach - in a real implementation,
-  // we'd need a proper way to track container relationships
-  const containers = document.querySelectorAll("[data-react-clone-root]");
-  return containers[0] as Element || document.body;
 }
