@@ -8,6 +8,9 @@
     "start": "node dist/server.js",
     "migrate:up": "ts-node src/migrate.ts up",
     "migrate:down": "ts-node src/migrate.ts down",
+    "schema:generate": "ts-node src/schema-generator.ts generate",
+    "schema:init": "ts-node src/schema-generator.ts init",
+    "schema:diff": "ts-node src/schema-generator.ts diff",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

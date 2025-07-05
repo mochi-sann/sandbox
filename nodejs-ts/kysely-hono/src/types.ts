@@ -1,14 +1,5 @@
-import { Generated } from "kysely";
+import { Schema } from "./schema";
 
-export interface Todo {
-  id: Generated<number>;
-  title: string;
-  description: string | null;
-  completed: boolean;
-  created_at: Generated<Date>;
-  updated_at: Generated<Date>;
-}
+export type Database = Schema;
 
-export interface Database {
-  todos: Todo;
-}
+export type Todo = Schema["todos"];
