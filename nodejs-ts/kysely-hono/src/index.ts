@@ -1,5 +1,6 @@
 import { Hono } from "hono";
-import { createTable, kysely } from "./database";
+import { kysely } from "./database";
+import { migrateToLatest } from "./migrator";
 
 const app = new Hono();
 
@@ -128,8 +129,8 @@ app.delete("/todos/:id", async (c) => {
   }
 });
 
-createTable().then(() => {
-  console.log("Database initialized");
+migrateToLatest().then(() => {
+  console.log("Database migrated to latest version");
 });
 
 export default app;

@@ -6,6 +6,8 @@
     "dev": "ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "migrate:up": "ts-node src/migrate.ts up",
+    "migrate:down": "ts-node src/migrate.ts down",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
