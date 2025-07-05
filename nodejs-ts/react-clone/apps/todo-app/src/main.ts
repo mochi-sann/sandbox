@@ -44,14 +44,14 @@ function Counter() {
     h(
       "button",
       {
-        onClick: () => setCount(count + 1),
+        onClick: () => setCount(prev => prev + 1),
       },
       "+1",
     ),
     h(
       "button",
       {
-        onClick: () => setCount(count - 1),
+        onClick: () => setCount(prev => prev - 1),
       },
       "-1",
     ),
@@ -60,8 +60,11 @@ function Counter() {
 
 // Main App Component
 function App() {
+  console.log("🏗️ App component called");
   const [todos, setTodos] = useState([]);
+  console.log("🏗️ todos useState returned:", todos);
   const [inputValue, setInputValue] = useState("");
+  console.log("🏗️ inputValue useState returned:", inputValue, "setInputValue:", typeof setInputValue);
 
   useEffect(() => {
     console.log("App mounted, todos count:", todos.length);
@@ -114,12 +117,15 @@ function App() {
         placeholder: "新しいタスクを入力...",
         onInput: (e) => {
           console.log("Input event:", e.target.value);
+          console.log("🚀 About to call setInputValue with:", e.target.value);
           setInputValue(e.target.value);
-          console.log(inputValue);
+          console.log("🚀 setInputValue called with:", e.target.value);
         },
         onChange: (e) => {
           console.log("Change event:", e.target.value);
+          console.log("🚀 About to call setInputValue (onChange) with:", e.target.value);
           setInputValue(e.target.value);
+          console.log("🚀 setInputValue (onChange) called with:", e.target.value);
         },
         onKeyDown: (e) => {
           console.log("Key down:", e.key);
