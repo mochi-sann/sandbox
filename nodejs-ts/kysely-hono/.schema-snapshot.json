@@ -1,0 +1,74 @@
+[
+  {
+    "name": "users",
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "primaryKey": true,
+        "autoIncrement": true
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "password",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": false,
+        "defaultExpression": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": false,
+        "defaultExpression": "CURRENT_TIMESTAMP"
+      }
+    ]
+  },
+  {
+    "name": "todos",
+    "columns": [
+      {
+        "name": "id",
+        "type": "integer",
+        "primaryKey": true,
+        "autoIncrement": true
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "name": "completed",
+        "type": "boolean",
+        "nullable": false,
+        "defaultValue": false
+      },
+      {
+        "name": "created_at",
+        "type": "datetime",
+        "nullable": false,
+        "defaultExpression": "CURRENT_TIMESTAMP"
+      },
+      {
+        "name": "updated_at",
+        "type": "datetime",
+        "nullable": false,
+        "defaultExpression": "CURRENT_TIMESTAMP"
+      }
+    ]
+  }
+]
