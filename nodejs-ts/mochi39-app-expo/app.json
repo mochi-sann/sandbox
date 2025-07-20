@@ -18,7 +18,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.mochi33.expo.todo.app",
-          "buildType": "apk"
+      "buildType": "apk"
     },
     "web": {
       "bundler": "metro",
@@ -26,6 +26,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "マイクを使用して音声認識を行います。"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
