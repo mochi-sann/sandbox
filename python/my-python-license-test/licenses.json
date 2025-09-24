@@ -21,6 +21,13 @@
     "Version": "6.9.2"
   },
   {
+    "Author": "\"Jeffrey A. Clark\" <aclark@aclark.net>",
+    "License": "UNKNOWN",
+    "Name": "pillow",
+    "URL": "https://python-pillow.github.io",
+    "Version": "11.3.0"
+  },
+  {
     "Author": "Qt for Python Team <pyside@qt-project.org>",
     "License": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
     "Name": "shiboken6",
