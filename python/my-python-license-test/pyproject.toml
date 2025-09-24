@@ -1,0 +1,10 @@
+[project]
+name = "my-gui"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pip-licenses>=5.0.0",
+    "pyside6>=6.9.2",
+]

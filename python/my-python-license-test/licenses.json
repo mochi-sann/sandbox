@@ -1,0 +1,30 @@
+[
+  {
+    "Author": "Qt for Python Team <pyside@qt-project.org>",
+    "License": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+    "Name": "PySide6",
+    "URL": "https://pyside.org",
+    "Version": "6.9.2"
+  },
+  {
+    "Author": "Qt for Python Team <pyside@qt-project.org>",
+    "License": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+    "Name": "PySide6_Addons",
+    "URL": "https://pyside.org",
+    "Version": "6.9.2"
+  },
+  {
+    "Author": "Qt for Python Team <pyside@qt-project.org>",
+    "License": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+    "Name": "PySide6_Essentials",
+    "URL": "https://pyside.org",
+    "Version": "6.9.2"
+  },
+  {
+    "Author": "Qt for Python Team <pyside@qt-project.org>",
+    "License": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only",
+    "Name": "shiboken6",
+    "URL": "https://pyside.org",
+    "Version": "6.9.2"
+  }
+]
