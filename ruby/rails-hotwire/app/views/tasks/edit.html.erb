@@ -1,3 +1,5 @@
 <%= turbo_frame_tag dom_id(@task) do %>
-  <%= render "form", task: @task %>
+  <div class="list-group-item">
+    <%= render "form", task: @task %>
+  </div>
 <% end %>

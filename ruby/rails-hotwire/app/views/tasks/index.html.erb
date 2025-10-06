@@ -1,24 +1,38 @@
 <% content_for :title, "TODOリスト" %>
 
-<section class="hero">
-  <h1>TODOリスト</h1>
-  <p>Hotwireでサクサク管理しましょう。</p>
-</section>
-
-<section class="task-form">
-  <h2>新しいタスク</h2>
-  <%= turbo_frame_tag "task_form" do %>
-    <%= render "form", task: @task %>
-  <% end %>
-</section>
-
-<section class="task-list">
-  <h2>タスク一覧</h2>
-  <div id="tasks">
-    <% if @tasks.any? %>
-      <%= render @tasks %>
-    <% else %>
-      <p>まだタスクはありません。最初のタスクを追加しましょう。</p>
-    <% end %>
+<div class="row g-4">
+  <div class="col-12">
+    <div class="p-4 bg-white rounded-4 shadow-sm">
+      <h1 class="h3 mb-2">TODOリスト</h1>
+      <p class="text-muted mb-0">Hotwireでサクサク管理しましょう。</p>
+    </div>
   </div>
-</section>
+
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-body-secondary fw-semibold">新しいタスク</div>
+      <div class="card-body">
+        <%= turbo_frame_tag "task_form" do %>
+          <%= render "form", task: @task %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-body-secondary fw-semibold">タスク一覧</div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush" id="tasks">
+          <% if @tasks.any? %>
+            <%= render @tasks %>
+          <% else %>
+            <div class="p-4 text-center text-muted">
+              まだタスクはありません。最初のタスクを追加しましょう。
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
