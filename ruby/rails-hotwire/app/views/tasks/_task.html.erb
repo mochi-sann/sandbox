@@ -1,0 +1,20 @@
+<turbo-frame id="<%= dom_id(task) %>">
+  <article class="task <%= 'is-completed' if task.completed? %>">
+    <header class="task__header">
+      <h3><%= task.title %></h3>
+      <div class="task__status">
+        <span><%= task.completed? ? "完了" : "未完了" %></span>
+      </div>
+    </header>
+
+    <% if task.description.present? %>
+      <p class="task__description"><%= simple_format(task.description) %></p>
+    <% end %>
+
+    <footer class="task__actions">
+      <%= button_to(task.completed? ? "未完了に戻す" : "完了にする", toggle_task_path(task), method: :patch, form_class: "inline-form") %>
+      <%= link_to "編集", edit_task_path(task), data: { turbo_frame: dom_id(task) } %>
+      <%= button_to "削除", task_path(task), method: :delete, form: { data: { turbo_confirm: "削除しますか？" } }, form_class: "inline-form" %>
+    </footer>
+  </article>
+</turbo-frame>
