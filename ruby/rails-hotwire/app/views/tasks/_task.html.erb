@@ -1,3 +1,4 @@
+<% page ||= 1 %>
 <turbo-frame id="<%= dom_id(task) %>">
   <div class="list-group-item list-group-item-action">
     <div class="d-flex justify-content-between align-items-start">
@@ -14,9 +15,9 @@
     <% end %>
 
     <div class="d-flex flex-wrap gap-2">
-      <%= button_to(task.completed? ? "未完了に戻す" : "完了にする", toggle_task_path(task), method: :patch, class: "btn btn-sm #{task.completed? ? 'btn-outline-warning' : 'btn-outline-success'}", form: { class: "d-inline" }) %>
-      <%= link_to "編集", edit_task_path(task), data: { turbo_frame: dom_id(task) }, class: "btn btn-sm btn-outline-secondary" %>
-      <%= button_to "削除", task_path(task), method: :delete, class: "btn btn-sm btn-outline-danger", form: { class: "d-inline", data: { turbo_confirm: "削除しますか？" } } %>
+      <%= button_to(task.completed? ? "未完了に戻す" : "完了にする", toggle_task_path(task, page: page), method: :patch, class: "btn btn-sm #{task.completed? ? 'btn-outline-warning' : 'btn-outline-success'}", form: { class: "d-inline" }) %>
+      <%= link_to "編集", edit_task_path(task, page: page), data: { turbo_frame: dom_id(task) }, class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to "削除", task_path(task, page: page), method: :delete, class: "btn btn-sm btn-outline-danger", form: { class: "d-inline", data: { turbo_confirm: "削除しますか？" } } %>
     </div>
   </div>
 </turbo-frame>

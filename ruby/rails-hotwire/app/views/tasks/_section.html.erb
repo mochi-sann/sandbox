@@ -1,0 +1,17 @@
+<% page ||= 1 %>
+<% total_pages ||= 1 %>
+<div class="list-group list-group-flush" id="tasks">
+  <% if tasks.any? %>
+    <%= render partial: "tasks/task", collection: tasks, as: :task, locals: { page: page } %>
+  <% else %>
+    <div class="list-group-item text-center text-muted py-4">
+      まだタスクはありません。最初のタスクを追加しましょう。
+    </div>
+  <% end %>
+</div>
+<% pagination = render("tasks/pagination", page: page, total_pages: total_pages) %>
+<% if pagination.present? %>
+  <div class="border-top">
+    <%= pagination %>
+  </div>
+<% end %>

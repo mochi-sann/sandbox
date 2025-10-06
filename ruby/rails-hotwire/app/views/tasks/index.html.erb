@@ -13,7 +13,7 @@
       <div class="card-header bg-body-secondary fw-semibold">新しいタスク</div>
       <div class="card-body">
         <%= turbo_frame_tag "task_form" do %>
-          <%= render "form", task: @task %>
+          <%= render "form", task: @task, page: @page %>
         <% end %>
       </div>
     </div>
@@ -21,17 +21,14 @@
 
   <div class="col-12">
     <div class="card shadow-sm">
-      <div class="card-header bg-body-secondary fw-semibold">タスク一覧</div>
+      <div class="card-header bg-body-secondary fw-semibold d-flex justify-content-between align-items-center">
+        <span>タスク一覧</span>
+        <small class="text-muted">全<%= @total_count %>件</small>
+      </div>
       <div class="card-body p-0">
-        <div class="list-group list-group-flush" id="tasks">
-          <% if @tasks.any? %>
-            <%= render @tasks %>
-          <% else %>
-            <div class="p-4 text-center text-muted">
-              まだタスクはありません。最初のタスクを追加しましょう。
-            </div>
-          <% end %>
-        </div>
+        <%= turbo_frame_tag "tasks_section" do %>
+          <%= render "section", tasks: @tasks, page: @page, total_pages: @total_pages %>
+        <% end %>
       </div>
     </div>
   </div>

@@ -1,0 +1,37 @@
+<% total_pages ||= 1 %>
+<% page ||= 1 %>
+<% return if total_pages <= 1 %>
+
+<% range_start = [page - 2, 1].max %>
+<% range_end = [range_start + 4, total_pages].min %>
+<% range_start = [range_end - 4, 1].max %>
+
+<nav aria-label="ページネーション">
+  <ul class="pagination justify-content-center mb-0">
+    <li class="page-item <%= 'disabled' if page <= 1 %>">
+      <% if page <= 1 %>
+        <span class="page-link">前へ</span>
+      <% else %>
+        <%= link_to "前へ", tasks_path(page: page - 1), class: "page-link" %>
+      <% end %>
+    </li>
+
+    <% (range_start..range_end).each do |number| %>
+      <li class="page-item <%= 'active' if number == page %>">
+        <% if number == page %>
+          <span class="page-link"><%= number %></span>
+        <% else %>
+          <%= link_to number, tasks_path(page: number), class: "page-link" %>
+        <% end %>
+      </li>
+    <% end %>
+
+    <li class="page-item <%= 'disabled' if page >= total_pages %>">
+      <% if page >= total_pages %>
+        <span class="page-link">次へ</span>
+      <% else %>
+        <%= link_to "次へ", tasks_path(page: page + 1), class: "page-link" %>
+      <% end %>
+    </li>
+  </ul>
+</nav>

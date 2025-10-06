@@ -1,3 +1,3 @@
-<%= turbo_stream.prepend "tasks", partial: "tasks/task", locals: { task: @task } %>
-<%= turbo_stream.replace "task_form", partial: "tasks/form", locals: { task: Task.new } %>
+<%= turbo_stream.replace "tasks_section", partial: "tasks/section", locals: { tasks: @tasks, page: @page, total_pages: @total_pages } %>
+<%= turbo_stream.replace "task_form", partial: "tasks/form", locals: { task: Task.new, page: @page } %>
 <%= turbo_stream.replace "flash", partial: "shared/flash" %>

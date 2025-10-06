@@ -1,2 +1,2 @@
-<%= turbo_stream.remove dom_id(@task) %>
+<%= turbo_stream.replace "tasks_section", partial: "tasks/section", locals: { tasks: @tasks, page: @page, total_pages: @total_pages } %>
 <%= turbo_stream.replace "flash", partial: "shared/flash" %>

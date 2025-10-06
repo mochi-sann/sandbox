@@ -1,4 +1,5 @@
-<%= form_with model: task, class: "row g-3" do |form| %>
+<% page ||= 1 %>
+<%= form_with model: task, url: task.persisted? ? task_path(task, page: page) : tasks_path(page: page), class: "row g-3" do |form| %>
   <% if task.errors.any? %>
     <div class="col-12">
       <div class="alert alert-danger" role="alert">
@@ -25,7 +26,7 @@
   <div class="col-12 d-flex gap-2">
     <%= form.submit task.persisted? ? "更新" : "追加", class: "btn btn-primary" %>
     <% if task.persisted? %>
-      <%= link_to "キャンセル", task_path(task), data: { turbo_frame: dom_id(task) }, class: "btn btn-outline-secondary" %>
+      <%= link_to "キャンセル", task_path(task, page: page), data: { turbo_frame: dom_id(task) }, class: "btn btn-outline-secondary" %>
     <% end %>
   </div>
 <% end %>
