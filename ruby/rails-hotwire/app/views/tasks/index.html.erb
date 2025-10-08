@@ -1,35 +1,26 @@
 <% content_for :title, "TODOリスト" %>
 
-<div class="row g-4">
-  <div class="col-12">
-    <div class="p-4 bg-white rounded-4 shadow-sm">
-      <h1 class="h3 mb-2">TODOリスト</h1>
-      <p class="text-muted mb-0">Hotwireでサクサク管理しましょう。</p>
-    </div>
-  </div>
+<% endpoints = {
+     index: tasks_path(format: :json),
+     create: tasks_path(format: :json),
+     update: task_path("__ID__", format: :json),
+     destroy: task_path("__ID__", format: :json),
+     toggle: toggle_task_path("__ID__", format: :json)
+   } %>
+<% initial_state = {
+     status: @status,
+     query: @query,
+     page: @page
+   } %>
 
-  <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-header bg-body-secondary fw-semibold">新しいタスク</div>
-      <div class="card-body">
-        <%= turbo_frame_tag "task_form" do %>
-          <%= render "form", task: @task, page: @page %>
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-12">
-    <div class="card shadow-sm">
-      <div class="card-header bg-body-secondary fw-semibold d-flex justify-content-between align-items-center">
-        <span>タスク一覧</span>
-        <small class="text-muted">全<%= @total_count %>件</small>
-      </div>
-      <div class="card-body p-0">
-        <%= turbo_frame_tag "tasks_section" do %>
-          <%= render "section", tasks: @tasks, page: @page, total_pages: @total_pages %>
-        <% end %>
-      </div>
+<div
+  data-controller="task-list"
+  data-task-list-endpoints-value="<%= json_escape(endpoints.to_json) %>"
+  data-task-list-initial-state-value="<%= json_escape(initial_state.to_json) %>"
+>
+  <div class="text-center py-5">
+    <div class="spinner-border text-secondary" role="status">
+      <span class="visually-hidden">読み込み中...</span>
     </div>
   </div>
 </div>

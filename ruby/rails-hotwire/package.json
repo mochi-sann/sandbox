@@ -1,0 +1,23 @@
+{
+  "name": "rails-hotwire",
+  "private": true,
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "build:watch": "node esbuild.config.js --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hotwired/stimulus": "^3.2.2",
+    "@hotwired/turbo-rails": "^7.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.17.0",
+    "@typescript-eslint/parser": "^7.17.0",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.4.5"
+  }
+}

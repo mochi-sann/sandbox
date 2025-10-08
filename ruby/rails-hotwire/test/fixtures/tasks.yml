@@ -1,11 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  title: MyString
-  description: MyText
+  title: 未完了タスク
+  description: 説明その1
   completed: false
 
 two:
-  title: MyString
-  description: MyText
-  completed: false
+  title: 完了タスク
+  description: 説明その2
+  completed: true

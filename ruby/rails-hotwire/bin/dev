@@ -1,2 +1,21 @@
-#!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+#!/usr/bin/env bash
+set -euo pipefail
+
+cleanup() {
+  if [[ -n "${RAILS_PID:-}" ]]; then
+    kill "$RAILS_PID" 2>/dev/null || true
+  fi
+  if [[ -n "${BUILD_PID:-}" ]]; then
+    kill "$BUILD_PID" 2>/dev/null || true
+  fi
+}
+
+trap cleanup EXIT
+
+./bin/rails server "$@" &
+RAILS_PID=$!
+
+npm run build:watch &
+BUILD_PID=$!
+
+wait
