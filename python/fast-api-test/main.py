@@ -21,6 +21,32 @@ class ErrorResponse(BaseModel):
     detail: str = Field(..., examples=["Todo not found"])
 
 
+VALIDATION_ERROR_RESPONSE = {
+    status.HTTP_422_UNPROCESSABLE_ENTITY: {
+        "description": "入力値がバリデーションに失敗した場合のエラーです。",
+        "content": {
+            "application/json": {
+                "example": {
+                    "detail": [
+                        {
+                            "type": "string_too_short",
+                            "loc": ["body", "title"],
+                            "msg": "String should have at least 1 characters",
+                            "input": "",
+                        }
+                    ]
+                }
+            }
+        },
+    }
+}
+
+TODO_NOT_FOUND_RESPONSE = {
+    "model": ErrorResponse,
+    "description": "指定IDのTodoが存在しません。",
+}
+
+
 app = FastAPI(
     title="Todo API",
     version="1.0.0",
@@ -110,6 +136,7 @@ def list_todos(db: Session = Depends(get_db)) -> List[Todo]:
     tags=["todos"],
     summary="Todo作成",
     description="新しいTodoを作成し、作成されたリソースを返します。",
+    responses=VALIDATION_ERROR_RESPONSE,
 )
 def create_todo(todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
     todo_model = TodoModel(
@@ -130,11 +157,9 @@ def create_todo(todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
     summary="Todo取得",
     description="指定されたIDのTodoを取得します。",
     responses={
-        status.HTTP_404_NOT_FOUND: {
-            "model": ErrorResponse,
-            "description": "指定IDのTodoが存在しません。",
-        }
-    },
+        status.HTTP_404_NOT_FOUND: TODO_NOT_FOUND_RESPONSE,
+    }
+    | VALIDATION_ERROR_RESPONSE,
 )
 def get_todo(todo_id: int, db: Session = Depends(get_db)) -> Todo:
     todo = _get_or_404(db, todo_id)
@@ -148,11 +173,9 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)) -> Todo:
     summary="Todo更新",
     description="指定されたIDのTodoを全体更新します。",
     responses={
-        status.HTTP_404_NOT_FOUND: {
-            "model": ErrorResponse,
-            "description": "指定IDのTodoが存在しません。",
-        }
-    },
+        status.HTTP_404_NOT_FOUND: TODO_NOT_FOUND_RESPONSE,
+    }
+    | VALIDATION_ERROR_RESPONSE,
 )
 def update_todo(todo_id: int, todo_update: TodoCreate, db: Session = Depends(get_db)) -> Todo:
     todo = _get_or_404(db, todo_id)
@@ -173,14 +196,12 @@ def update_todo(todo_id: int, todo_update: TodoCreate, db: Session = Depends(get
     summary="Todo削除",
     description="指定されたIDのTodoを削除します。",
     responses={
-        status.HTTP_404_NOT_FOUND: {
-            "model": ErrorResponse,
-            "description": "指定IDのTodoが存在しません。",
-        },
+        status.HTTP_404_NOT_FOUND: TODO_NOT_FOUND_RESPONSE,
         status.HTTP_204_NO_CONTENT: {
             "description": "削除が成功しました。レスポンスボディは含まれません。",
         },
-    },
+    }
+    | VALIDATION_ERROR_RESPONSE,
 )
 def delete_todo(todo_id: int, db: Session = Depends(get_db)) -> None:
     todo = _get_or_404(db, todo_id)
