@@ -1,8 +1,16 @@
+from pathlib import Path
+import sys
+
 import pytest
-from httpx import AsyncClient
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from main import Base, app, get_db
 
@@ -30,9 +38,10 @@ def override_db():
     Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client(override_db):
-    async with AsyncClient(app=app, base_url="http://testserver") as async_client:
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
         yield async_client
 
 
