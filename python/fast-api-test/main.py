@@ -1,7 +1,10 @@
+from collections.abc import Generator
 from typing import Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy import Boolean, Column, Integer, String, Text, create_engine, select
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 
 class TodoCreate(BaseModel):
@@ -32,16 +35,49 @@ app = FastAPI(
     ],
 )
 
-# 簡易的なインメモリストア。永続化は別途実装が必要。
-_todo_store: Dict[int, Todo] = {}
-_next_id: int = 1
+# SQLiteベースのシンプルな永続化。必要に応じて別DBに差し替え可能。
+DATABASE_URL = "sqlite:///./todos.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+Base = declarative_base()
 
 
-def _get_next_id() -> int:
-    global _next_id
-    todo_id = _next_id
-    _next_id += 1
-    return todo_id
+class TodoModel(Base):
+    __tablename__ = "todos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    completed = Column(Boolean, nullable=False, default=False)
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    Base.metadata.create_all(bind=engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def _to_read_model(todo: TodoModel) -> Todo:
+    return Todo(
+        id=todo.id,
+        title=todo.title,
+        description=todo.description,
+        completed=todo.completed,
+    )
+
+
+def _get_or_404(db: Session, todo_id: int) -> TodoModel:
+    todo = db.get(TodoModel, todo_id)
+    if todo is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+    return todo
 
 
 @app.get(
@@ -62,8 +98,9 @@ async def read_root() -> Dict[str, str]:
     summary="Todo一覧取得",
     description="登録済みのTodoリストを作成順に返します。",
 )
-async def list_todos() -> List[Todo]:
-    return list(_todo_store.values())
+def list_todos(db: Session = Depends(get_db)) -> List[Todo]:
+    todos = db.scalars(select(TodoModel).order_by(TodoModel.id)).all()
+    return [_to_read_model(todo) for todo in todos]
 
 
 @app.post(
@@ -74,11 +111,16 @@ async def list_todos() -> List[Todo]:
     summary="Todo作成",
     description="新しいTodoを作成し、作成されたリソースを返します。",
 )
-async def create_todo(todo: TodoCreate) -> Todo:
-    todo_id = _get_next_id()
-    new_todo = Todo(id=todo_id, **todo.model_dump())
-    _todo_store[todo_id] = new_todo
-    return new_todo
+def create_todo(todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
+    todo_model = TodoModel(
+        title=todo.title,
+        description=todo.description,
+        completed=todo.completed,
+    )
+    db.add(todo_model)
+    db.commit()
+    db.refresh(todo_model)
+    return _to_read_model(todo_model)
 
 
 @app.get(
@@ -94,11 +136,9 @@ async def create_todo(todo: TodoCreate) -> Todo:
         }
     },
 )
-async def get_todo(todo_id: int) -> Todo:
-    todo = _todo_store.get(todo_id)
-    if todo is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
-    return todo
+def get_todo(todo_id: int, db: Session = Depends(get_db)) -> Todo:
+    todo = _get_or_404(db, todo_id)
+    return _to_read_model(todo)
 
 
 @app.put(
@@ -114,13 +154,16 @@ async def get_todo(todo_id: int) -> Todo:
         }
     },
 )
-async def update_todo(todo_id: int, todo_update: TodoCreate) -> Todo:
-    if todo_id not in _todo_store:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
+def update_todo(todo_id: int, todo_update: TodoCreate, db: Session = Depends(get_db)) -> Todo:
+    todo = _get_or_404(db, todo_id)
 
-    updated_todo = Todo(id=todo_id, **todo_update.model_dump())
-    _todo_store[todo_id] = updated_todo
-    return updated_todo
+    todo.title = todo_update.title
+    todo.description = todo_update.description
+    todo.completed = todo_update.completed
+
+    db.commit()
+    db.refresh(todo)
+    return _to_read_model(todo)
 
 
 @app.delete(
@@ -139,7 +182,7 @@ async def update_todo(todo_id: int, todo_update: TodoCreate) -> Todo:
         },
     },
 )
-async def delete_todo(todo_id: int) -> None:
-    if todo_id not in _todo_store:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
-    del _todo_store[todo_id]
+def delete_todo(todo_id: int, db: Session = Depends(get_db)) -> None:
+    todo = _get_or_404(db, todo_id)
+    db.delete(todo)
+    db.commit()
