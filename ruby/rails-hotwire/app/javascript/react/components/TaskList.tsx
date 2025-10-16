@@ -47,6 +47,25 @@ export const TaskList = ({ endpoints, initialState }: TaskListProps) => {
     }
   }, [editing, tasks])
 
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    url.searchParams.set("page", String(page))
+
+    if (status !== "all") {
+      url.searchParams.set("status", status)
+    } else {
+      url.searchParams.delete("status")
+    }
+
+    if (query.trim()) {
+      url.searchParams.set("query", query.trim())
+    } else {
+      url.searchParams.delete("query")
+    }
+
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`)
+  }, [page, status, query])
+
   const handleCreate = (payload: TaskPayload) => {
     return actions.createTask(payload)
   }
