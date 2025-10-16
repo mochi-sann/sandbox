@@ -59,3 +59,4 @@ python/fast-api-test-uv/todos.db
 nodejs-ts/react-clone/.turbo
 nodejs-ts/kysely-hono/.claude/settings.local.json
 nodejs-ts/kysely-hono/todos.db
+python/fast-api-test/__pycache__
