@@ -6,14 +6,12 @@ export type SvgCatalogEntry = {
   url: string;
 };
 
-const SVG_GLOB = '../assets/svg-samples/**/*.svg';
-
-const rawModules = import.meta.glob(SVG_GLOB, {
+const rawModules = import.meta.glob('../assets/svg-samples/**/*.svg', {
   as: 'raw',
   eager: true
 });
 
-const urlModules = import.meta.glob(SVG_GLOB, {
+const urlModules = import.meta.glob('../assets/svg-samples/**/*.svg', {
   as: 'url',
   eager: true
 });
