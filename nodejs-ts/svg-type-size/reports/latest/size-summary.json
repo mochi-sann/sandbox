@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2025-10-22T05:22:56.172Z",
+  "renderCount": 500,
+  "svgCount": 3,
+  "methods": [
+    {
+      "id": "inline",
+      "label": "インライン JSX",
+      "bundleBytes": 8453,
+      "assetBytes": 0,
+      "totalBytes": 8453,
+      "averageBytesPerSvg": 5.6353333333333335,
+      "svgCount": 3,
+      "renderCount": 500,
+      "deltaToBaseline": 0
+    },
+    {
+      "id": "img",
+      "label": "img タグ",
+      "bundleBytes": 434,
+      "assetBytes": 0,
+      "totalBytes": 434,
+      "averageBytesPerSvg": 0.28933333333333333,
+      "svgCount": 3,
+      "renderCount": 500,
+      "deltaToBaseline": -8019
+    },
+    {
+      "id": "svgr",
+      "label": "SVGR コンポーネント",
+      "bundleBytes": 595,
+      "assetBytes": 0,
+      "totalBytes": 595,
+      "averageBytesPerSvg": 0.39666666666666667,
+      "svgCount": 3,
+      "renderCount": 500,
+      "deltaToBaseline": -7858
+    }
+  ],
+  "runs": [
+    {
+      "runId": "2025-10-22T05-22-53-205Z-run1-cab1d4ff",
+      "runIndex": 1,
+      "startedAt": "2025-10-22T05:22:53.205Z",
+      "completedAt": "2025-10-22T05:22:54.238Z",
+      "durationMs": 1033,
+      "renderCount": 500,
+      "svgCount": 3,
+      "totalBytes": 9482
+    },
+    {
+      "runId": "2025-10-22T05-22-53-205Z-run2-64d8c148",
+      "runIndex": 2,
+      "startedAt": "2025-10-22T05:22:54.238Z",
+      "completedAt": "2025-10-22T05:22:55.184Z",
+      "durationMs": 946,
+      "renderCount": 500,
+      "svgCount": 3,
+      "totalBytes": 9482
+    },
+    {
+      "runId": "2025-10-22T05-22-53-205Z-run3-26929138",
+      "runIndex": 3,
+      "startedAt": "2025-10-22T05:22:55.184Z",
+      "completedAt": "2025-10-22T05:22:56.172Z",
+      "durationMs": 988,
+      "renderCount": 500,
+      "svgCount": 3,
+      "totalBytes": 9482
+    }
+  ],
+  "anomaly": {
+    "detected": false,
+    "threshold": 0.01,
+    "variance": 0
+  }
+}
