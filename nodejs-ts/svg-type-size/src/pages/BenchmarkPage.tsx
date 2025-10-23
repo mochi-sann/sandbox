@@ -70,6 +70,20 @@ const RendererDashboard = () => {
         </form>
       </header>
 
+      <RendererSection
+        title="読み込み済み SVG 一覧"
+        description="ベンチマーク対象の SVG を 1 枚ずつ確認できます。"
+      >
+        <div className="svg-grid svg-sample-grid" data-testid="svg-sample-grid">
+          {svgCatalog.map((entry) => (
+            <div className="svg-card svg-sample-card" key={entry.id}>
+              <div className="svg-sample-preview" dangerouslySetInnerHTML={{ __html: entry.raw }} />
+              <p className="svg-sample-name">{entry.name}</p>
+            </div>
+          ))}
+        </div>
+      </RendererSection>
+
       <div className="renderer-grid">
         {renderers.map((renderer) => (
           <RendererSection key={renderer.id} title={renderer.name} description={renderer.description}>

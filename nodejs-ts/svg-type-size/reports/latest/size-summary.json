@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2025-10-22T05:22:56.172Z",
-  "renderCount": 500,
+  "generatedAt": "2025-10-22T09:14:47.504Z",
+  "renderCount": 100,
   "svgCount": 3,
   "methods": [
     {
@@ -9,9 +9,9 @@
       "bundleBytes": 8453,
       "assetBytes": 0,
       "totalBytes": 8453,
-      "averageBytesPerSvg": 5.6353333333333335,
+      "averageBytesPerSvg": 28.176666666666666,
       "svgCount": 3,
-      "renderCount": 500,
+      "renderCount": 100,
       "deltaToBaseline": 0
     },
     {
@@ -20,9 +20,9 @@
       "bundleBytes": 434,
       "assetBytes": 0,
       "totalBytes": 434,
-      "averageBytesPerSvg": 0.28933333333333333,
+      "averageBytesPerSvg": 1.4466666666666668,
       "svgCount": 3,
-      "renderCount": 500,
+      "renderCount": 100,
       "deltaToBaseline": -8019
     },
     {
@@ -31,40 +31,40 @@
       "bundleBytes": 595,
       "assetBytes": 0,
       "totalBytes": 595,
-      "averageBytesPerSvg": 0.39666666666666667,
+      "averageBytesPerSvg": 1.9833333333333334,
       "svgCount": 3,
-      "renderCount": 500,
+      "renderCount": 100,
       "deltaToBaseline": -7858
     }
   ],
   "runs": [
     {
-      "runId": "2025-10-22T05-22-53-205Z-run1-cab1d4ff",
+      "runId": "2025-10-22T09-14-44-372Z-run1-5b8bb3d9",
       "runIndex": 1,
-      "startedAt": "2025-10-22T05:22:53.205Z",
-      "completedAt": "2025-10-22T05:22:54.238Z",
-      "durationMs": 1033,
-      "renderCount": 500,
+      "startedAt": "2025-10-22T09:14:44.372Z",
+      "completedAt": "2025-10-22T09:14:45.531Z",
+      "durationMs": 1159,
+      "renderCount": 100,
       "svgCount": 3,
       "totalBytes": 9482
     },
     {
-      "runId": "2025-10-22T05-22-53-205Z-run2-64d8c148",
+      "runId": "2025-10-22T09-14-44-372Z-run2-2e31615e",
       "runIndex": 2,
-      "startedAt": "2025-10-22T05:22:54.238Z",
-      "completedAt": "2025-10-22T05:22:55.184Z",
-      "durationMs": 946,
-      "renderCount": 500,
+      "startedAt": "2025-10-22T09:14:45.532Z",
+      "completedAt": "2025-10-22T09:14:46.548Z",
+      "durationMs": 1016,
+      "renderCount": 100,
       "svgCount": 3,
       "totalBytes": 9482
     },
     {
-      "runId": "2025-10-22T05-22-53-205Z-run3-26929138",
+      "runId": "2025-10-22T09-14-44-372Z-run3-9f7404f3",
       "runIndex": 3,
-      "startedAt": "2025-10-22T05:22:55.184Z",
-      "completedAt": "2025-10-22T05:22:56.172Z",
-      "durationMs": 988,
-      "renderCount": 500,
+      "startedAt": "2025-10-22T09:14:46.549Z",
+      "completedAt": "2025-10-22T09:14:47.504Z",
+      "durationMs": 955,
+      "renderCount": 100,
       "svgCount": 3,
       "totalBytes": 9482
     }

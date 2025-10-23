@@ -16,6 +16,7 @@ describe('T-002/T-003 ベンチマークページ表示', () => {
   test('3 種類のレンダラーが描画される', async () => {
     renderWithRouter();
 
+    expect(await screen.findByTestId('svg-sample-grid')).toBeInTheDocument();
     expect(await screen.findByText('インライン JSX')).toBeInTheDocument();
     expect(screen.getByText('img タグ')).toBeInTheDocument();
     expect(screen.getByText('SVGR コンポーネント')).toBeInTheDocument();

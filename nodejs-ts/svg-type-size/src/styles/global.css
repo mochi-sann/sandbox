@@ -68,6 +68,24 @@ td {
   background: #fafafa;
 }
 
+.svg-sample-card {
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 120px;
+}
+
+.svg-sample-preview svg {
+  width: 64px;
+  height: 64px;
+}
+
+.svg-sample-name {
+  margin: 0;
+  font-size: 0.85rem;
+  text-align: center;
+  word-break: break-all;
+}
+
 .alert {
   border-radius: 8px;
   padding: 1rem;
