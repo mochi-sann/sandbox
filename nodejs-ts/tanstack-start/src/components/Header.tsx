@@ -4,11 +4,8 @@ import TanChatAIAssistant from './example-AIAssistant.tsx'
 
 import { useState } from 'react'
 import {
-  BookOpen,
   ChevronDown,
   ChevronRight,
-  ClipboardType,
-  Database,
   Guitar,
   Home,
   Menu,
@@ -178,97 +175,6 @@ export default function Header() {
           )}
 
           <Link
-            to="/demo/drizzle"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Database size={20} />
-            <span className="font-medium">Drizzle</span>
-          </Link>
-
-          <Link
-            to="/demo/form/simple"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <ClipboardType size={20} />
-            <span className="font-medium">Simple Form</span>
-          </Link>
-
-          <Link
-            to="/demo/form/address"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <ClipboardType size={20} />
-            <span className="font-medium">Address Form</span>
-          </Link>
-
-          <Link
-            to="/demo/orpc-todo"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Network size={20} />
-            <span className="font-medium">oRPC Todo</span>
-          </Link>
-
-          <Link
-            to="/demo/store"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Store size={20} />
-            <span className="font-medium">Store</span>
-          </Link>
-
-          <Link
-            to="/demo/storybook"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <BookOpen size={20} />
-            <span className="font-medium">Storybook</span>
-          </Link>
-
-          <Link
-            to="/demo/tanstack-query"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-            }}
-          >
-            <Network size={20} />
-            <span className="font-medium">TanStack Query</span>
-          </Link>
-
-          <Link
             to="/demo/tanchat"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -292,6 +198,19 @@ export default function Header() {
           >
             <Guitar size={20} />
             <span className="font-medium">Guitar Demo</span>
+          </Link>
+
+          <Link
+            to="/demo/store"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+            }}
+          >
+            <Store size={20} />
+            <span className="font-medium">Store</span>
           </Link>
 
           {/* Demo Links End */}
