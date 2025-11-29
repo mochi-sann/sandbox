@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   resources :organization_memberships
   resources :organizations
   resources :users
+  get "todos/optimized" => "todos#index_optimized"
   resources :todos
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

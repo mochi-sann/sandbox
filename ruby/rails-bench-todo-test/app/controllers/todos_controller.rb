@@ -3,7 +3,15 @@ class TodosController < ApplicationController
 
   # GET /todos or /todos.json
   def index
-    @todos = Todo.all
+    # N+1 prone query
+    @todos = Todo.all.limit(50) 
+  end
+
+  # GET /todos/optimized or /todos/optimized.json
+  def index_optimized
+    # Optimized query
+    @todos = Todo.includes(:project, :category, :tags).all.limit(50)
+    render :index
   end
 
   # GET /todos/1 or /todos/1.json

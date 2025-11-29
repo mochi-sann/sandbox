@@ -2,98 +2,80 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-# Clean up existing data (optional, be careful in production)
+# Clean up existing data
 if Rails.env.development?
-  ActivityLog.destroy_all
-  TimeEntry.destroy_all
-  Comment.destroy_all
-  Tagging.destroy_all
-  Assignment.destroy_all
-  Todo.destroy_all
-  Tag.destroy_all
-  Category.destroy_all
-  Project.destroy_all
-  OrganizationMembership.destroy_all
-  Organization.destroy_all
-  User.destroy_all
+  ActivityLog.delete_all
+  TimeEntry.delete_all
+  Comment.delete_all
+  Tagging.delete_all
+  Assignment.delete_all
+  Todo.delete_all
+  Tag.delete_all
+  Category.delete_all
+  Project.delete_all
+  OrganizationMembership.delete_all
+  Organization.delete_all
+  User.delete_all
 end
 
-puts "Creating Users..."
+puts "Creating Users (100)..."
 users = []
-5.times do |i|
+100.times do |i|
   users << User.create!(
     email: "user#{i+1}@example.com",
     name: "User #{i+1}"
   )
 end
 
-puts "Creating Organizations..."
-org1 = Organization.create!(name: "Acme Corp")
-org2 = Organization.create!(name: "Beta Inc")
-
-puts "Creating Memberships..."
-OrganizationMembership.create!(user: users[0], organization: org1, role: :admin)
-OrganizationMembership.create!(user: users[1], organization: org1, role: :member)
-OrganizationMembership.create!(user: users[2], organization: org1, role: :member)
-OrganizationMembership.create!(user: users[3], organization: org2, role: :admin)
-OrganizationMembership.create!(user: users[4], organization: org2, role: :member)
-
-puts "Creating Projects..."
-proj1 = Project.create!(name: "Website Redesign", description: "Overhaul the main company website", organization: org1)
-proj2 = Project.create!(name: "Q4 Marketing", description: "Marketing campaign for Q4", organization: org1)
-proj3 = Project.create!(name: "Internal Tooling", description: "Fix internal scripts", organization: org2)
-
-puts "Creating Categories..."
-cat_frontend = Category.create!(name: "Frontend", project: proj1)
-cat_backend = Category.create!(name: "Backend", project: proj1)
-cat_design = Category.create!(name: "Design", project: proj1)
-cat_marketing = Category.create!(name: "Ads", project: proj2)
-
-puts "Creating Tags..."
-tags = ["High Priority", "Bug", "Feature", "Review Needed"].map do |name|
-  Tag.create!(name: name, color: ["#ff0000", "#00ff00", "#0000ff", "#ffa500"].sample)
+puts "Creating Organizations (10)..."
+organizations = []
+10.times do |i|
+  organizations << Organization.create!(name: "Org #{i+1}")
 end
 
-puts "Creating Todos..."
-todos = [
-  { title: "Design Home Page", project: proj1, category: cat_design, completed: true },
-  { title: "Implement Navbar", project: proj1, category: cat_frontend, completed: false },
-  { title: "Setup Database", project: proj1, category: cat_backend, completed: true },
-  { title: "Create Ad Banners", project: proj2, category: cat_marketing, completed: false },
-  { title: "Fix Login Bug", project: proj3, category: nil, completed: false }
-]
+puts "Creating Memberships..."
+users.each do |user|
+  OrganizationMembership.create!(user: user, organization: organizations.sample, role: [:admin, :member].sample)
+end
 
-todos.each do |t|
-  todo = Todo.create!(
-    title: t[:title],
-    project: t[:project],
-    category: t[:category],
-    completed: t[:completed]
-  )
+puts "Creating Projects (50)..."
+projects = []
+50.times do |i|
+  projects << Project.create!(name: "Project #{i+1}", description: "Desc #{i+1}", organization: organizations.sample)
+end
+
+puts "Creating Categories..."
+categories = []
+projects.each do |proj|
+  3.times { |i| categories << Category.create!(name: "Cat #{i+1}", project: proj) }
+end
+
+puts "Creating Tags (20)..."
+tags = []
+20.times do |i|
+  tags << Tag.create!(name: "Tag #{i+1}", color: "#%06x" % (rand * 0xffffff))
+end
+
+puts "Creating Todos (2000)..."
+todos_data = []
+2000.times do |i|
+  project = projects.sample
+  # 80% chance to have a category from the project
+  category = (rand < 0.8) ? Category.where(project: project).sample : nil
   
-  # Assign random tags
-  todo.tags << tags.sample(rand(1..2))
+  todo = Todo.new(
+    title: "Todo #{i+1} - #{SecureRandom.hex(4)}",
+    project: project,
+    category: category,
+    completed: [true, false].sample
+  )
+  todo.save!
+  
+  # Assign random tags (0 to 3 tags)
+  todo.tags << tags.sample(rand(0..3))
   
   # Assign random user
   Assignment.create!(todo: todo, user: users.sample)
-  
-  # Create random comments
-  rand(0..3).times do
-    Comment.create!(
-      todo: todo, 
-      user: users.sample, 
-      content: ["Great job!", "Needs revision.", "Looking into it.", "Done."].sample
-    )
-  end
-  
-  # Create Activity Log
-  ActivityLog.create!(
-    user: users.sample,
-    entity_type: "Todo",
-    entity_id: todo.id,
-    action: "created",
-    details: { title: todo.title }
-  )
 end
 
 puts "Seeding finished!"
