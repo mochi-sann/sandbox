@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  resources :comments
+  resources :assignments
+  resources :tags
+  resources :categories
+  resources :projects
+  resources :organization_memberships
+  resources :organizations
+  resources :users
   resources :todos
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
