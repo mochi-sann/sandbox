@@ -4,13 +4,13 @@ class TodosController < ApplicationController
   # GET /todos or /todos.json
   def index
     # N+1 prone query
-    @todos = Todo.all.limit(50) 
+    @todos = Todo.all.limit(200) 
   end
 
   # GET /todos/optimized or /todos/optimized.json
   def index_optimized
     # Optimized query
-    @todos = Todo.includes(:project, :category, :tags).all.limit(50)
+    @todos = Todo.includes(:project, :category, :tags, :users).all.limit(200)
     render :index
   end
 

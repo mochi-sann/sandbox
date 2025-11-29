@@ -13,4 +13,9 @@ json.tags todo.tags do |tag|
   json.color tag.color
 end
 
+json.users todo.users do |user|
+  json.name user.name
+  json.email user.email
+end
+
 json.url todo_url(todo, format: :json)

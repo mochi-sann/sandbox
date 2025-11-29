@@ -19,6 +19,11 @@
           <% todo.tags.each do |tag| %>
             <span class="badge rounded-pill" style="background-color: <%= tag.color %>"><%= tag.name %></span>
           <% end %>
+          <span class="ms-2 border-start ps-2">
+            <% todo.users.each do |user| %>
+              <span class="badge bg-light text-dark border" title="<%= user.email %>"><%= user.name.first %></span>
+            <% end %>
+          </span>
         </small>
       </div>
     </div>

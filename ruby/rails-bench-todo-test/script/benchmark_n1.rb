@@ -6,7 +6,7 @@ app = Rails.application
 session = ActionDispatch::Integration::Session.new(app)
 
 puts "Benchmarking TodosController (N+1 vs Optimized)..."
-puts "Testing with 50 items per page (fetching associated Project, Category, and Tags)"
+puts "Testing with 200 items per page (fetching associated Project, Category, Tags, and Users)"
 
 # Warmup requests
 session.get "/todos"
