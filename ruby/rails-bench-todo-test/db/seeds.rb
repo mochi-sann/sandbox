@@ -7,3 +7,16 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+todos = [
+  { title: "牛乳を買う", completed: false },
+  { title: "メール返信", completed: true },
+  { title: "Rails 8の学習", completed: false },
+  { title: "散歩に行く", completed: true }
+]
+
+todos.each do |todo_attributes|
+  Todo.find_or_create_by!(title: todo_attributes[:title]) do |todo|
+    todo.completed = todo_attributes[:completed]
+  end
+end
