@@ -58,6 +58,7 @@ group :development do
   gem 'rack-mini-profiler', '~> 3.0', require: false
   gem 'memory_profiler', '~> 1.0', require: false
   gem 'stackprof'
+  gem 'benchmark-ips'
 end
 
 group :test do

@@ -78,6 +78,7 @@ GEM
     base64 (0.3.0)
     bcrypt_pbkdf (1.1.1)
     benchmark (0.5.0)
+    benchmark-ips (2.14.0)
     bigdecimal (3.3.1)
     bindex (0.8.1)
     bootsnap (1.19.0)
@@ -384,6 +385,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  benchmark-ips
   bootsnap
   brakeman
   capybara
