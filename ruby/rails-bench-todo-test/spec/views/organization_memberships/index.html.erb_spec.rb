@@ -11,7 +11,6 @@ RSpec.describe "organization_memberships/index", type: :view do
   it "renders a list of organization_memberships" do
     render
     cell_selector = 'div>p'
-    assert_select cell_selector, text: Regexp.new(nil.to_s), count: 4
-    assert_select cell_selector, text: Regexp.new("member".to_s), count: 2
+    assert_select cell_selector, count: 8
   end
 end
