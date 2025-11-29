@@ -1,12 +1,35 @@
-<div id="<%= dom_id todo %>">
-  <p>
-    <strong>Title:</strong>
-    <%= todo.title %>
-  </p>
-
-  <p>
-    <strong>Completed:</strong>
-    <%= todo.completed %>
-  </p>
-
-</div>
+<%= turbo_frame_tag todo do %>
+  <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center todo-card">
+    <div class="d-flex align-items-center">
+      <%= form_with model: todo, url: todo_path(todo), method: :patch, class: "me-3", data: { turbo_form: true } do |f| %>
+        <%= f.check_box :completed, class: "form-check-input rounded-circle", onchange: "this.form.requestSubmit()", style: "width: 1.5em; height: 1.5em;" %>
+      <% end %>
+      
+      <div>
+        <h6 class="mb-0 <%= 'text-decoration-line-through text-muted' if todo.completed? %>">
+          <%= link_to todo.title, todo_path(todo), data: { turbo_frame: "_top" }, class: "text-decoration-none text-dark" %>
+        </h6>
+        <small class="text-muted">
+          <% if todo.project %>
+            <span class="badge bg-secondary"><%= todo.project.name %></span>
+          <% end %>
+          <% if todo.category %>
+            <span class="badge bg-info text-dark"><%= todo.category.name %></span>
+          <% end %>
+          <% todo.tags.each do |tag| %>
+            <span class="badge rounded-pill" style="background-color: <%= tag.color %>"><%= tag.name %></span>
+          <% end %>
+        </small>
+      </div>
+    </div>
+    
+    <div class="btn-group">
+      <%= link_to edit_todo_path(todo), class: "btn btn-sm btn-outline-secondary border-0", data: { turbo_frame: "_top" } do %>
+        <i class="fas fa-edit"></i>
+      <% end %>
+      <%= button_to todo_path(todo), method: :delete, class: "btn btn-sm btn-outline-danger border-0", form: { data: { turbo_confirm: "Are you sure?" } } do %>
+        <i class="fas fa-trash"></i>
+      <% end %>
+    </div>
+  </div>
+<% end %>

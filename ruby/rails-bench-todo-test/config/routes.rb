@@ -1,6 +1,14 @@
 Rails.application.routes.draw do
+  get "dashboard/index"
+  resources :activity_logs
+  resources :time_entries
+  resources :recurring_patterns
+  resources :reminders
+  resources :subtasks
   resources :comments
+  resources :dependencies
   resources :assignments
+  resources :taggings
   resources :tags
   resources :categories
   resources :projects
@@ -19,5 +27,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "dashboard#index"
 end

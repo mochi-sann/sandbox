@@ -1,0 +1,99 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">Dashboard</h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-group me-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+      <span data-feather="calendar"></span>
+      This week
+    </button>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Summary Cards -->
+  <div class="col-md-3 mb-4">
+    <div class="card border-left-primary shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Todos</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800"><%= Todo.count %></div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-4">
+    <div class="card border-left-success shadow h-100 py-2">
+      <div class="card-body">
+        <div class="row no-gutters align-items-center">
+          <div class="col mr-2">
+            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800"><%= Todo.where(completed: true).count %></div>
+          </div>
+          <div class="col-auto">
+            <i class="fas fa-check fa-2x text-gray-300"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Main Todo List -->
+  <div class="col-lg-8">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">My Tasks</h6>
+        <div class="dropdown no-arrow">
+          <%= link_to new_todo_path, class: "btn btn-sm btn-primary shadow-sm", data: { turbo_frame: "modal" } do %>
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add Task
+          <% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <%= turbo_frame_tag "todos" do %>
+          <% if @todos.any? %>
+            <div class="list-group list-group-flush">
+              <%= render @todos %>
+            </div>
+          <% else %>
+            <p class="text-muted text-center my-5">No tasks found. Get started by adding one!</p>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side Widgets -->
+  <div class="col-lg-4">
+    <div class="card shadow mb-4">
+      <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+      </div>
+      <div class="card-body">
+        <% if @recent_activities.present? %>
+          <ul class="list-unstyled">
+            <% @recent_activities.each do |activity| %>
+              <li class="mb-2 small">
+                <strong><%= activity.user.name %></strong> <%= activity.action %> <%= activity.entity_type %>
+                <br>
+                <span class="text-muted"><%= time_ago_in_words(activity.created_at) %> ago</span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="small text-muted">No recent activity.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
