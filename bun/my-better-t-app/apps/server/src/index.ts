@@ -9,6 +9,7 @@ import { onError } from "@orpc/server";
 import { appRouter } from "@my-better-t-app/api/routers/index";
 import { createContext } from "@my-better-t-app/api/context";
 import { auth } from "@my-better-t-app/auth";
+import openapi from "@elysiajs/openapi";
 
 const rpcHandler = new RPCHandler(appRouter, {
 	interceptors: [
@@ -31,6 +32,7 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 });
 
 const app = new Elysia()
+.use(openapi())
 	.use(
 		cors({
 			origin: process.env.CORS_ORIGIN || "",
