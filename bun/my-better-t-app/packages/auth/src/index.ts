@@ -4,20 +4,21 @@ import { db } from "@my-better-t-app/db";
 import * as schema from "@my-better-t-app/db/schema/auth";
 
 export const auth = betterAuth({
-	database: drizzleAdapter(db, {
-		provider: "pg",
+  database: drizzleAdapter(db, {
+    provider: "pg",
 
-		schema: schema,
-	}),
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
-	emailAndPassword: {
-		enabled: true,
-	},
-	advanced: {
-		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
-			httpOnly: true,
-		},
-	},
+    schema: schema,
+  }),
+  trustedOrigins: [process.env.CORS_ORIGIN || ""],
+  emailAndPassword: {
+    enabled: true,
+  },
+  appName: "todoapp",
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+    },
+  },
 });

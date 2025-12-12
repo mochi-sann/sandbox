@@ -13,74 +13,78 @@ import openapi from "@elysiajs/openapi";
 import { OpenAPIGenerator } from "@orpc/openapi";
 
 const rpcHandler = new RPCHandler(appRouter, {
-	interceptors: [
-		onError((error) => {
-			console.error(error);
-		}),
-	],
+  interceptors: [
+    onError((error) => {
+      console.error(error);
+    }),
+  ],
 });
 
 const openAPIGenerator = new OpenAPIGenerator({
-	schemaConverters: [new ZodToJsonSchemaConverter()],
+  schemaConverters: [new ZodToJsonSchemaConverter()],
 });
 
 const openAPISpec = await openAPIGenerator.generate(appRouter, {
-	info: {
-		title: "My App API",
-		version: "1.0.0",
-	},
-	servers: [{ url: "/api" }],
+  info: {
+    title: "My App API",
+    version: "1.0.0",
+  },
+  servers: [{ url: "/api" }],
 });
 
 const apiHandler = new OpenAPIHandler(appRouter, {
-	plugins: [
-		new OpenAPIReferencePlugin({
-			schemaConverters: [new ZodToJsonSchemaConverter()],
-		}),
-	],
-	interceptors: [
-		onError((error) => {
-			console.error(error);
-		}),
-	],
+  plugins: [
+    new OpenAPIReferencePlugin({
+      schemaConverters: [new ZodToJsonSchemaConverter()],
+    }),
+  ],
+  interceptors: [
+    onError((error) => {
+      console.error(error);
+    }),
+  ],
 });
 
 export const app = new Elysia()
-	.use(
-		openapi({
-			documentation: openAPISpec as any,
-		}),
-	)
-	.use(
-		cors({
-			origin: process.env.CORS_ORIGIN || "",
-			methods: ["GET", "POST", "OPTIONS"],
-			allowedHeaders: ["Content-Type", "Authorization"],
-			credentials: true,
-		}),
-	)
-	.all("/api/auth/*", async (context) => {
-		const { request, status } = context;
-		if (["POST", "GET"].includes(request.method)) {
-			return auth.handler(request);
-		}
-		return status(405);
-	})
-	.all("/rpc*", async (context) => {
-		const { response } = await rpcHandler.handle(context.request, {
-			prefix: "/rpc",
-			context: await createContext({ context }),
-		});
-		return response ?? new Response("Not Found", { status: 404 });
-	})
-	.all("/api*", async (context) => {
-		const { response } = await apiHandler.handle(context.request, {
-			prefix: "/api",
-			context: await createContext({ context }),
-		});
-		return response ?? new Response("Not Found", { status: 404 });
-	})
-	.get("/", () => "OK")
-	.listen(3000, () => {
-		console.log("Server is running on http://localhost:3000");
-	});
+  .onRequest(({ request }) => {
+    const url = new URL(request.url).pathname;
+    console.log(`\x1b[32m[API]\x1b[0m \x1b[1m${request.method}\x1b[0m ${url}`);
+  })
+  .use(
+    openapi({
+      documentation: openAPISpec as any,
+    }),
+  )
+  .use(
+    cors({
+      origin: process.env.CORS_ORIGIN || "",
+      methods: ["GET", "POST", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      credentials: true,
+    }),
+  )
+  .all("/api/auth/*", async (context) => {
+    const { request, status } = context;
+    if (["POST", "GET"].includes(request.method)) {
+      return auth.handler(request);
+    }
+    return status(405);
+  })
+  .all("/rpc*", async (context) => {
+    const { response } = await rpcHandler.handle(context.request, {
+      prefix: "/rpc",
+      context: await createContext({ context }),
+    });
+    return response ?? new Response("Not Found", { status: 404 });
+  })
+  .all("/api*", async (context) => {
+    const { response } = await apiHandler.handle(context.request, {
+      prefix: "/api",
+      context: await createContext({ context }),
+    });
+    return response ?? new Response("Not Found", { status: 404 });
+  })
+  .get("/", () => "OK")
+  .listen(3000, () => {
+    console.log("Server is running on http://localhost:3000");
+  });

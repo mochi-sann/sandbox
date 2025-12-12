@@ -4,17 +4,17 @@ import { todoRouter } from "./todo";
 import { tagRouter } from "./tag";
 
 export const appRouter = {
-	healthCheck: publicProcedure.handler(() => {
-		return "OK";
-	}),
-	privateData: protectedProcedure.handler(({ context }) => {
-		return {
-			message: "This is private",
-			user: context.session?.user,
-		};
-	}),
-	todo: todoRouter,
-	tag: tagRouter,
+  healthCheck: publicProcedure.handler(() => {
+    return "OK";
+  }),
+  privateData: protectedProcedure.handler(({ context }) => {
+    return {
+      message: "This is private",
+      user: context.session?.user,
+    };
+  }),
+  todo: todoRouter,
+  tag: tagRouter,
 };
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;
