@@ -19,7 +19,6 @@ export const tag = pgTable(
     color: text("color").notNull(),
     userId: text("user_id")
       .notNull()
-      .unique()
       .references(() => user.id, { onDelete: "cascade" }),
   },
   (t) => [unique().on(t.name, t.userId)],

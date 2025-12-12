@@ -1,6 +1,6 @@
 {
-  "id": "e6292169-4b69-4104-8baf-1255bebf288b",
-  "prevId": "162f83c6-373e-404c-87e4-09db114b7833",
+  "id": "c9da5e6e-6f5d-4a1d-96fd-cca10419d196",
+  "prevId": "e6292169-4b69-4104-8baf-1255bebf288b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -489,9 +489,53 @@
           "primaryKey": false,
           "notNull": true
         },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
         "due_at": {
           "name": "due_at",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "priority": {
+          "name": "priority",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'P2'"
+        },
+        "is_starred": {
+          "name": "is_starred",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "estimated_minutes": {
+          "name": "estimated_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_minutes": {
+          "name": "actual_minutes",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
@@ -509,23 +553,7 @@
           "notNull": true
         }
       },
-      "indexes": {
-        "todo_user_id_index": {
-          "name": "todo_user_id_index",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "todo_user_id_user_id_fk": {
           "name": "todo_user_id_user_id_fk",

@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, serial, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, serial, timestamp, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { todoTag } from "./tag";
@@ -11,12 +11,19 @@ export const todo = pgTable("todo", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  startAt: timestamp("start_at"),
   dueAt: timestamp("due_at"),
+  completedAt: timestamp("completed_at"),
+  deletedAt: timestamp("deleted_at"),
+  priority: text("priority").default("P2"),
+  isStarred: boolean("is_starred").default(false).notNull(),
+  estimatedMinutes: integer("estimated_minutes"),
+  actualMinutes: integer("actual_minutes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-}, (table)=>[index().on(table.userId)]);
+});
 
 export const todoRelations = relations(todo, ({ many }) => ({
   tags: many(todoTag),

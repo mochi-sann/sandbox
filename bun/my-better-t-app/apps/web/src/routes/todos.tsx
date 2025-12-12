@@ -143,9 +143,7 @@ function TodosRoute() {
     setEditTodoText(todo.text);
     setEditTodoBody(todo.body || "");
     // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
-    const formattedDate = todo.dueAt
-      ? new Date(todo.dueAt).toISOString().slice(0, 16)
-      : "";
+    const formattedDate = todo.dueAt ? new Date(todo.dueAt).toISOString().slice(0, 16) : "";
     setEditDueAt(formattedDate);
     setEditTagIds(todo.tags.map((t: any) => t.id));
   };
@@ -338,11 +336,7 @@ function TodosRoute() {
                         <Button size="sm" onClick={handleUpdateTodo}>
                           Save
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setEditingTodoId(null)}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => setEditingTodoId(null)}>
                           Cancel
                         </Button>
                       </div>

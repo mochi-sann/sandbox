@@ -4,7 +4,7 @@ import * as auth from "./schema/auth";
 import * as todo from "./schema/todo";
 import * as tag from "./schema/tag";
 
-export { eq, and } from "drizzle-orm";
+export { eq, and, isNull, isNotNull, desc, asc, not } from "drizzle-orm";
 
 class CustomLogWriter implements LogWriter {
   write(message: string) {

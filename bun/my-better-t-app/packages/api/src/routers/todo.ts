@@ -1,6 +1,6 @@
 import z from "zod";
 import { ORPCError } from "@orpc/server";
-import { db, eq, and } from "@my-better-t-app/db";
+import { db, eq, and, isNull } from "@my-better-t-app/db";
 import { todo } from "@my-better-t-app/db/schema/todo";
 import { todoTag } from "@my-better-t-app/db/schema/tag";
 import { protectedProcedure } from "../index";
@@ -12,6 +12,13 @@ const todoSchema = z.object({
   completed: z.boolean(),
   userId: z.string(),
   dueAt: z.date().nullable(),
+  startAt: z.date().nullable(),
+  completedAt: z.date().nullable(),
+  deletedAt: z.date().nullable(),
+  priority: z.string().nullable(),
+  isStarred: z.boolean(),
+  estimatedMinutes: z.number().nullable(),
+  actualMinutes: z.number().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
   tags: z
@@ -28,7 +35,7 @@ const todoSchema = z.object({
 export const todoRouter = {
   getAll: protectedProcedure.output(z.array(todoSchema)).handler(async ({ context }) => {
     const todos = await db.query.todo.findMany({
-      where: eq(todo.userId, context.session.user.id),
+      where: and(eq(todo.userId, context.session.user.id), isNull(todo.deletedAt)),
       with: {
         tags: {
           with: {
@@ -51,6 +58,10 @@ export const todoRouter = {
         text: z.string().min(1),
         body: z.string().optional(),
         dueAt: z.date().optional(),
+        startAt: z.date().optional(),
+        priority: z.string().optional(),
+        isStarred: z.boolean().optional(),
+        estimatedMinutes: z.number().optional(),
         tags: z.array(z.number()).optional(),
       }),
     )
@@ -63,6 +74,10 @@ export const todoRouter = {
           body: input.body,
           userId: context.session.user.id,
           dueAt: input.dueAt,
+          startAt: input.startAt,
+          priority: input.priority,
+          isStarred: input.isStarred ?? false,
+          estimatedMinutes: input.estimatedMinutes,
         })
         .returning();
 
@@ -81,7 +96,6 @@ export const todoRouter = {
         );
       }
 
-      // Fetch full object with tags to return
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, created.id),
         with: {
@@ -109,6 +123,11 @@ export const todoRouter = {
         body: z.string().nullable().optional(),
         completed: z.boolean().optional(),
         dueAt: z.date().nullable().optional(),
+        startAt: z.date().nullable().optional(),
+        priority: z.string().nullable().optional(),
+        isStarred: z.boolean().optional(),
+        estimatedMinutes: z.number().nullable().optional(),
+        actualMinutes: z.number().nullable().optional(),
         tags: z.array(z.number()).optional(),
       }),
     )
@@ -128,7 +147,6 @@ export const todoRouter = {
       }
 
       if (tags !== undefined) {
-        // Replace tags
         await db.delete(todoTag).where(eq(todoTag.todoId, id));
         if (tags.length > 0) {
           await db.insert(todoTag).values(
@@ -165,7 +183,10 @@ export const todoRouter = {
     .handler(async ({ input, context }) => {
       const [updated] = await db
         .update(todo)
-        .set({ completed: input.completed })
+        .set({
+          completed: input.completed,
+          completedAt: input.completed ? new Date() : null,
+        })
         .where(and(eq(todo.id, input.id), eq(todo.userId, context.session.user.id)))
         .returning();
 
@@ -199,7 +220,8 @@ export const todoRouter = {
     .output(todoSchema)
     .handler(async ({ input, context }) => {
       const [deleted] = await db
-        .delete(todo)
+        .update(todo)
+        .set({ deletedAt: new Date() })
         .where(and(eq(todo.id, input.id), eq(todo.userId, context.session.user.id)))
         .returning();
 
@@ -209,7 +231,57 @@ export const todoRouter = {
         });
       }
 
-      // Return with empty tags as it's deleted
-      return { ...deleted, tags: [] };
+      const fullTodo = await db.query.todo.findFirst({
+        where: eq(todo.id, deleted.id),
+        with: {
+          tags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
+      });
+
+      if (!fullTodo) return { ...deleted, tags: [] };
+
+      return {
+        ...fullTodo,
+        tags: fullTodo.tags.map((tt) => tt.tag),
+      };
+    }),
+
+  restore: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .output(todoSchema)
+    .handler(async ({ input, context }) => {
+      const [restored] = await db
+        .update(todo)
+        .set({ deletedAt: null })
+        .where(and(eq(todo.id, input.id), eq(todo.userId, context.session.user.id)))
+        .returning();
+
+      if (!restored) {
+        throw new ORPCError("NOT_FOUND", {
+          message: "Todo not found or access denied",
+        });
+      }
+
+      const fullTodo = await db.query.todo.findFirst({
+        where: eq(todo.id, restored.id),
+        with: {
+          tags: {
+            with: {
+              tag: true,
+            },
+          },
+        },
+      });
+
+      if (!fullTodo) throw new ORPCError("INTERNAL_SERVER_ERROR");
+
+      return {
+        ...fullTodo,
+        tags: fullTodo.tags.map((tt) => tt.tag),
+      };
     }),
 };

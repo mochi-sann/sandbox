@@ -21,7 +21,9 @@ export const tagRouter = {
     .output(tagSchema)
     .handler(async ({ input, context }) => {
       // Check for existing tag with same name and user ID
-      const existingTag = await db.select().from(tag)
+      const existingTag = await db
+        .select()
+        .from(tag)
         .where(and(eq(tag.name, input.name), eq(tag.userId, context.session.user.id)))
         .limit(1);
 
@@ -30,7 +32,7 @@ export const tagRouter = {
           message: `Tag with name '${input.name}' already exists.`,
         });
       }
-      
+
       const [created] = await db
         .insert(tag)
         .values({
