@@ -1,44 +1,22 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Link, createFileRoute, redirect } from "@tanstack/react-router";
-import {
-  Calendar,
-  ChevronDown,
-  Folder,
-  Loader2,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
 import { z } from "zod";
 
 import { orpc } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getUser } from "../functions/get-user";
+import {
+  ProjectFilterBanner,
+  TodoCreationForm,
+  TodoListSection,
+  TodoSearchBar,
+} from "./todos/components";
+import type { ClearFilterLink } from "./todos/types";
 
 const todosSearchSchema = z.object({
   projectId: z.number().optional(),
 });
-
-type ClearFilterLink = {
-  to: string;
-  search?: Record<string, unknown>;
-  label?: string;
-};
 
 export interface TodosPageProps {
   projectIdFilter?: number;
@@ -151,7 +129,6 @@ export function TodosPage({
         setNewTodoBody("");
         setDueAt("");
         setSelectedTagIds([]);
-        // Keep project selected if filtered, otherwise reset
         if (projectIdFilter === undefined) setSelectedProjectId(null);
       },
     }),
@@ -237,8 +214,7 @@ export function TodosPage({
     }
   };
 
-  const handleUpdateTodo = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateTodo = () => {
     if (editingTodoId && editTodoText.trim()) {
       updateMutation.mutate({
         id: editingTodoId,
@@ -269,18 +245,26 @@ export function TodosPage({
     deleteMutation.mutate({ id });
   };
 
-  const handleCreateTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTagName.trim()) {
-      const color = stringToColor(newTagName);
-      createTagMutation.mutate({ name: newTagName, color });
+  const handleCreateTag = () => {
+    if (!newTagName.trim()) {
+      return;
     }
+    const color = stringToColor(newTagName);
+    createTagMutation.mutate({ name: newTagName, color });
   };
 
   const handleCreateSubtask = (todoId: number, text: string) => {
     if (text.trim()) {
       createSubtaskMutation.mutate({ todoId, text });
     }
+  };
+
+  const handleToggleSubtaskStatus = (id: number, completed: boolean) => {
+    toggleSubtaskMutation.mutate({ id, completed });
+  };
+
+  const handleDeleteSubtask = (id: number) => {
+    deleteSubtaskMutation.mutate({ id });
   };
 
   const toggleTagSelection = (tagId: number) => {
@@ -303,370 +287,662 @@ export function TodosPage({
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          {projectIdFilter !== undefined && (
-            <div className="mb-4 flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-muted">
-              <Folder className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">
-                Project: {filteredProject?.name ?? `#${projectIdFilter}`}
-              </span>
-              {clearFilterLink && (
-                <Link
-                  to={clearFilterLink.to}
-                  search={clearFilterLink.search ?? {}}
-                  className="text-xs text-muted-foreground hover:underline ml-auto"
-                >
-                  {clearFilterLink.label ?? "Clear Filter"}
-                </Link>
-              )}
-            </div>
-          )}
-
-          <div className="mb-6 relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search todos..."
-              className="pl-9"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
-          <form onSubmit={handleAddTodo} className="mb-6 space-y-2">
-            <Input
-              value={newTodoText}
-              onChange={(e) => setNewTodoText(e.target.value)}
-              placeholder="Task title..."
-              disabled={createMutation.isPending}
-            />
-            <Textarea
-              value={newTodoBody}
-              onChange={(e) => setNewTodoBody(e.target.value)}
-              placeholder="Details (optional)..."
-              disabled={createMutation.isPending}
-            />
-            <div className="flex flex-wrap gap-2 items-center">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 gap-1"
-                    disabled={lockProjectSelection}
-                  >
-                    <Folder className="h-3.5 w-3.5" />
-                    {projects.data?.find((p) => p.id === selectedProjectId)?.name || "Project"}
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => handleProjectSelection(null)}>
-                    No Project
-                  </DropdownMenuItem>
-                  {projects.data?.map((project) => (
-                    <DropdownMenuItem
-                      key={project.id}
-                      onClick={() => handleProjectSelection(project.id)}
-                    >
-                      {project.name}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {tags.data?.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="outline"
-                  className={`cursor-pointer border-2 ${selectedTagIds.includes(tag.id) ? "border-primary" : "border-transparent"}`}
-                  style={{
-                    backgroundColor: tag.color,
-                    color: "#fff",
-                  }}
-                  onClick={() => toggleTagSelection(tag.id)}
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs"
-                onClick={() => setIsManagingTags(!isManagingTags)}
-              >
-                {isManagingTags ? "Hide Tags" : "Manage Tags"}
-              </Button>
-            </div>
-
-            {isManagingTags && (
-              <div className="rounded-md border p-2 space-y-2 bg-muted/50">
-                <div className="flex flex-col gap-2">
-                  <Input
-                    value={newTagName}
-                    onChange={(e) => {
-                      setNewTagName(e.target.value);
-                      setTagCreationError(null);
-                    }}
-                    placeholder="Tag name"
-                    className="h-8 focus-visible:ring-blue-500"
-                    aria-invalid={!!tagCreationError}
-                  />
-                  {tagCreationError && (
-                    <p className="text-destructive text-xs">{tagCreationError}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleCreateTag}
-                      disabled={!newTagName.trim()}
-                      className="w-full"
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Create Tag
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {tags.data?.map((tag) => (
-                    <div
-                      key={tag.id}
-                      className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
-                      style={{ backgroundColor: tag.color }}
-                    >
-                      {tag.name}
-                      <button
-                        onClick={() => deleteTagMutation.mutate({ id: tag.id })}
-                        className="ml-1 hover:text-red-200"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center space-x-2">
-              <Input
-                type="datetime-local"
-                value={dueAt}
-                onChange={(e) => setDueAt(e.target.value)}
-                disabled={createMutation.isPending}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={createMutation.isPending || !newTodoText.trim()}>
-                {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
-              </Button>
-            </div>
-          </form>
-
-          {todos.isLoading ? (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : todos.data?.length === 0 ? (
-            <p className="py-4 text-center">No todos yet. Add one above!</p>
-          ) : (
-            <ul className="space-y-2">
-              {todos.data?.map((todo) => (
-                <li
-                  key={todo.id}
-                  className="flex items-start justify-between rounded-md border p-2"
-                >
-                  {editingTodoId === todo.id ? (
-                    <div className="w-full space-y-2">
-                      <Input
-                        value={editTodoText}
-                        onChange={(e) => setEditTodoText(e.target.value)}
-                        placeholder="Task title"
-                      />
-                      <Textarea
-                        value={editTodoBody}
-                        onChange={(e) => setEditTodoBody(e.target.value)}
-                        placeholder="Details"
-                      />
-                      <div className="flex flex-wrap gap-2 items-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 gap-1">
-                              <Folder className="h-3.5 w-3.5" />
-                              {projects.data?.find((p) => p.id === editProjectId)?.name ||
-                                "Project"}
-                              <ChevronDown className="h-3 w-3 opacity-50" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
-                            <DropdownMenuItem onClick={() => setEditProjectId(null)}>
-                              No Project
-                            </DropdownMenuItem>
-                            {projects.data?.map((project) => (
-                              <DropdownMenuItem
-                                key={project.id}
-                                onClick={() => setEditProjectId(project.id)}
-                              >
-                                {project.name}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        {tags.data?.map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            variant="outline"
-                            className={`cursor-pointer border-2 ${editTagIds.includes(tag.id) ? "border-primary" : "border-transparent"}`}
-                            style={{
-                              backgroundColor: tag.color,
-                              color: "#fff",
-                            }}
-                            onClick={() => toggleEditTagSelection(tag.id)}
-                          >
-                            {tag.name}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <Input
-                          type="datetime-local"
-                          value={editDueAt}
-                          onChange={(e) => setEditDueAt(e.target.value)}
-                          className="flex-1"
-                        />
-                        <Button size="sm" onClick={handleUpdateTodo}>
-                          Save
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setEditingTodoId(null)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-start space-x-2 w-full">
-                        <Checkbox
-                          checked={todo.completed}
-                          onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
-                          id={`todo-${todo.id}`}
-                          className="mt-1"
-                        />
-                        <div className="flex flex-col gap-1 w-full">
-                          <label
-                            htmlFor={`todo-${todo.id}`}
-                            className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
-                          >
-                            {todo.text}
-                          </label>
-                          {todo.body && (
-                            <div className="text-sm text-muted-foreground break-words">
-                              <ReactMarkdown>{todo.body}</ReactMarkdown>
-                            </div>
-                          )}
-                          <div className="flex flex-wrap gap-2 items-center">
-                            {todo.project && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 px-1.5 py-0.5 rounded-md">
-                                <Folder className="h-3 w-3" />
-                                <span>{todo.project.name}</span>
-                              </div>
-                            )}
-                            {todo.tags.map((tag) => (
-                              <Badge
-                                key={tag.id}
-                                style={{
-                                  backgroundColor: tag.color,
-                                  color: "#fff",
-                                }}
-                                className="text-[10px] px-1.5 py-0 h-5"
-                              >
-                                {tag.name}
-                              </Badge>
-                            ))}
-                            {todo.dueAt && (
-                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(todo.dueAt).toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="mt-2 w-full">
-                            {todo.subtasks && todo.subtasks.length > 0 && (
-                              <ul className="space-y-1 mb-1">
-                                {todo.subtasks.map((subtask: any) => (
-                                  <li
-                                    key={subtask.id}
-                                    className="flex items-center gap-2 group text-sm"
-                                  >
-                                    <Checkbox
-                                      checked={subtask.completed}
-                                      onCheckedChange={(c) =>
-                                        toggleSubtaskMutation.mutate({
-                                          id: subtask.id,
-                                          completed: !!c,
-                                        })
-                                      }
-                                      className="h-3 w-3"
-                                    />
-                                    <span
-                                      className={`${subtask.completed ? "line-through text-muted-foreground" : ""}`}
-                                    >
-                                      {subtask.text}
-                                    </span>
-                                    <button
-                                      onClick={() =>
-                                        deleteSubtaskMutation.mutate({
-                                          id: subtask.id,
-                                        })
-                                      }
-                                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                            <div className="flex items-center gap-2">
-                              <Plus className="h-3 w-3 text-muted-foreground" />
-                              <Input
-                                className="h-6 text-xs border-none shadow-none focus-visible:ring-0 p-0 placeholder:text-muted-foreground/70"
-                                placeholder="Add subtask..."
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    handleCreateSubtask(todo.id, e.currentTarget.value);
-                                    e.currentTarget.value = "";
-                                  }
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditClick(todo)}
-                          aria-label="Edit todo"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteTodo(todo.id)}
-                          aria-label="Delete todo"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <ProjectFilterBanner
+            projectIdFilter={projectIdFilter}
+            filteredProject={filteredProject}
+            clearFilterLink={clearFilterLink}
+          />
+          <TodoSearchBar value={search} onChange={setSearch} />
+          <TodoCreationForm
+            newTodoText={newTodoText}
+            onNewTodoTextChange={setNewTodoText}
+            newTodoBody={newTodoBody}
+            onNewTodoBodyChange={setNewTodoBody}
+            dueAt={dueAt}
+            onDueAtChange={setDueAt}
+            onSubmit={handleAddTodo}
+            isSubmitting={createMutation.isPending}
+            canSubmit={Boolean(newTodoText.trim())}
+            projects={projects.data}
+            selectedProjectId={selectedProjectId}
+            onProjectSelect={handleProjectSelection}
+            lockProjectSelection={lockProjectSelection}
+            tags={tags.data}
+            selectedTagIds={selectedTagIds}
+            onToggleTag={toggleTagSelection}
+            isManagingTags={isManagingTags}
+            onToggleManageTags={() => setIsManagingTags((prev) => !prev)}
+            newTagName={newTagName}
+            onNewTagNameChange={(value) => {
+              setNewTagName(value);
+              setTagCreationError(null);
+            }}
+            onCreateTag={handleCreateTag}
+            onDeleteTag={(id) => deleteTagMutation.mutate({ id })}
+            tagCreationError={tagCreationError}
+          />
+          <TodoListSection
+            isLoading={todos.isLoading}
+            todos={todos.data}
+            editingTodoId={editingTodoId}
+            editTodoText={editTodoText}
+            onEditTodoTextChange={setEditTodoText}
+            editTodoBody={editTodoBody}
+            onEditTodoBodyChange={setEditTodoBody}
+            editDueAt={editDueAt}
+            onEditDueAtChange={setEditDueAt}
+            editTagIds={editTagIds}
+            onToggleEditTag={toggleEditTagSelection}
+            editProjectId={editProjectId}
+            onEditProjectChange={setEditProjectId}
+            projects={projects.data}
+            tags={tags.data}
+            onEditClick={handleEditClick}
+            onCancelEdit={() => setEditingTodoId(null)}
+            onUpdateTodo={handleUpdateTodo}
+            onToggleTodo={handleToggleTodo}
+            onDeleteTodo={handleDeleteTodo}
+            onCreateSubtask={handleCreateSubtask}
+            onToggleSubtask={handleToggleSubtaskStatus}
+            onDeleteSubtask={handleDeleteSubtask}
+          />
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+interface ProjectFilterBannerProps {
+  projectIdFilter?: number;
+  filteredProject?: { name: string } | undefined;
+  clearFilterLink: ClearFilterLink | null;
+}
+
+function ProjectFilterBanner({
+  projectIdFilter,
+  filteredProject,
+  clearFilterLink,
+}: ProjectFilterBannerProps) {
+  if (projectIdFilter === undefined) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4 flex items-center gap-2 rounded-md border border-muted bg-muted/20 p-2">
+      <Folder className="h-4 w-4 text-primary" />
+      <span className="text-sm font-medium">
+        Project: {filteredProject?.name ?? `#${projectIdFilter}`}
+      </span>
+      {clearFilterLink && (
+        <Link
+          to={clearFilterLink.to}
+          search={clearFilterLink.search ?? {}}
+          className="ml-auto text-xs text-muted-foreground hover:underline"
+        >
+          {clearFilterLink.label ?? "Clear Filter"}
+        </Link>
+      )}
+    </div>
+  );
+}
+
+interface TodoSearchBarProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+function TodoSearchBar({ value, onChange }: TodoSearchBarProps) {
+  return (
+    <div className="relative mb-6">
+      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Input
+        type="search"
+        placeholder="Search todos..."
+        className="pl-9"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+interface TodoCreationFormProps {
+  newTodoText: string;
+  onNewTodoTextChange: (value: string) => void;
+  newTodoBody: string;
+  onNewTodoBodyChange: (value: string) => void;
+  dueAt: string;
+  onDueAtChange: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  isSubmitting: boolean;
+  canSubmit: boolean;
+  projects: any[] | undefined;
+  selectedProjectId: number | null;
+  onProjectSelect: (id: number | null) => void;
+  lockProjectSelection: boolean;
+  tags: any[] | undefined;
+  selectedTagIds: number[];
+  onToggleTag: (id: number) => void;
+  isManagingTags: boolean;
+  onToggleManageTags: () => void;
+  newTagName: string;
+  onNewTagNameChange: (value: string) => void;
+  onCreateTag: () => void;
+  onDeleteTag: (id: number) => void;
+  tagCreationError: string | null;
+}
+
+function TodoCreationForm({
+  newTodoText,
+  onNewTodoTextChange,
+  newTodoBody,
+  onNewTodoBodyChange,
+  dueAt,
+  onDueAtChange,
+  onSubmit,
+  isSubmitting,
+  canSubmit,
+  projects,
+  selectedProjectId,
+  onProjectSelect,
+  lockProjectSelection,
+  tags,
+  selectedTagIds,
+  onToggleTag,
+  isManagingTags,
+  onToggleManageTags,
+  newTagName,
+  onNewTagNameChange,
+  onCreateTag,
+  onDeleteTag,
+  tagCreationError,
+}: TodoCreationFormProps) {
+  return (
+    <form onSubmit={onSubmit} className="mb-6 space-y-2">
+      <Input
+        value={newTodoText}
+        onChange={(e) => onNewTodoTextChange(e.target.value)}
+        placeholder="Task title..."
+        disabled={isSubmitting}
+      />
+      <Textarea
+        value={newTodoBody}
+        onChange={(e) => onNewTodoBodyChange(e.target.value)}
+        placeholder="Details (optional)..."
+        disabled={isSubmitting}
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <ProjectDropdown
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelect={onProjectSelect}
+          disabled={lockProjectSelection}
+        />
+        <TagSelection tags={tags} selectedTagIds={selectedTagIds} onToggle={onToggleTag} />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs"
+          onClick={onToggleManageTags}
+        >
+          {isManagingTags ? "Hide Tags" : "Manage Tags"}
+        </Button>
+      </div>
+
+      {isManagingTags && (
+        <TagManagementPanel
+          tags={tags}
+          newTagName={newTagName}
+          onNewTagNameChange={onNewTagNameChange}
+          tagCreationError={tagCreationError}
+          onCreateTag={onCreateTag}
+          onDeleteTag={onDeleteTag}
+        />
+      )}
+
+      <div className="flex items-center space-x-2">
+        <Input
+          type="datetime-local"
+          value={dueAt}
+          onChange={(e) => onDueAtChange(e.target.value)}
+          disabled={isSubmitting}
+          className="flex-1"
+        />
+        <Button type="submit" disabled={isSubmitting || !canSubmit}>
+          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+interface ProjectDropdownProps {
+  projects: any[] | undefined;
+  selectedProjectId: number | null;
+  onSelect: (id: number | null) => void;
+  disabled?: boolean;
+}
+
+function ProjectDropdown({ projects, selectedProjectId, onSelect, disabled = false }: ProjectDropdownProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-1" disabled={disabled}>
+          <Folder className="h-3.5 w-3.5" />
+          {projects?.find((p) => p.id === selectedProjectId)?.name || "Project"}
+          <ChevronDown className="h-3 w-3 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuItem onClick={() => onSelect(null)}>No Project</DropdownMenuItem>
+        {projects?.map((project) => (
+          <DropdownMenuItem key={project.id} onClick={() => onSelect(project.id)}>
+            {project.name}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+interface TagSelectionProps {
+  tags: any[] | undefined;
+  selectedTagIds: number[];
+  onToggle: (id: number) => void;
+}
+
+function TagSelection({ tags, selectedTagIds, onToggle }: TagSelectionProps) {
+  return (
+    <>
+      {tags?.map((tag) => (
+        <Badge
+          key={tag.id}
+          variant="outline"
+          className={`cursor-pointer border-2 ${selectedTagIds.includes(tag.id) ? "border-primary" : "border-transparent"}`}
+          style={{
+            backgroundColor: tag.color,
+            color: "#fff",
+          }}
+          onClick={() => onToggle(tag.id)}
+        >
+          {tag.name}
+        </Badge>
+      ))}
+    </>
+  );
+}
+
+interface TagManagementPanelProps {
+  tags: any[] | undefined;
+  newTagName: string;
+  onNewTagNameChange: (value: string) => void;
+  tagCreationError: string | null;
+  onCreateTag: () => void;
+  onDeleteTag: (id: number) => void;
+}
+
+function TagManagementPanel({
+  tags,
+  newTagName,
+  onNewTagNameChange,
+  tagCreationError,
+  onCreateTag,
+  onDeleteTag,
+}: TagManagementPanelProps) {
+  return (
+    <div className="space-y-2 rounded-md border bg-muted/50 p-2">
+      <div className="flex flex-col gap-2">
+        <Input
+          value={newTagName}
+          onChange={(e) => onNewTagNameChange(e.target.value)}
+          placeholder="Tag name"
+          className="h-8 focus-visible:ring-blue-500"
+          aria-invalid={!!tagCreationError}
+        />
+        {tagCreationError && <p className="text-xs text-destructive">{tagCreationError}</p>}
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            onClick={onCreateTag}
+            disabled={!newTagName.trim()}
+            className="w-full"
+          >
+            <Plus className="mr-1 h-4 w-4" /> Create Tag
+          </Button>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {tags?.map((tag) => (
+          <div
+            key={tag.id}
+            className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
+            style={{ backgroundColor: tag.color }}
+          >
+            {tag.name}
+            <button
+              type="button"
+              onClick={() => onDeleteTag(tag.id)}
+              className="ml-1 hover:text-red-200"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface TodoListSectionProps {
+  isLoading: boolean;
+  todos: any[] | undefined;
+  editingTodoId: number | null;
+  editTodoText: string;
+  onEditTodoTextChange: (value: string) => void;
+  editTodoBody: string;
+  onEditTodoBodyChange: (value: string) => void;
+  editDueAt: string;
+  onEditDueAtChange: (value: string) => void;
+  editTagIds: number[];
+  onToggleEditTag: (id: number) => void;
+  editProjectId: number | null;
+  onEditProjectChange: (id: number | null) => void;
+  projects: any[] | undefined;
+  tags: any[] | undefined;
+  onEditClick: (todo: any) => void;
+  onCancelEdit: () => void;
+  onUpdateTodo: () => void;
+  onToggleTodo: (id: number, completed: boolean) => void;
+  onDeleteTodo: (id: number) => void;
+  onCreateSubtask: (todoId: number, text: string) => void;
+  onToggleSubtask: (id: number, completed: boolean) => void;
+  onDeleteSubtask: (id: number) => void;
+}
+
+function TodoListSection({
+  isLoading,
+  todos,
+  editingTodoId,
+  editTodoText,
+  onEditTodoTextChange,
+  editTodoBody,
+  onEditTodoBodyChange,
+  editDueAt,
+  onEditDueAtChange,
+  editTagIds,
+  onToggleEditTag,
+  editProjectId,
+  onEditProjectChange,
+  projects,
+  tags,
+  onEditClick,
+  onCancelEdit,
+  onUpdateTodo,
+  onToggleTodo,
+  onDeleteTodo,
+  onCreateSubtask,
+  onToggleSubtask,
+  onDeleteSubtask,
+}: TodoListSectionProps) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!todos || todos.length === 0) {
+    return <p className="py-4 text-center">No todos yet. Add one above!</p>;
+  }
+
+  return (
+    <ul className="space-y-2">
+      {todos.map((todo) => (
+        <TodoListItem
+          key={todo.id}
+          todo={todo}
+          isEditing={editingTodoId === todo.id}
+          editTodoText={editTodoText}
+          onEditTodoTextChange={onEditTodoTextChange}
+          editTodoBody={editTodoBody}
+          onEditTodoBodyChange={onEditTodoBodyChange}
+          editDueAt={editDueAt}
+          onEditDueAtChange={onEditDueAtChange}
+          editTagIds={editTagIds}
+          onToggleEditTag={onToggleEditTag}
+          editProjectId={editProjectId}
+          onEditProjectChange={onEditProjectChange}
+          projects={projects}
+          tags={tags}
+          onSave={onUpdateTodo}
+          onCancel={onCancelEdit}
+          onEditClick={onEditClick}
+          onToggleTodo={onToggleTodo}
+          onDeleteTodo={onDeleteTodo}
+          onCreateSubtask={onCreateSubtask}
+          onToggleSubtask={onToggleSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+        />
+      ))}
+    </ul>
+  );
+}
+
+interface TodoListItemProps {
+  todo: any;
+  isEditing: boolean;
+  editTodoText: string;
+  onEditTodoTextChange: (value: string) => void;
+  editTodoBody: string;
+  onEditTodoBodyChange: (value: string) => void;
+  editDueAt: string;
+  onEditDueAtChange: (value: string) => void;
+  editTagIds: number[];
+  onToggleEditTag: (id: number) => void;
+  editProjectId: number | null;
+  onEditProjectChange: (id: number | null) => void;
+  projects: any[] | undefined;
+  tags: any[] | undefined;
+  onSave: () => void;
+  onCancel: () => void;
+  onEditClick: (todo: any) => void;
+  onToggleTodo: (id: number, completed: boolean) => void;
+  onDeleteTodo: (id: number) => void;
+  onCreateSubtask: (todoId: number, text: string) => void;
+  onToggleSubtask: (id: number, completed: boolean) => void;
+  onDeleteSubtask: (id: number) => void;
+}
+
+function TodoListItem({
+  todo,
+  isEditing,
+  editTodoText,
+  onEditTodoTextChange,
+  editTodoBody,
+  onEditTodoBodyChange,
+  editDueAt,
+  onEditDueAtChange,
+  editTagIds,
+  onToggleEditTag,
+  editProjectId,
+  onEditProjectChange,
+  projects,
+  tags,
+  onSave,
+  onCancel,
+  onEditClick,
+  onToggleTodo,
+  onDeleteTodo,
+  onCreateSubtask,
+  onToggleSubtask,
+  onDeleteSubtask,
+}: TodoListItemProps) {
+  if (isEditing) {
+    return (
+      <li className="rounded-md border p-2">
+        <div className="space-y-2">
+          <Input
+            value={editTodoText}
+            onChange={(e) => onEditTodoTextChange(e.target.value)}
+            placeholder="Task title"
+          />
+          <Textarea
+            value={editTodoBody}
+            onChange={(e) => onEditTodoBodyChange(e.target.value)}
+            placeholder="Details"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <ProjectDropdown
+              projects={projects}
+              selectedProjectId={editProjectId}
+              onSelect={onEditProjectChange}
+            />
+            <TagSelection tags={tags} selectedTagIds={editTagIds} onToggle={onToggleEditTag} />
+          </div>
+          <div className="flex gap-2">
+            <Input
+              type="datetime-local"
+              value={editDueAt}
+              onChange={(e) => onEditDueAtChange(e.target.value)}
+              className="flex-1"
+            />
+            <Button size="sm" onClick={onSave}>
+              Save
+            </Button>
+            <Button size="sm" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li className="flex items-start justify-between rounded-md border p-2">
+      <div className="flex w-full items-start space-x-2">
+        <Checkbox
+          checked={todo.completed}
+          onCheckedChange={() => onToggleTodo(todo.id, todo.completed)}
+          id={`todo-${todo.id}`}
+          className="mt-1"
+        />
+        <div className="flex w-full flex-col gap-1">
+          <label
+            htmlFor={`todo-${todo.id}`}
+            className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
+          >
+            {todo.text}
+          </label>
+          {todo.body && (
+            <div className="break-words text-sm text-muted-foreground">
+              <ReactMarkdown>{todo.body}</ReactMarkdown>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {todo.project && (
+              <div className="flex items-center gap-1 rounded-md bg-secondary/50 px-1.5 py-0.5 text-xs text-muted-foreground">
+                <Folder className="h-3 w-3" />
+                <span>{todo.project.name}</span>
+              </div>
+            )}
+            {todo.tags.map((tag: any) => (
+              <Badge
+                key={tag.id}
+                style={{
+                  backgroundColor: tag.color,
+                  color: "#fff",
+                }}
+                className="h-5 px-1.5 py-0 text-[10px]"
+              >
+                {tag.name}
+              </Badge>
+            ))}
+            {todo.dueAt && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                {new Date(todo.dueAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+          <SubtaskList
+            todo={todo}
+            onCreateSubtask={onCreateSubtask}
+            onToggleSubtask={onToggleSubtask}
+            onDeleteSubtask={onDeleteSubtask}
+          />
+        </div>
+      </div>
+      <div className="ml-2 flex flex-col gap-1">
+        <Button variant="ghost" size="icon" onClick={() => onEditClick(todo)} aria-label="Edit todo">
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onDeleteTodo(todo.id)}
+          aria-label="Delete todo"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+interface SubtaskListProps {
+  todo: any;
+  onCreateSubtask: (todoId: number, text: string) => void;
+  onToggleSubtask: (id: number, completed: boolean) => void;
+  onDeleteSubtask: (id: number) => void;
+}
+
+function SubtaskList({ todo, onCreateSubtask, onToggleSubtask, onDeleteSubtask }: SubtaskListProps) {
+  return (
+    <div className="mt-2 w-full">
+      {todo.subtasks && todo.subtasks.length > 0 && (
+        <ul className="mb-1 space-y-1">
+          {todo.subtasks.map((subtask: any) => (
+            <li key={subtask.id} className="group flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={subtask.completed}
+                onCheckedChange={(c) => onToggleSubtask(subtask.id, !!c)}
+                className="h-3 w-3"
+              />
+              <span className={subtask.completed ? "line-through text-muted-foreground" : ""}>
+                {subtask.text}
+              </span>
+              <button
+                type="button"
+                onClick={() => onDeleteSubtask(subtask.id)}
+                className="opacity-0 text-muted-foreground transition-opacity hover:text-destructive group-hover:opacity-100"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex items-center gap-2">
+        <Plus className="h-3 w-3 text-muted-foreground" />
+        <Input
+          className="h-6 border-none p-0 text-xs shadow-none placeholder:text-muted-foreground/70 focus-visible:ring-0"
+          placeholder="Add subtask..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              const value = e.currentTarget.value.trim();
+              if (!value) {
+                return;
+              }
+              onCreateSubtask(todo.id, value);
+              e.currentTarget.value = "";
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
