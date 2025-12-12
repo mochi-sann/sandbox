@@ -64,6 +64,13 @@
       "when": 1765510955751,
       "tag": "0008_acoustic_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1765515258539,
+      "tag": "0009_naive_cable",
+      "breakpoints": true
     }
   ]
 }
