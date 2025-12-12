@@ -35,9 +35,5 @@ export function highlightSql(sql: string): string {
 export function highlightMeta(log: string): string {
   if (!isTTY) return log;
 
-  return log.replace(
-    /(\d+ms)/g,
-    (m) => chalk.greenBright.bold(m),
-  );
+  return log.replace(/(\d+ms)/g, (m) => chalk.greenBright.bold(m));
 }
-
