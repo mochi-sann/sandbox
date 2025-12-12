@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Calendar, Loader2, Plus, Trash2, X } from "lucide-react";
+import { Calendar, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -47,6 +47,13 @@ function TodosRoute() {
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [tagCreationError, setTagCreationError] = useState<string | null>(null);
 
+  // Edit state
+  const [editingTodoId, setEditingTodoId] = useState<number | null>(null);
+  const [editTodoText, setEditTodoText] = useState("");
+  const [editTodoBody, setEditTodoBody] = useState("");
+  const [editDueAt, setEditDueAt] = useState("");
+  const [editTagIds, setEditTagIds] = useState<number[]>([]);
+
   const todos = useQuery(orpc.todo.getAll.queryOptions());
   const tags = useQuery(orpc.tag.list.queryOptions());
 
@@ -58,6 +65,14 @@ function TodosRoute() {
         setNewTodoBody("");
         setDueAt("");
         setSelectedTagIds([]);
+      },
+    }),
+  );
+  const updateMutation = useMutation(
+    orpc.todo.update.mutationOptions({
+      onSuccess: () => {
+        todos.refetch();
+        setEditingTodoId(null);
       },
     }),
   );
@@ -110,6 +125,31 @@ function TodosRoute() {
     }
   };
 
+  const handleUpdateTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingTodoId && editTodoText.trim()) {
+      updateMutation.mutate({
+        id: editingTodoId,
+        text: editTodoText,
+        body: editTodoBody || null,
+        dueAt: editDueAt ? new Date(editDueAt) : null,
+        tags: editTagIds,
+      });
+    }
+  };
+
+  const handleEditClick = (todo: any) => {
+    setEditingTodoId(todo.id);
+    setEditTodoText(todo.text);
+    setEditTodoBody(todo.body || "");
+    // Format date for datetime-local input (YYYY-MM-DDTHH:mm)
+    const formattedDate = todo.dueAt
+      ? new Date(todo.dueAt).toISOString().slice(0, 16)
+      : "";
+    setEditDueAt(formattedDate);
+    setEditTagIds(todo.tags.map((t: any) => t.id));
+  };
+
   const handleToggleTodo = (id: number, completed: boolean) => {
     toggleMutation.mutate({ id, completed: !completed });
   };
@@ -128,6 +168,12 @@ function TodosRoute() {
 
   const toggleTagSelection = (tagId: number) => {
     setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
+    );
+  };
+
+  const toggleEditTagSelection = (tagId: number) => {
+    setEditTagIds((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId],
     );
   };
@@ -254,55 +300,116 @@ function TodosRoute() {
                   key={todo.id}
                   className="flex items-start justify-between rounded-md border p-2"
                 >
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      checked={todo.completed}
-                      onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
-                      id={`todo-${todo.id}`}
-                      className="mt-1"
-                    />
-                    <div className="flex flex-col gap-1">
-                      <label
-                        htmlFor={`todo-${todo.id}`}
-                        className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
-                      >
-                        {todo.text}
-                      </label>
-                      {todo.body && (
-                        <div className="text-sm text-muted-foreground break-words">
-                          <ReactMarkdown>{todo.body}</ReactMarkdown>
-                        </div>
-                      )}
+                  {editingTodoId === todo.id ? (
+                    <div className="w-full space-y-2">
+                      <Input
+                        value={editTodoText}
+                        onChange={(e) => setEditTodoText(e.target.value)}
+                        placeholder="Task title"
+                      />
+                      <Textarea
+                        value={editTodoBody}
+                        onChange={(e) => setEditTodoBody(e.target.value)}
+                        placeholder="Details"
+                      />
                       <div className="flex flex-wrap gap-2">
-                        {todo.tags.map((tag) => (
+                        {tags.data?.map((tag) => (
                           <Badge
                             key={tag.id}
+                            variant="outline"
+                            className={`cursor-pointer border-2 ${editTagIds.includes(tag.id) ? "border-primary" : "border-transparent"}`}
                             style={{
                               backgroundColor: tag.color,
                               color: "#fff",
                             }}
-                            className="text-[10px] px-1.5 py-0 h-5"
+                            onClick={() => toggleEditTagSelection(tag.id)}
                           >
                             {tag.name}
                           </Badge>
                         ))}
-                        {todo.dueAt && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(todo.dueAt).toLocaleString()}
-                          </span>
-                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          type="datetime-local"
+                          value={editDueAt}
+                          onChange={(e) => setEditDueAt(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button size="sm" onClick={handleUpdateTodo}>
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setEditingTodoId(null)}
+                        >
+                          Cancel
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteTodo(todo.id)}
-                    aria-label="Delete todo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  ) : (
+                    <>
+                      <div className="flex items-start space-x-2 w-full">
+                        <Checkbox
+                          checked={todo.completed}
+                          onCheckedChange={() => handleToggleTodo(todo.id, todo.completed)}
+                          id={`todo-${todo.id}`}
+                          className="mt-1"
+                        />
+                        <div className="flex flex-col gap-1 w-full">
+                          <label
+                            htmlFor={`todo-${todo.id}`}
+                            className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
+                          >
+                            {todo.text}
+                          </label>
+                          {todo.body && (
+                            <div className="text-sm text-muted-foreground break-words">
+                              <ReactMarkdown>{todo.body}</ReactMarkdown>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {todo.tags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                style={{
+                                  backgroundColor: tag.color,
+                                  color: "#fff",
+                                }}
+                                className="text-[10px] px-1.5 py-0 h-5"
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))}
+                            {todo.dueAt && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(todo.dueAt).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 ml-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick(todo)}
+                          aria-label="Edit todo"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteTodo(todo.id)}
+                          aria-label="Delete todo"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
