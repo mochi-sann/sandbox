@@ -78,6 +78,13 @@
       "when": 1765517646107,
       "tag": "0010_ordinary_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1765518049282,
+      "tag": "0011_serious_microchip",
+      "breakpoints": true
     }
   ]
 }

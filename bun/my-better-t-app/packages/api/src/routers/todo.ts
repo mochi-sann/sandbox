@@ -4,6 +4,7 @@ import { db, eq, and, isNull, or, ilike, exists } from "@my-better-t-app/db";
 import { todo, subtask } from "@my-better-t-app/db/schema/todo";
 import { todoTag, tag } from "@my-better-t-app/db/schema/tag";
 import { protectedProcedure } from "../index";
+import { logAudit } from "../utils/audit";
 
 const subtaskSchema = z.object({
   id: z.number(),
@@ -87,7 +88,6 @@ export const todoRouter = {
     .input(z.object({ todoId: z.number(), text: z.string().min(1) }))
     .output(subtaskSchema)
     .handler(async ({ input, context }) => {
-      // Verify ownership of todo
       const todoExists = await db.query.todo.findFirst({
         where: and(eq(todo.id, input.todoId), eq(todo.userId, context.session.user.id)),
       });
@@ -107,6 +107,12 @@ export const todoRouter = {
       if (!created) {
         throw new ORPCError("INTERNAL_SERVER_ERROR");
       }
+
+      await logAudit(context.session.user.id, "SUBTASK_CREATE", "SUBTASK", created.id, {
+        todoId: input.todoId,
+        text: input.text,
+      });
+
       return created;
     }),
 
@@ -135,6 +141,11 @@ export const todoRouter = {
           message: "Subtask not found or access denied",
         });
       }
+
+      await logAudit(context.session.user.id, "SUBTASK_TOGGLE", "SUBTASK", updated.id, {
+        completed: input.completed,
+      });
+
       return updated;
     }),
 
@@ -162,6 +173,9 @@ export const todoRouter = {
           message: "Subtask not found or access denied",
         });
       }
+
+      await logAudit(context.session.user.id, "SUBTASK_DELETE", "SUBTASK", deleted.id);
+
       return deleted;
     }),
 
@@ -208,6 +222,10 @@ export const todoRouter = {
           })),
         );
       }
+
+      await logAudit(context.session.user.id, "TODO_CREATE", "TODO", created.id, {
+        text: created.text,
+      });
 
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, created.id),
@@ -271,6 +289,11 @@ export const todoRouter = {
         }
       }
 
+      await logAudit(context.session.user.id, "TODO_UPDATE", "TODO", updated.id, {
+        updates,
+        tags,
+      });
+
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, id),
         with: {
@@ -309,6 +332,10 @@ export const todoRouter = {
         });
       }
 
+      await logAudit(context.session.user.id, "TODO_TOGGLE", "TODO", updated.id, {
+        completed: input.completed,
+      });
+
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, updated.id),
         with: {
@@ -344,6 +371,8 @@ export const todoRouter = {
         });
       }
 
+      await logAudit(context.session.user.id, "TODO_DELETE", "TODO", deleted.id);
+
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, deleted.id),
         with: {
@@ -378,6 +407,8 @@ export const todoRouter = {
           message: "Todo not found or access denied",
         });
       }
+
+      await logAudit(context.session.user.id, "TODO_RESTORE", "TODO", restored.id);
 
       const fullTodo = await db.query.todo.findFirst({
         where: eq(todo.id, restored.id),

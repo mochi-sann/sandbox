@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import * as auth from "./schema/auth";
 import * as todo from "./schema/todo";
 import * as tag from "./schema/tag";
+import * as audit from "./schema/audit";
 import chalk from "chalk";
 import { highlightMeta, highlightSql } from "./utils/logHilight";
 
@@ -37,6 +38,6 @@ pool.query = (async (...args: any[]) => {
 }) as any;
 
 export const db = drizzle(pool, {
-  schema: { ...auth, ...todo, ...tag },
+  schema: { ...auth, ...todo, ...tag, ...audit },
   logger,
 });
