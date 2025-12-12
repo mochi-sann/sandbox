@@ -3,12 +3,34 @@ import { DefaultLogger, type LogWriter } from "drizzle-orm/logger";
 import * as auth from "./schema/auth";
 import * as todo from "./schema/todo";
 import * as tag from "./schema/tag";
+import chalk from "chalk";
+import { highlightMeta, highlightSql } from "./utils/logHilight";
 
-export { eq, and, isNull, isNotNull, desc, asc, not, ilike, or } from "drizzle-orm";
+export {
+  eq,
+  and,
+  isNull,
+  isNotNull,
+  desc,
+  asc,
+  not,
+  ilike,
+  or,
+  exists,
+} from "drizzle-orm";
 
 class CustomLogWriter implements LogWriter {
   write(message: string) {
-    console.log(`\x1b[36m[SQL]\x1b[0m ${message}`);
+    const output =
+      message.includes("SELECT") || message.includes("INSERT")
+        ? highlightSql(message)
+        : highlightMeta(message);
+
+    console.log(`${chalk.cyan("[SQL]")} ${output}`);
+
+    const sql = highlightSql(message);
+
+    console.log(`${chalk.gray("[db]")} ${chalk.cyanBright("SQL")}\n${sql}\n`);
   }
 }
 

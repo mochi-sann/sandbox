@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Calendar, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Calendar, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -38,6 +38,7 @@ function stringToColor(str: string) {
 }
 
 function TodosRoute() {
+  const [search, setSearch] = useState("");
   const [newTodoText, setNewTodoText] = useState("");
   const [newTodoBody, setNewTodoBody] = useState("");
   const [dueAt, setDueAt] = useState("");
@@ -54,7 +55,7 @@ function TodosRoute() {
   const [editDueAt, setEditDueAt] = useState("");
   const [editTagIds, setEditTagIds] = useState<number[]>([]);
 
-  const todos = useQuery(orpc.todo.getAll.queryOptions());
+  const todos = useQuery(orpc.todo.getAll.queryOptions({ input: { search } }));
   const tags = useQuery(orpc.tag.list.queryOptions());
 
   const createMutation = useMutation(
@@ -184,6 +185,17 @@ function TodosRoute() {
           <CardDescription>Manage your tasks efficiently</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-6 relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search todos..."
+              className="pl-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
           <form onSubmit={handleAddTodo} className="mb-6 space-y-2">
             <Input
               value={newTodoText}

@@ -1,12 +1,4 @@
-import {
-  pgTable,
-  text,
-  serial,
-  integer,
-  primaryKey,
-  unique,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, primaryKey, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { todo } from "./todo";

@@ -1,8 +1,8 @@
 import z from "zod";
 import { ORPCError } from "@orpc/server";
-import { db, eq, and, isNull, or, ilike } from "@my-better-t-app/db";
+import { db, eq, and, isNull, or, ilike, exists } from "@my-better-t-app/db";
 import { todo } from "@my-better-t-app/db/schema/todo";
-import { todoTag } from "@my-better-t-app/db/schema/tag";
+import { todoTag, tag } from "@my-better-t-app/db/schema/tag";
 import { protectedProcedure } from "../index";
 
 const todoSchema = z.object({
@@ -42,7 +42,19 @@ export const todoRouter = {
         where: and(
           eq(todo.userId, context.session.user.id),
           isNull(todo.deletedAt),
-          search ? or(ilike(todo.text, `%${search}%`), ilike(todo.body, `%${search}%`)) : undefined,
+          search
+            ? or(
+                ilike(todo.text, `%${search}%`),
+                ilike(todo.body, `%${search}%`),
+                exists(
+                  db
+                    .select()
+                    .from(todoTag)
+                    .innerJoin(tag, eq(todoTag.tagId, tag.id))
+                    .where(and(eq(todoTag.todoId, todo.id), ilike(tag.name, `%${search}%`))),
+                ),
+              )
+            : undefined,
         ),
         with: {
           tags: {
