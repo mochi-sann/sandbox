@@ -1,78 +1,189 @@
 import z from "zod";
 import { ORPCError } from "@orpc/server";
 import { db, eq, and, isNull, or, ilike, exists } from "@my-better-t-app/db";
-import { todo } from "@my-better-t-app/db/schema/todo";
+import { todo, subtask } from "@my-better-t-app/db/schema/todo";
 import { todoTag, tag } from "@my-better-t-app/db/schema/tag";
 import { protectedProcedure } from "../index";
 
+const subtaskSchema = z.object({
+	id: z.number(),
+	text: z.string(),
+	completed: z.boolean(),
+	todoId: z.number(),
+});
+
 const todoSchema = z.object({
-  id: z.number(),
-  text: z.string(),
-  body: z.string().nullable(),
-  completed: z.boolean(),
-  userId: z.string(),
-  dueAt: z.date().nullable(),
-  startAt: z.date().nullable(),
-  completedAt: z.date().nullable(),
-  deletedAt: z.date().nullable(),
-  priority: z.string().nullable(),
-  isStarred: z.boolean(),
-  estimatedMinutes: z.number().nullable(),
-  actualMinutes: z.number().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  tags: z
-    .array(
-      z.object({
-        id: z.number(),
-        name: z.string(),
-        color: z.string(),
-      }),
-    )
-    .default([]),
+	id: z.number(),
+	text: z.string(),
+	body: z.string().nullable(),
+	completed: z.boolean(),
+	userId: z.string(),
+	dueAt: z.date().nullable(),
+	startAt: z.date().nullable(),
+	completedAt: z.date().nullable(),
+	deletedAt: z.date().nullable(),
+	priority: z.string().nullable(),
+	isStarred: z.boolean(),
+	estimatedMinutes: z.number().nullable(),
+	actualMinutes: z.number().nullable(),
+	createdAt: z.date(),
+	updatedAt: z.date(),
+	tags: z
+		.array(
+			z.object({
+				id: z.number(),
+				name: z.string(),
+				color: z.string(),
+			}),
+		)
+		.default([]),
+	subtasks: z.array(subtaskSchema).default([]),
 });
 
 export const todoRouter = {
-  getAll: protectedProcedure
-    .input(z.object({ search: z.string().optional() }).optional())
-    .output(z.array(todoSchema))
-    .handler(async ({ input, context }) => {
-      const search = input?.search;
-      const todos = await db.query.todo.findMany({
-        where: and(
-          eq(todo.userId, context.session.user.id),
-          isNull(todo.deletedAt),
-          search
-            ? or(
-                ilike(todo.text, `%${search}%`),
-                ilike(todo.body, `%${search}%`),
-                exists(
-                  db
-                    .select()
-                    .from(todoTag)
-                    .innerJoin(tag, eq(todoTag.tagId, tag.id))
-                    .where(and(eq(todoTag.todoId, todo.id), ilike(tag.name, `%${search}%`))),
-                ),
-              )
-            : undefined,
-        ),
-        with: {
-          tags: {
-            with: {
-              tag: true,
-            },
-          },
-        },
-        orderBy: (t, { desc }) => [desc(t.createdAt)],
-      });
+	getAll: protectedProcedure
+		.input(z.object({ search: z.string().optional() }).optional())
+		.output(z.array(todoSchema))
+		.handler(async ({ input, context }) => {
+			const search = input?.search;
+			const todos = await db.query.todo.findMany({
+				where: and(
+					eq(todo.userId, context.session.user.id),
+					isNull(todo.deletedAt),
+					search
+						? or(
+							ilike(todo.text, `%${search}%`),
+							ilike(todo.body, `%${search}%`),
+							exists(
+								db
+									.select()
+									.from(todoTag)
+									.innerJoin(tag, eq(todoTag.tagId, tag.id))
+									.where(
+										and(
+											eq(todoTag.todoId, todo.id),
+											ilike(tag.name, `%${search}%`),
+										),
+									),
+								),
+						  )
+						: undefined,
+				),
+				with: {
+					tags: {
+						with: {
+							tag: true,
+						},
+					},
+					subtasks: {
+						orderBy: (s, { asc }) => [asc(s.id)],
+					},
+				},
+				orderBy: (t, { desc }) => [desc(t.createdAt)],
+			});
 
-      return todos.map((t) => ({
-        ...t,
-        tags: t.tags.map((tt) => tt.tag),
-      }));
-    }),
+			return todos.map((t) => ({
+				...t,
+				tags: t.tags.map((tt) => tt.tag),
+			}));
+		}),
 
-  create: protectedProcedure
+	createSubtask: protectedProcedure
+		.input(z.object({ todoId: z.number(), text: z.string().min(1) }))
+		.output(subtaskSchema)
+		.handler(async ({ input, context }) => {
+			// Verify ownership of todo
+			const todoExists = await db.query.todo.findFirst({
+				where: and(
+					eq(todo.id, input.todoId),
+					eq(todo.userId, context.session.user.id),
+				),
+			});
+
+			if (!todoExists) {
+				throw new ORPCError("NOT_FOUND", { message: "Todo not found" });
+			}
+
+			const [created] = await db
+				.insert(subtask)
+				.values({
+					todoId: input.todoId,
+					text: input.text,
+				})
+				.returning();
+
+			if (!created) {
+				throw new ORPCError("INTERNAL_SERVER_ERROR");
+			}
+			return created;
+		}),
+
+	toggleSubtask: protectedProcedure
+		.input(z.object({ id: z.number(), completed: z.boolean() }))
+		.output(subtaskSchema)
+		.handler(async ({ input, context }) => {
+			const [updated] = await db
+				.update(subtask)
+				.set({ completed: input.completed })
+				.where(
+					and(
+						eq(subtask.id, input.id),
+						exists(
+							db
+								.select()
+								.from(todo)
+								.where(
+									and(
+										eq(todo.id, subtask.todoId),
+										eq(todo.userId, context.session.user.id),
+									),
+								),
+						),
+					),
+				)
+				.returning();
+
+			if (!updated) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Subtask not found or access denied",
+				});
+			}
+			return updated;
+		}),
+
+	deleteSubtask: protectedProcedure
+		.input(z.object({ id: z.number() }))
+		.output(subtaskSchema)
+		.handler(async ({ input, context }) => {
+			const [deleted] = await db
+				.delete(subtask)
+				.where(
+					and(
+						eq(subtask.id, input.id),
+						exists(
+							db
+								.select()
+								.from(todo)
+								.where(
+									and(
+										eq(todo.id, subtask.todoId),
+										eq(todo.userId, context.session.user.id),
+									),
+								),
+						),
+					),
+				)
+				.returning();
+
+			if (!deleted) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Subtask not found or access denied",
+				});
+			}
+			return deleted;
+		}),
+
+	create: protectedProcedure
     .input(
       z.object({
         text: z.string().min(1),

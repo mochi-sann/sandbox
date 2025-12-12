@@ -25,6 +25,27 @@ export const todo = pgTable("todo", {
     .notNull(),
 });
 
+export const subtask = pgTable("subtask", {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  todoId: integer("todo_id")
+    .notNull()
+    .references(() => todo.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
 export const todoRelations = relations(todo, ({ many }) => ({
   tags: many(todoTag),
+  subtasks: many(subtask),
+}));
+
+export const subtaskRelations = relations(subtask, ({ one }) => ({
+  todo: one(todo, {
+    fields: [subtask.todoId],
+    references: [todo.id],
+  }),
 }));
