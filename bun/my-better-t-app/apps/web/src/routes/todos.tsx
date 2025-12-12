@@ -28,6 +28,15 @@ export const Route = createFileRoute("/todos")({
   },
 });
 
+function stringToColor(str: string) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+  return "#" + "00000".substring(0, 6 - c.length) + c;
+}
+
 function TodosRoute() {
   const [newTodoText, setNewTodoText] = useState("");
   const [newTodoBody, setNewTodoBody] = useState("");
@@ -35,7 +44,6 @@ function TodosRoute() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 
   const [newTagName, setNewTagName] = useState("");
-  const [newTagColor, setNewTagColor] = useState("#000000");
   const [isManagingTags, setIsManagingTags] = useState(false);
   const [tagCreationError, setTagCreationError] = useState<string | null>(null);
 
@@ -73,7 +81,6 @@ function TodosRoute() {
       onSuccess: (data) => {
         tags.refetch();
         setNewTagName("");
-        setNewTagColor("#000000");
         setSelectedTagIds((prev) => [...prev, data.id]);
         setTagCreationError(null); // Clear error on success
       },
@@ -114,7 +121,8 @@ function TodosRoute() {
   const handleCreateTag = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTagName.trim()) {
-      createTagMutation.mutate({ name: newTagName, color: newTagColor });
+      const color = stringToColor(newTagName);
+      createTagMutation.mutate({ name: newTagName, color });
     }
   };
 
@@ -188,19 +196,14 @@ function TodosRoute() {
                     <p className="text-destructive text-xs">{tagCreationError}</p>
                   )}
                   <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={newTagColor}
-                      onChange={(e) => setNewTagColor(e.target.value)}
-                      className="h-8 w-12 p-1"
-                    />
                     <Button
                       type="button"
                       size="sm"
                       onClick={handleCreateTag}
                       disabled={!newTagName.trim()}
+                      className="w-full"
                     >
-                      <Plus className="h-4 w-4" />
+                      <Plus className="h-4 w-4 mr-1" /> Create Tag
                     </Button>
                   </div>
                 </div>
