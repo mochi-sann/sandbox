@@ -8,9 +8,11 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Calendar, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 import { orpc } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/todos")({
 
 function TodosRoute() {
 	const [newTodoText, setNewTodoText] = useState("");
+	const [newTodoBody, setNewTodoBody] = useState("");
 	const [dueAt, setDueAt] = useState("");
 
 	const todos = useQuery(orpc.todo.getAll.queryOptions());
@@ -41,6 +44,7 @@ function TodosRoute() {
 			onSuccess: () => {
 				todos.refetch();
 				setNewTodoText("");
+				setNewTodoBody("");
 				setDueAt("");
 			},
 		}),
@@ -65,6 +69,7 @@ function TodosRoute() {
 		if (newTodoText.trim()) {
 			createMutation.mutate({
 				text: newTodoText,
+				body: newTodoBody || undefined,
 				dueAt: dueAt ? new Date(dueAt) : undefined,
 			});
 		}
@@ -87,15 +92,18 @@ function TodosRoute() {
 				</CardHeader>
 				<CardContent>
 					<form onSubmit={handleAddTodo} className="mb-6 space-y-2">
-						<div className="flex items-center space-x-2">
-							<Input
-								value={newTodoText}
-								onChange={(e) => setNewTodoText(e.target.value)}
-								placeholder="Add a new task..."
-								disabled={createMutation.isPending}
-								className="flex-1"
-							/>
-						</div>
+						<Input
+							value={newTodoText}
+							onChange={(e) => setNewTodoText(e.target.value)}
+							placeholder="Task title..."
+							disabled={createMutation.isPending}
+						/>
+						<Textarea
+							value={newTodoBody}
+							onChange={(e) => setNewTodoBody(e.target.value)}
+							placeholder="Details (optional)..."
+							disabled={createMutation.isPending}
+						/>
 						<div className="flex items-center space-x-2">
 							<Input
 								type="datetime-local"
@@ -128,25 +136,31 @@ function TodosRoute() {
 							{todos.data?.map((todo) => (
 								<li
 									key={todo.id}
-									className="flex items-center justify-between rounded-md border p-2"
+									className="flex items-start justify-between rounded-md border p-2"
 								>
-									<div className="flex items-center space-x-2">
+									<div className="flex items-start space-x-2">
 										<Checkbox
 											checked={todo.completed}
 											onCheckedChange={() =>
 												handleToggleTodo(todo.id, todo.completed)
 											}
 											id={`todo-${todo.id}`}
+											className="mt-1"
 										/>
 										<div className="flex flex-col">
 											<label
 												htmlFor={`todo-${todo.id}`}
-												className={`${todo.completed ? "line-through text-muted-foreground" : ""}`}
+												className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
 											>
 												{todo.text}
 											</label>
+											{todo.body && (
+												<ReactMarkdown className="text-sm text-muted-foreground break-words">
+													{todo.body}
+												</ReactMarkdown>
+											)}
 											{todo.dueAt && (
-												<span className="flex items-center gap-1 text-xs text-muted-foreground">
+												<span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
 													<Calendar className="h-3 w-3" />
 													{new Date(todo.dueAt).toLocaleString()}
 												</span>

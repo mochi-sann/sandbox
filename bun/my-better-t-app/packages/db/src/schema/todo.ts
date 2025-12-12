@@ -4,6 +4,7 @@ import { user } from "./auth";
 export const todo = pgTable("todo", {
   id: serial("id").primaryKey(),
   text: text("text").notNull(),
+  body: text("body"),
   completed: boolean("completed").default(false).notNull(),
   userId: text("user_id")
     .notNull()

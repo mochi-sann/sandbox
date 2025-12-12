@@ -7,6 +7,7 @@ import { protectedProcedure } from "../index";
 const todoSchema = z.object({
 	id: z.number(),
 	text: z.string(),
+	body: z.string().nullable(),
 	completed: z.boolean(),
 	userId: z.string(),
 	dueAt: z.date().nullable(),
@@ -25,13 +26,20 @@ export const todoRouter = {
 		}),
 
 	create: protectedProcedure
-		.input(z.object({ text: z.string().min(1), dueAt: z.date().optional() }))
+		.input(
+			z.object({
+				text: z.string().min(1),
+				body: z.string().optional(),
+				dueAt: z.date().optional(),
+			}),
+		)
 		.output(todoSchema)
 		.handler(async ({ input, context }) => {
 			const [created] = await db
 				.insert(todo)
 				.values({
 					text: input.text,
+					body: input.body,
 					userId: context.session.user.id,
 					dueAt: input.dueAt,
 				})
@@ -51,6 +59,7 @@ export const todoRouter = {
 			z.object({
 				id: z.number(),
 				text: z.string().optional(),
+				body: z.string().nullable().optional(),
 				completed: z.boolean().optional(),
 				dueAt: z.date().nullable().optional(),
 			}),
