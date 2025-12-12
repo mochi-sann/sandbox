@@ -268,9 +268,9 @@ function TodosRoute() {
 												{todo.text}
 											</label>
 											{todo.body && (
-												<ReactMarkdown className="text-sm text-muted-foreground break-words">
-													{todo.body}
-												</ReactMarkdown>
+												<div className="text-sm text-muted-foreground break-words">
+													<ReactMarkdown>{todo.body}</ReactMarkdown>
+												</div>
 											)}
 											<div className="flex flex-wrap gap-2">
 												{todo.tags.map((tag) => (
