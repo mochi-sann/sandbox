@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Calendar, Loader2, Plus, Tag, Trash2, X } from "lucide-react";
+import { Calendar, Loader2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -37,6 +37,7 @@ function TodosRoute() {
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState("#000000");
   const [isManagingTags, setIsManagingTags] = useState(false);
+  const [tagCreationError, setTagCreationError] = useState<string | null>(null);
 
   const todos = useQuery(orpc.todo.getAll.queryOptions());
   const tags = useQuery(orpc.tag.list.queryOptions());
@@ -74,6 +75,11 @@ function TodosRoute() {
         setNewTagName("");
         setNewTagColor("#000000");
         setSelectedTagIds((prev) => [...prev, data.id]);
+        setTagCreationError(null); // Clear error on success
+      },
+      onError: (error) => {
+        // Assuming error is an ORPCError or similar with a message
+        setTagCreationError(error.message || "Failed to create tag.");
       },
     }),
   );
@@ -167,27 +173,36 @@ function TodosRoute() {
 
             {isManagingTags && (
               <div className="rounded-md border p-2 space-y-2 bg-muted/50">
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <Input
                     value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
+                    onChange={(e) => {
+                      setNewTagName(e.target.value);
+                      setTagCreationError(null); // Clear error on change
+                    }}
                     placeholder="Tag name"
-                    className="h-8"
+                    className="h-8 focus-visible:ring-blue-500" // Glow effect
+                    aria-invalid={!!tagCreationError}
                   />
-                  <Input
-                    type="color"
-                    value={newTagColor}
-                    onChange={(e) => setNewTagColor(e.target.value)}
-                    className="h-8 w-12 p-1"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleCreateTag}
-                    disabled={!newTagName.trim()}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  {tagCreationError && (
+                    <p className="text-destructive text-xs">{tagCreationError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={newTagColor}
+                      onChange={(e) => setNewTagColor(e.target.value)}
+                      className="h-8 w-12 p-1"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCreateTag}
+                      disabled={!newTagName.trim()}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {tags.data?.map((tag) => (

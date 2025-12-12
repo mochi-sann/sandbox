@@ -20,6 +20,17 @@ export const tagRouter = {
     .input(z.object({ name: z.string().min(1), color: z.string().min(1) }))
     .output(tagSchema)
     .handler(async ({ input, context }) => {
+      // Check for existing tag with same name and user ID
+      const existingTag = await db.select().from(tag)
+        .where(and(eq(tag.name, input.name), eq(tag.userId, context.session.user.id)))
+        .limit(1);
+
+      if (existingTag.length > 0) {
+        throw new ORPCError("CONFLICT", {
+          message: `Tag with name '${input.name}' already exists.`,
+        });
+      }
+      
       const [created] = await db
         .insert(tag)
         .values({
