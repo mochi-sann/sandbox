@@ -1,6 +1,6 @@
 import z from "zod";
 import { ORPCError } from "@orpc/server";
-import { db, eq, and, isNull } from "@my-better-t-app/db";
+import { db, eq, and, isNull, or, ilike } from "@my-better-t-app/db";
 import { todo } from "@my-better-t-app/db/schema/todo";
 import { todoTag } from "@my-better-t-app/db/schema/tag";
 import { protectedProcedure } from "../index";
@@ -33,24 +33,32 @@ const todoSchema = z.object({
 });
 
 export const todoRouter = {
-  getAll: protectedProcedure.output(z.array(todoSchema)).handler(async ({ context }) => {
-    const todos = await db.query.todo.findMany({
-      where: and(eq(todo.userId, context.session.user.id), isNull(todo.deletedAt)),
-      with: {
-        tags: {
-          with: {
-            tag: true,
+  getAll: protectedProcedure
+    .input(z.object({ search: z.string().optional() }).optional())
+    .output(z.array(todoSchema))
+    .handler(async ({ input, context }) => {
+      const search = input?.search;
+      const todos = await db.query.todo.findMany({
+        where: and(
+          eq(todo.userId, context.session.user.id),
+          isNull(todo.deletedAt),
+          search ? or(ilike(todo.text, `%${search}%`), ilike(todo.body, `%${search}%`)) : undefined,
+        ),
+        with: {
+          tags: {
+            with: {
+              tag: true,
+            },
           },
         },
-      },
-      orderBy: (t, { desc }) => [desc(t.createdAt)],
-    });
+        orderBy: (t, { desc }) => [desc(t.createdAt)],
+      });
 
-    return todos.map((t) => ({
-      ...t,
-      tags: t.tags.map((tt) => tt.tag),
-    }));
-  }),
+      return todos.map((t) => ({
+        ...t,
+        tags: t.tags.map((tt) => tt.tag),
+      }));
+    }),
 
   create: protectedProcedure
     .input(
