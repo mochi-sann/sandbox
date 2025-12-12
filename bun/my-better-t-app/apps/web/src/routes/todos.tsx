@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -10,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Calendar, Loader2, Trash2 } from "lucide-react";
+import { Calendar, Loader2, Plus, Tag, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -37,8 +38,15 @@ function TodosRoute() {
 	const [newTodoText, setNewTodoText] = useState("");
 	const [newTodoBody, setNewTodoBody] = useState("");
 	const [dueAt, setDueAt] = useState("");
+	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
+
+	const [newTagName, setNewTagName] = useState("");
+	const [newTagColor, setNewTagColor] = useState("#000000");
+	const [isManagingTags, setIsManagingTags] = useState(false);
 
 	const todos = useQuery(orpc.todo.getAll.queryOptions());
+	const tags = useQuery(orpc.tag.list.queryOptions());
+
 	const createMutation = useMutation(
 		orpc.todo.create.mutationOptions({
 			onSuccess: () => {
@@ -46,6 +54,7 @@ function TodosRoute() {
 				setNewTodoText("");
 				setNewTodoBody("");
 				setDueAt("");
+				setSelectedTagIds([]);
 			},
 		}),
 	);
@@ -64,6 +73,24 @@ function TodosRoute() {
 		}),
 	);
 
+	const createTagMutation = useMutation(
+		orpc.tag.create.mutationOptions({
+			onSuccess: () => {
+				tags.refetch();
+				setNewTagName("");
+				setNewTagColor("#000000");
+			},
+		}),
+	);
+
+	const deleteTagMutation = useMutation(
+		orpc.tag.delete.mutationOptions({
+			onSuccess: () => {
+				tags.refetch();
+			},
+		}),
+	);
+
 	const handleAddTodo = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (newTodoText.trim()) {
@@ -71,6 +98,7 @@ function TodosRoute() {
 				text: newTodoText,
 				body: newTodoBody || undefined,
 				dueAt: dueAt ? new Date(dueAt) : undefined,
+				tags: selectedTagIds,
 			});
 		}
 	};
@@ -81,6 +109,21 @@ function TodosRoute() {
 
 	const handleDeleteTodo = (id: number) => {
 		deleteMutation.mutate({ id });
+	};
+
+	const handleCreateTag = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (newTagName.trim()) {
+			createTagMutation.mutate({ name: newTagName, color: newTagColor });
+		}
+	};
+
+	const toggleTagSelection = (tagId: number) => {
+		setSelectedTagIds((prev) =>
+			prev.includes(tagId)
+				? prev.filter((id) => id !== tagId)
+				: [...prev, tagId],
+		);
 	};
 
 	return (
@@ -104,6 +147,76 @@ function TodosRoute() {
 							placeholder="Details (optional)..."
 							disabled={createMutation.isPending}
 						/>
+						<div className="flex flex-wrap gap-2">
+							{tags.data?.map((tag) => (
+								<Badge
+									key={tag.id}
+									variant="outline"
+									className={`cursor-pointer border-2 ${selectedTagIds.includes(tag.id) ? "border-primary" : "border-transparent"}`}
+									style={{
+										backgroundColor: tag.color,
+										color: "#fff", // Simplified: always white text
+									}}
+									onClick={() => toggleTagSelection(tag.id)}
+								>
+									{tag.name}
+								</Badge>
+							))}
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="h-6 text-xs"
+								onClick={() => setIsManagingTags(!isManagingTags)}
+							>
+								{isManagingTags ? "Hide Tags" : "Manage Tags"}
+							</Button>
+						</div>
+
+						{isManagingTags && (
+							<div className="rounded-md border p-2 space-y-2 bg-muted/50">
+								<div className="flex gap-2">
+									<Input
+										value={newTagName}
+										onChange={(e) => setNewTagName(e.target.value)}
+										placeholder="Tag name"
+										className="h-8"
+									/>
+									<Input
+										type="color"
+										value={newTagColor}
+										onChange={(e) => setNewTagColor(e.target.value)}
+										className="h-8 w-12 p-1"
+									/>
+									<Button
+										type="button"
+										size="sm"
+										onClick={handleCreateTag}
+										disabled={!newTagName.trim()}
+									>
+										<Plus className="h-4 w-4" />
+									</Button>
+								</div>
+								<div className="flex flex-wrap gap-2">
+									{tags.data?.map((tag) => (
+										<div
+											key={tag.id}
+											className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-white"
+											style={{ backgroundColor: tag.color }}
+										>
+											{tag.name}
+											<button
+												onClick={() => deleteTagMutation.mutate({ id: tag.id })}
+												className="ml-1 hover:text-red-200"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
 						<div className="flex items-center space-x-2">
 							<Input
 								type="datetime-local"
@@ -147,7 +260,7 @@ function TodosRoute() {
 											id={`todo-${todo.id}`}
 											className="mt-1"
 										/>
-										<div className="flex flex-col">
+										<div className="flex flex-col gap-1">
 											<label
 												htmlFor={`todo-${todo.id}`}
 												className={`font-medium ${todo.completed ? "line-through text-muted-foreground" : ""}`}
@@ -159,12 +272,26 @@ function TodosRoute() {
 													{todo.body}
 												</ReactMarkdown>
 											)}
-											{todo.dueAt && (
-												<span className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-													<Calendar className="h-3 w-3" />
-													{new Date(todo.dueAt).toLocaleString()}
-												</span>
-											)}
+											<div className="flex flex-wrap gap-2">
+												{todo.tags.map((tag) => (
+													<Badge
+														key={tag.id}
+														style={{
+															backgroundColor: tag.color,
+															color: "#fff",
+														}}
+														className="text-[10px] px-1.5 py-0 h-5"
+													>
+														{tag.name}
+													</Badge>
+												))}
+												{todo.dueAt && (
+													<span className="flex items-center gap-1 text-xs text-muted-foreground">
+														<Calendar className="h-3 w-3" />
+														{new Date(todo.dueAt).toLocaleString()}
+													</span>
+												)}
+											</div>
 										</div>
 									</div>
 									<Button

@@ -1,5 +1,7 @@
 import { pgTable, text, boolean, serial, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { user } from "./auth";
+import { todoTag } from "./tag";
 
 export const todo = pgTable("todo", {
   id: serial("id").primaryKey(),
@@ -15,3 +17,7 @@ export const todo = pgTable("todo", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const todoRelations = relations(todo, ({ many }) => ({
+  tags: many(todoTag),
+}));
