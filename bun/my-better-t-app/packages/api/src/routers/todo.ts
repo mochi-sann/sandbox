@@ -3,6 +3,7 @@ import { ORPCError } from "@orpc/server";
 import { db, eq, and, isNull, or, ilike, exists } from "@my-better-t-app/db";
 import { todo, subtask } from "@my-better-t-app/db/schema/todo";
 import { todoTag, tag } from "@my-better-t-app/db/schema/tag";
+import { project } from "@my-better-t-app/db/schema/project";
 import { protectedProcedure } from "../index";
 import { logAudit } from "../utils/audit";
 
@@ -19,6 +20,7 @@ const todoSchema = z.object({
   body: z.string().nullable(),
   completed: z.boolean(),
   userId: z.string(),
+  projectId: z.number().nullable(),
   dueAt: z.date().nullable(),
   startAt: z.date().nullable(),
   completedAt: z.date().nullable(),
@@ -43,14 +45,24 @@ const todoSchema = z.object({
 
 export const todoRouter = {
   getAll: protectedProcedure
-    .input(z.object({ search: z.string().optional() }).optional())
+    .input(
+      z
+        .object({
+          search: z.string().optional(),
+          projectId: z.number().optional(),
+        })
+        .optional(),
+    )
     .output(z.array(todoSchema))
     .handler(async ({ input, context }) => {
       const search = input?.search;
+      const projectId = input?.projectId;
+
       const todos = await db.query.todo.findMany({
         where: and(
           eq(todo.userId, context.session.user.id),
           isNull(todo.deletedAt),
+          projectId !== undefined ? eq(todo.projectId, projectId) : undefined,
           search
             ? or(
                 ilike(todo.text, `%${search}%`),
@@ -61,6 +73,12 @@ export const todoRouter = {
                     .from(todoTag)
                     .innerJoin(tag, eq(todoTag.tagId, tag.id))
                     .where(and(eq(todoTag.todoId, todo.id), ilike(tag.name, `%${search}%`))),
+                ),
+                exists(
+                  db
+                    .select()
+                    .from(project)
+                    .where(and(eq(project.id, todo.projectId), ilike(project.name, `%${search}%`))),
                 ),
               )
             : undefined,
@@ -74,6 +92,7 @@ export const todoRouter = {
           subtasks: {
             orderBy: (s, { asc }) => [asc(s.id)],
           },
+          project: true,
         },
         orderBy: (t, { desc }) => [desc(t.createdAt)],
       });
@@ -184,6 +203,7 @@ export const todoRouter = {
       z.object({
         text: z.string().min(1),
         body: z.string().optional(),
+        projectId: z.number().optional(),
         dueAt: z.date().optional(),
         startAt: z.date().optional(),
         priority: z.string().optional(),
@@ -200,6 +220,7 @@ export const todoRouter = {
           text: input.text,
           body: input.body,
           userId: context.session.user.id,
+          projectId: input.projectId,
           dueAt: input.dueAt,
           startAt: input.startAt,
           priority: input.priority,
@@ -252,6 +273,7 @@ export const todoRouter = {
         id: z.number(),
         text: z.string().optional(),
         body: z.string().nullable().optional(),
+        projectId: z.number().nullable().optional(),
         completed: z.boolean().optional(),
         dueAt: z.date().nullable().optional(),
         startAt: z.date().nullable().optional(),
@@ -278,6 +300,7 @@ export const todoRouter = {
       }
 
       if (tags !== undefined) {
+        // Replace tags
         await db.delete(todoTag).where(eq(todoTag.todoId, id));
         if (tags.length > 0) {
           await db.insert(todoTag).values(

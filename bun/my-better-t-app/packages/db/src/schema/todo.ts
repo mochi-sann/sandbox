@@ -2,6 +2,7 @@ import { pgTable, text, boolean, serial, timestamp, integer } from "drizzle-orm/
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { todoTag } from "./tag";
+import { project } from "./project";
 
 export const todo = pgTable("todo", {
   id: serial("id").primaryKey(),
@@ -11,6 +12,7 @@ export const todo = pgTable("todo", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").references(() => project.id, { onDelete: "set null" }),
   startAt: timestamp("start_at"),
   dueAt: timestamp("due_at"),
   completedAt: timestamp("completed_at"),
@@ -38,7 +40,11 @@ export const subtask = pgTable("subtask", {
     .notNull(),
 });
 
-export const todoRelations = relations(todo, ({ many }) => ({
+export const todoRelations = relations(todo, ({ one, many }) => ({
+  project: one(project, {
+    fields: [todo.projectId],
+    references: [project.id],
+  }),
   tags: many(todoTag),
   subtasks: many(subtask),
 }));
