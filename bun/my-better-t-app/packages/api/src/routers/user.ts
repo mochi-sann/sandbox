@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { db, eq, and } from "@my-better-t-app/db";
+import { db, eq } from "@my-better-t-app/db";
 import { user } from "@my-better-t-app/db/schema/auth";
 import { todo } from "@my-better-t-app/db/schema/todo";
 import { tag } from "@my-better-t-app/db/schema/tag";
