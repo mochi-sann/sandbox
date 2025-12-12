@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import {
 	Calendar,
 	ChevronDown,
@@ -22,15 +22,21 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { z } from "zod";
 
 import { orpc } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getUser } from "../functions/get-user";
 
+const todosSearchSchema = z.object({
+	projectId: z.number().optional(),
+});
+
 export const Route = createFileRoute("/todos")({
 	component: TodosRoute,
+	validateSearch: (search) => todosSearchSchema.parse(search),
 	beforeLoad: async () => {
 		const session = await getUser();
 		return { session };
@@ -54,14 +60,21 @@ function stringToColor(str: string) {
 }
 
 function TodosRoute() {
+	const { projectId } = Route.useSearch();
 	const [search, setSearch] = useState("");
 	const [newTodoText, setNewTodoText] = useState("");
 	const [newTodoBody, setNewTodoBody] = useState("");
 	const [dueAt, setDueAt] = useState("");
 	const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
 	const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
-		null,
+		projectId || null,
 	);
+
+	useEffect(() => {
+		if (projectId !== undefined) {
+			setSelectedProjectId(projectId);
+		}
+	}, [projectId]);
 
 	const [newTagName, setNewTagName] = useState("");
 	const [isManagingTags, setIsManagingTags] = useState(false);
@@ -75,9 +88,13 @@ function TodosRoute() {
 	const [editTagIds, setEditTagIds] = useState<number[]>([]);
 	const [editProjectId, setEditProjectId] = useState<number | null>(null);
 
-	const todos = useQuery(orpc.todo.getAll.queryOptions({ input: { search } }));
+	const todos = useQuery(
+		orpc.todo.getAll.queryOptions({ input: { search, projectId } }),
+	);
 	const tags = useQuery(orpc.tag.list.queryOptions());
 	const projects = useQuery(orpc.project.list.queryOptions());
+
+	const filteredProject = projects.data?.find((p) => p.id === projectId);
 
 	const createMutation = useMutation(
 		orpc.todo.create.mutationOptions({
@@ -87,7 +104,8 @@ function TodosRoute() {
 				setNewTodoBody("");
 				setDueAt("");
 				setSelectedTagIds([]);
-				setSelectedProjectId(null);
+				// Keep project selected if filtered, otherwise reset
+				if (!projectId) setSelectedProjectId(null);
 			},
 		}),
 	);
@@ -223,16 +241,14 @@ function TodosRoute() {
 	const toggleTagSelection = (tagId: number) => {
 		setSelectedTagIds((prev) =>
 			prev.includes(tagId)
-				? prev.filter((id) => id !== tagId)
-				: [...prev, tagId],
+				? prev.filter((id) => id !== tagId) : [...prev, tagId],
 		);
 	};
 
 	const toggleEditTagSelection = (tagId: number) => {
 		setEditTagIds((prev) =>
 			prev.includes(tagId)
-				? prev.filter((id) => id !== tagId)
-				: [...prev, tagId],
+				? prev.filter((id) => id !== tagId) : [...prev, tagId],
 		);
 	};
 
@@ -244,6 +260,22 @@ function TodosRoute() {
 					<CardDescription>Manage your tasks efficiently</CardDescription>
 				</CardHeader>
 				<CardContent>
+					{filteredProject && (
+						<div className="mb-4 flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-muted">
+							<Folder className="h-4 w-4 text-primary" />
+							<span className="text-sm font-medium">
+								Project: {filteredProject.name}
+							</span>
+							<Link
+								to="/todos"
+								search={{}}
+								className="text-xs text-muted-foreground hover:underline ml-auto"
+							>
+								Clear Filter
+							</Link>
+						</div>
+					)}
+
 					<div className="mb-6 relative">
 						<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
 						<Input
@@ -256,6 +288,7 @@ function TodosRoute() {
 					</div>
 
 					<form onSubmit={handleAddTodo} className="mb-6 space-y-2">
+
 						<Input
 							value={newTodoText}
 							onChange={(e) => setNewTodoText(e.target.value)}
