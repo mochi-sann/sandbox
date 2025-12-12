@@ -30,11 +30,11 @@ const pool = new Pool({
 
 const originalQuery = pool.query.bind(pool);
 pool.query = (async (...args: any[]) => {
-	const start = performance.now();
-	// @ts-ignore
-	const result = await originalQuery(...args);
-	const end = performance.now();
-	const duration = (end - start).toFixed(2);
+  const start = performance.now();
+  // @ts-ignore
+  const result = await originalQuery(...args);
+  const end = performance.now();
+  const duration = (end - start).toFixed(2);
   console.log(`${chalk.gray("[db]")} ${chalk.greenBright(`Duration: ${duration}ms`)}`);
   return result;
 }) as any;
