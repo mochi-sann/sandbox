@@ -69,14 +69,14 @@ function TodosRoute() {
 
   const createTagMutation = useMutation(
     orpc.tag.create.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (data) => {
         tags.refetch();
         setNewTagName("");
         setNewTagColor("#000000");
+        setSelectedTagIds((prev) => [...prev, data.id]);
       },
     }),
   );
-
   const deleteTagMutation = useMutation(
     orpc.tag.delete.mutationOptions({
       onSuccess: () => {
