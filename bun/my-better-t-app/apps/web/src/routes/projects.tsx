@@ -2,7 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Link, createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, redirect, useLocation } from "@tanstack/react-router";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -26,6 +26,13 @@ export const Route = createFileRoute("/projects")({
 });
 
 function ProjectsRoute() {
+  const location = useLocation();
+  const isViewingProject = location.pathname !== "/projects";
+
+  if (isViewingProject) {
+    return <Outlet />;
+  }
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -119,8 +126,8 @@ function ProjectsRoute() {
                     {new Date(project.createdAt).toLocaleDateString()}
                   </div>
                   <Link
-                    to="/todos"
-                    search={{ projectId: project.id }}
+                    to="/projects/$projectId"
+                    params={{ projectId: project.id.toString() }}
                     className={buttonVariants({
                       variant: "outline",
                       size: "sm",

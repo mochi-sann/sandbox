@@ -34,6 +34,20 @@ const todosSearchSchema = z.object({
   projectId: z.number().optional(),
 });
 
+type ClearFilterLink = {
+  to: string;
+  search?: Record<string, unknown>;
+  label?: string;
+};
+
+export interface TodosPageProps {
+  projectIdFilter?: number;
+  lockProjectSelection?: boolean;
+  title?: string;
+  description?: string;
+  clearFilterLink?: ClearFilterLink | null;
+}
+
 export const Route = createFileRoute("/todos")({
   component: TodosRoute,
   validateSearch: (search) => todosSearchSchema.parse(search),
@@ -50,6 +64,25 @@ export const Route = createFileRoute("/todos")({
   },
 });
 
+function TodosRoute() {
+  const { projectId } = Route.useSearch();
+
+  return (
+    <TodosPage
+      projectIdFilter={projectId}
+      clearFilterLink={
+        projectId !== undefined
+          ? {
+              to: "/todos",
+              search: {},
+              label: "Clear Filter",
+            }
+          : null
+      }
+    />
+  );
+}
+
 function stringToColor(str: string) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -59,20 +92,32 @@ function stringToColor(str: string) {
   return "#" + "00000".substring(0, 6 - c.length) + c;
 }
 
-function TodosRoute() {
-  const { projectId } = Route.useSearch();
+export function TodosPage({
+  projectIdFilter,
+  lockProjectSelection = false,
+  title = "Todo List",
+  description = "Manage your tasks efficiently",
+  clearFilterLink = null,
+}: TodosPageProps = {}) {
   const [search, setSearch] = useState("");
   const [newTodoText, setNewTodoText] = useState("");
   const [newTodoBody, setNewTodoBody] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(projectId || null);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    projectIdFilter ?? null,
+  );
 
   useEffect(() => {
-    if (projectId !== undefined) {
-      setSelectedProjectId(projectId);
+    if (projectIdFilter !== undefined) {
+      setSelectedProjectId(projectIdFilter);
     }
-  }, [projectId]);
+  }, [projectIdFilter]);
+
+  const handleProjectSelection = (projectId: number | null) => {
+    if (lockProjectSelection) return;
+    setSelectedProjectId(projectId);
+  };
 
   const [newTagName, setNewTagName] = useState("");
   const [isManagingTags, setIsManagingTags] = useState(false);
@@ -86,11 +131,17 @@ function TodosRoute() {
   const [editTagIds, setEditTagIds] = useState<number[]>([]);
   const [editProjectId, setEditProjectId] = useState<number | null>(null);
 
-  const todos = useQuery(orpc.todo.getAll.queryOptions({ input: { search, projectId } }));
+  const todos = useQuery(
+    orpc.todo.getAll.queryOptions({
+      input: { search, projectId: projectIdFilter },
+    }),
+  );
   const tags = useQuery(orpc.tag.list.queryOptions());
   const projects = useQuery(orpc.project.list.queryOptions());
 
-  const filteredProject = projects.data?.find((p) => p.id === projectId);
+  const filteredProject = projectIdFilter
+    ? projects.data?.find((p) => p.id === projectIdFilter)
+    : undefined;
 
   const createMutation = useMutation(
     orpc.todo.create.mutationOptions({
@@ -101,7 +152,7 @@ function TodosRoute() {
         setDueAt("");
         setSelectedTagIds([]);
         // Keep project selected if filtered, otherwise reset
-        if (!projectId) setSelectedProjectId(null);
+        if (projectIdFilter === undefined) setSelectedProjectId(null);
       },
     }),
   );
@@ -248,21 +299,25 @@ function TodosRoute() {
     <div className="mx-auto w-full max-w-md py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Todo List</CardTitle>
-          <CardDescription>Manage your tasks efficiently</CardDescription>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredProject && (
+          {projectIdFilter !== undefined && (
             <div className="mb-4 flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-muted">
               <Folder className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Project: {filteredProject.name}</span>
-              <Link
-                to="/todos"
-                search={{}}
-                className="text-xs text-muted-foreground hover:underline ml-auto"
-              >
-                Clear Filter
-              </Link>
+              <span className="text-sm font-medium">
+                Project: {filteredProject?.name ?? `#${projectIdFilter}`}
+              </span>
+              {clearFilterLink && (
+                <Link
+                  to={clearFilterLink.to}
+                  search={clearFilterLink.search ?? {}}
+                  className="text-xs text-muted-foreground hover:underline ml-auto"
+                >
+                  {clearFilterLink.label ?? "Clear Filter"}
+                </Link>
+              )}
             </div>
           )}
 
@@ -293,20 +348,25 @@ function TodosRoute() {
             <div className="flex flex-wrap gap-2 items-center">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1"
+                    disabled={lockProjectSelection}
+                  >
                     <Folder className="h-3.5 w-3.5" />
                     {projects.data?.find((p) => p.id === selectedProjectId)?.name || "Project"}
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => setSelectedProjectId(null)}>
+                  <DropdownMenuItem onClick={() => handleProjectSelection(null)}>
                     No Project
                   </DropdownMenuItem>
                   {projects.data?.map((project) => (
                     <DropdownMenuItem
                       key={project.id}
-                      onClick={() => setSelectedProjectId(project.id)}
+                      onClick={() => handleProjectSelection(project.id)}
                     >
                       {project.name}
                     </DropdownMenuItem>

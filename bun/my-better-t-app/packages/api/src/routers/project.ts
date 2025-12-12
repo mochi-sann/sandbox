@@ -1,8 +1,8 @@
+import { protectedProcedure } from "../index";
+import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { db, eq, and } from "@my-better-t-app/db";
 import { project } from "@my-better-t-app/db/schema/project";
-import { protectedProcedure } from "../index";
-import { ORPCError } from "@orpc/server";
 
 const projectSchema = z.object({
   id: z.number(),
@@ -17,6 +17,21 @@ export const projectRouter = {
   list: protectedProcedure.output(z.array(projectSchema)).handler(async ({ context }) => {
     return await db.select().from(project).where(eq(project.userId, context.session.user.id));
   }),
+
+  get: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .output(projectSchema)
+    .handler(async ({ input, context }) => {
+      const found = await db.query.project.findFirst({
+        where: and(eq(project.id, input.id), eq(project.userId, context.session.user.id)),
+      });
+
+      if (!found) {
+        throw new ORPCError("NOT_FOUND", { message: "Project not found" });
+      }
+
+      return found;
+    }),
 
   create: protectedProcedure
     .input(z.object({ name: z.string().min(1), description: z.string().optional() }))
