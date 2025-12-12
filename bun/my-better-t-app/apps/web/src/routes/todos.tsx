@@ -8,19 +8,32 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, Trash2 } from "lucide-react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Calendar, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { orpc } from "@/utils/orpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getUser } from "../functions/get-user";
 
 export const Route = createFileRoute("/todos")({
 	component: TodosRoute,
+	beforeLoad: async () => {
+		const session = await getUser();
+		return { session };
+	},
+	loader: async ({ context }) => {
+		if (!context.session) {
+			throw redirect({
+				to: "/login",
+			});
+		}
+	},
 });
 
 function TodosRoute() {
 	const [newTodoText, setNewTodoText] = useState("");
+	const [dueAt, setDueAt] = useState("");
 
 	const todos = useQuery(orpc.todo.getAll.queryOptions());
 	const createMutation = useMutation(
@@ -28,6 +41,7 @@ function TodosRoute() {
 			onSuccess: () => {
 				todos.refetch();
 				setNewTodoText("");
+				setDueAt("");
 			},
 		}),
 	);
@@ -49,7 +63,10 @@ function TodosRoute() {
 	const handleAddTodo = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (newTodoText.trim()) {
-			createMutation.mutate({ text: newTodoText });
+			createMutation.mutate({
+				text: newTodoText,
+				dueAt: dueAt ? new Date(dueAt) : undefined,
+			});
 		}
 	};
 
@@ -69,26 +86,35 @@ function TodosRoute() {
 					<CardDescription>Manage your tasks efficiently</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form
-						onSubmit={handleAddTodo}
-						className="mb-6 flex items-center space-x-2"
-					>
-						<Input
-							value={newTodoText}
-							onChange={(e) => setNewTodoText(e.target.value)}
-							placeholder="Add a new task..."
-							disabled={createMutation.isPending}
-						/>
-						<Button
-							type="submit"
-							disabled={createMutation.isPending || !newTodoText.trim()}
-						>
-							{createMutation.isPending ? (
-								<Loader2 className="h-4 w-4 animate-spin" />
-							) : (
-								"Add"
-							)}
-						</Button>
+					<form onSubmit={handleAddTodo} className="mb-6 space-y-2">
+						<div className="flex items-center space-x-2">
+							<Input
+								value={newTodoText}
+								onChange={(e) => setNewTodoText(e.target.value)}
+								placeholder="Add a new task..."
+								disabled={createMutation.isPending}
+								className="flex-1"
+							/>
+						</div>
+						<div className="flex items-center space-x-2">
+							<Input
+								type="datetime-local"
+								value={dueAt}
+								onChange={(e) => setDueAt(e.target.value)}
+								disabled={createMutation.isPending}
+								className="flex-1"
+							/>
+							<Button
+								type="submit"
+								disabled={createMutation.isPending || !newTodoText.trim()}
+							>
+								{createMutation.isPending ? (
+									<Loader2 className="h-4 w-4 animate-spin" />
+								) : (
+									"Add"
+								)}
+							</Button>
+						</div>
 					</form>
 
 					{todos.isLoading ? (
@@ -112,12 +138,20 @@ function TodosRoute() {
 											}
 											id={`todo-${todo.id}`}
 										/>
-										<label
-											htmlFor={`todo-${todo.id}`}
-											className={`${todo.completed ? "line-through" : ""}`}
-										>
-											{todo.text}
-										</label>
+										<div className="flex flex-col">
+											<label
+												htmlFor={`todo-${todo.id}`}
+												className={`${todo.completed ? "line-through text-muted-foreground" : ""}`}
+											>
+												{todo.text}
+											</label>
+											{todo.dueAt && (
+												<span className="flex items-center gap-1 text-xs text-muted-foreground">
+													<Calendar className="h-3 w-3" />
+													{new Date(todo.dueAt).toLocaleString()}
+												</span>
+											)}
+										</div>
 									</div>
 									<Button
 										variant="ghost"

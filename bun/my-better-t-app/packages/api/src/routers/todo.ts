@@ -9,6 +9,7 @@ const todoSchema = z.object({
 	text: z.string(),
 	completed: z.boolean(),
 	userId: z.string(),
+	dueAt: z.date().nullable(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 });
@@ -24,7 +25,7 @@ export const todoRouter = {
 		}),
 
 	create: protectedProcedure
-		.input(z.object({ text: z.string().min(1) }))
+		.input(z.object({ text: z.string().min(1), dueAt: z.date().optional() }))
 		.output(todoSchema)
 		.handler(async ({ input, context }) => {
 			const [created] = await db
@@ -32,6 +33,7 @@ export const todoRouter = {
 				.values({
 					text: input.text,
 					userId: context.session.user.id,
+					dueAt: input.dueAt,
 				})
 				.returning();
 
@@ -42,6 +44,35 @@ export const todoRouter = {
 			}
 
 			return created;
+		}),
+
+	update: protectedProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				text: z.string().optional(),
+				completed: z.boolean().optional(),
+				dueAt: z.date().nullable().optional(),
+			}),
+		)
+		.output(todoSchema)
+		.handler(async ({ input, context }) => {
+			const { id, ...updates } = input;
+			const [updated] = await db
+				.update(todo)
+				.set(updates)
+				.where(
+					and(eq(todo.id, id), eq(todo.userId, context.session.user.id)),
+				)
+				.returning();
+
+			if (!updated) {
+				throw new ORPCError("NOT_FOUND", {
+					message: "Todo not found or access denied",
+				});
+			}
+
+			return updated;
 		}),
 
 	toggle: protectedProcedure
