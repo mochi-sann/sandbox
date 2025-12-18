@@ -7,8 +7,12 @@ bun create elysia ./elysia-example
 ```
 
 ## Development
-To start the development server run:
+
 ```bash
+bun install
+cp .env.example .env # 必要に応じて接続情報を調整
+docker compose up -d # PostgreSQL 起動
+bun run db:push # Drizzle 経由でテーブル作成
 bun run dev
 ```
 
