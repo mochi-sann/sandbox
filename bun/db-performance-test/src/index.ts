@@ -1,20 +1,45 @@
 import "dotenv/config";
 import { swagger } from "@elysiajs/swagger";
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { db, schema } from "./db";
+import {
+  CreateTodoInput,
+  CreateUserInput,
+  createTodoInputSchema,
+  createUserInputSchema,
+  openApiDocument,
+} from "./openapi";
+
+const swaggerExcludedMethods = [
+  "GET",
+  "POST",
+  "PUT",
+  "DELETE",
+  "PATCH",
+  "OPTIONS",
+  "HEAD",
+  "TRACE",
+  "CONNECT",
+  "ALL",
+];
+
+const jsonError = (body: unknown, status: number) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
 
 const app = new Elysia()
   .use(
     swagger({
-      documentation: {
-        info: {
-          title: "Bun Drizzle API",
-          version: "1.0.0",
-        },
-      },
+      documentation: openApiDocument,
+      excludeMethods: swaggerExcludedMethods,
     })
   )
   .get("/", () => ({ status: "ok" }))
+  .get("/openapi.json", () => openApiDocument, {
+    detail: { hide: true },
+  })
   .get("/users", async () => {
     return db.query.users.findMany({
       with: { todos: true },
@@ -25,7 +50,7 @@ const app = new Elysia()
     const userId = Number(params.id);
 
     if (Number.isNaN(userId)) {
-      return new Response("Invalid user id", { status: 400 });
+      return jsonError({ message: "Invalid user id" }, 400);
     }
 
     const user = await db.query.users.findFirst({
@@ -34,7 +59,7 @@ const app = new Elysia()
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return jsonError({ message: "User not found" }, 404);
     }
 
     return user;
@@ -42,42 +67,54 @@ const app = new Elysia()
   .post(
     "/users",
     async ({ body }) => {
+      const parsed = createUserInputSchema.safeParse(body);
+
+      if (!parsed.success) {
+        return jsonError(
+          { message: "Invalid request", issues: parsed.error.flatten() },
+          400
+        );
+      }
+
+      const payload: CreateUserInput = parsed.data;
+
       const [user] = await db
         .insert(schema.users)
-        .values({ name: body.name, email: body.email })
+        .values({ name: payload.name, email: payload.email })
         .returning();
 
-      return user;
-    },
-    {
-      body: t.Object({
-        name: t.String({ minLength: 1 }),
-        email: t.String({ format: "email" }),
-      }),
+      return new Response(JSON.stringify(user), {
+        status: 201,
+        headers: { "content-type": "application/json" },
+      });
     }
   )
-  .post(
-    "/todos",
-    async ({ body }) => {
-      const [todo] = await db
-        .insert(schema.todos)
-        .values({
-          title: body.title,
-          userId: body.userId,
-          completed: body.completed ?? false,
-        })
-        .returning();
+  .post("/todos", async ({ body }) => {
+    const parsed = createTodoInputSchema.safeParse(body);
 
-      return todo;
-    },
-    {
-      body: t.Object({
-        title: t.String({ minLength: 1 }),
-        userId: t.Number(),
-        completed: t.Optional(t.Boolean()),
-      }),
+    if (!parsed.success) {
+      return jsonError(
+        { message: "Invalid request", issues: parsed.error.flatten() },
+        400
+      );
     }
-  )
+
+    const payload: CreateTodoInput = parsed.data;
+
+    const [todo] = await db
+      .insert(schema.todos)
+      .values({
+        title: payload.title,
+        userId: payload.userId,
+        completed: payload.completed ?? false,
+      })
+      .returning();
+
+    return new Response(JSON.stringify(todo), {
+      status: 201,
+      headers: { "content-type": "application/json" },
+    });
+  })
   .get("/todos", async () => {
     return db.query.todos.findMany({
       with: { user: true },
