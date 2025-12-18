@@ -12,6 +12,19 @@ def dm_sending_decision(age: int) -> str:
 def main():
     age = int(input("Enter your age: "))
     print(dm_sending_decision(age))
+    
+    print(dm_sending_decision(19))
+    print(dm_sending_decision(20))
+    print(dm_sending_decision(21))
+    print(dm_sending_decision(29))
+    print(dm_sending_decision(30))
+    print(dm_sending_decision(31))
+    print(dm_sending_decision(39))
+    print(dm_sending_decision(40))
+    print(dm_sending_decision(41))
+    print(dm_sending_decision(49))
+    print(dm_sending_decision(50))
+    print(dm_sending_decision(51))
 
 
 
