@@ -13,6 +13,7 @@ bun install
 cp .env.example .env # 必要に応じて接続情報を調整
 docker compose up -d # PostgreSQL 起動
 bun run db:push # Drizzle 経由でテーブル作成
+bun run drizzle:seed # Faker でダミーデータ投入 (任意)
 bun run dev
 ```
 
