@@ -1,8 +1,19 @@
 import "dotenv/config";
+import { swagger } from "@elysiajs/swagger";
 import { Elysia, t } from "elysia";
 import { db, schema } from "./db";
 
 const app = new Elysia()
+  .use(
+    swagger({
+      documentation: {
+        info: {
+          title: "Bun Drizzle API",
+          version: "1.0.0",
+        },
+      },
+    })
+  )
   .get("/", () => ({ status: "ok" }))
   .get("/users", async () => {
     return db.query.users.findMany({
