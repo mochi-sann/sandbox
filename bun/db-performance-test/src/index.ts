@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { swagger } from "@elysiajs/swagger";
 import { Elysia } from "elysia";
+import { performance } from "node:perf_hooks";
 import { db, schema } from "./db";
 import {
   CreateTodoInput,
@@ -9,6 +10,16 @@ import {
   createUserInputSchema,
   openApiDocument,
 } from "./openapi";
+
+const getPathFromUrl = (url: string) => {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url;
+  }
+};
+
+const formatDuration = (ms: number) => `${ms.toFixed(2)}ms`;
 
 const swaggerExcludedMethods = [
   "GET",
@@ -30,6 +41,31 @@ const jsonError = (body: unknown, status: number) =>
   });
 
 const app = new Elysia()
+  .derive(({ request }) => ({
+    requestStart: performance.now(),
+    requestPath: getPathFromUrl(request.url),
+  }))
+  .onAfterHandle(({ request, set, requestStart, requestPath }, value) => {
+    const duration = performance.now() - requestStart;
+    const status =
+      value instanceof Response ? value.status : set.status ?? 200;
+
+    console.info(
+      `[HTTP] ${request.method} ${requestPath} ${status} ${formatDuration(duration)}`
+    );
+
+    return value;
+  })
+  .onError(({ request, error, requestStart, requestPath, code }) => {
+    const duration = performance.now() - requestStart;
+    const statusCode = typeof code === "number" ? code : 500;
+    console.error(
+      `[HTTP] ${request.method} ${requestPath} ${statusCode} ${formatDuration(
+        duration
+      )}`,
+      error
+    );
+  })
   .use(
     swagger({
       documentation: openApiDocument,

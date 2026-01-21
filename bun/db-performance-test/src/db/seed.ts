@@ -2,8 +2,19 @@ import "dotenv/config";
 import { faker } from "@faker-js/faker";
 import { db, schema } from ".";
 
-const USER_COUNT = Number(process.env.SEED_USER_COUNT ?? 5);
-const TODOS_PER_USER = Number(process.env.SEED_TODO_COUNT ?? 3);
+const USER_COUNT = Number(process.env.SEED_USER_COUNT ?? 10_000);
+const TODOS_PER_USER = Number(process.env.SEED_TODO_COUNT ?? 20);
+const USER_BATCH_SIZE = Math.max(
+  1,
+  Number(process.env.SEED_USER_BATCH_SIZE ?? 1000),
+);
+const TODO_BATCH_SIZE = Math.max(
+  1,
+  Number(process.env.SEED_TODO_BATCH_SIZE ?? 5000),
+);
+
+type NewUser = typeof schema.users.$inferInsert;
+type NewTodo = typeof schema.todos.$inferInsert;
 
 const resetDatabase = async () => {
   await db.delete(schema.todos);
@@ -11,33 +22,49 @@ const resetDatabase = async () => {
 };
 
 const createUsers = async () => {
-  const users = Array.from({ length: USER_COUNT }, () => ({
+  const users: NewUser[] = Array.from({ length: USER_COUNT }, (_, index) => ({
     name: faker.person.fullName(),
-    email: faker.internet.email().toLowerCase(),
+    email: `user-${index + 1}@example.com`,
   }));
 
-  return db.insert(schema.users).values(users).returning();
+  const insertedUsers: Array<{ id: number }> = [];
+
+  for (let i = 0; i < users.length; i += USER_BATCH_SIZE) {
+    const chunk = users.slice(i, i + USER_BATCH_SIZE);
+    const created = await db.insert(schema.users).values(chunk).returning();
+    insertedUsers.push(...created);
+  }
+
+  return insertedUsers;
 };
 
 const createTodos = async (users: Array<{ id: number }>) => {
-  const todos = users.flatMap((user) =>
-    Array.from({ length: TODOS_PER_USER }, () => ({
-      title: faker.hacker.phrase(),
-      userId: user.id,
-      completed: faker.datatype.boolean({ probability: 0.4 }),
-    }))
-  );
+  const todoBatch: NewTodo[] = [];
 
-  if (todos.length === 0) {
-    return;
+  for (const user of users) {
+    for (let i = 0; i < TODOS_PER_USER; i += 1) {
+      todoBatch.push({
+        title: faker.hacker.phrase(),
+        userId: user.id,
+        completed: faker.datatype.boolean({ probability: 0.4 }),
+        status: faker.number.int({ min: 0, max: 2 }),
+      });
+
+      if (todoBatch.length >= TODO_BATCH_SIZE) {
+        await db.insert(schema.todos).values(todoBatch);
+        todoBatch.length = 0;
+      }
+    }
   }
 
-  await db.insert(schema.todos).values(todos);
+  if (todoBatch.length > 0) {
+    await db.insert(schema.todos).values(todoBatch);
+  }
 };
 
 const main = async () => {
   console.log(
-    `Seeding database with ${USER_COUNT} users and ${TODOS_PER_USER} todos per user...`
+    `Seeding database with ${USER_COUNT} users and ${TODOS_PER_USER} todos per user...`,
   );
 
   await resetDatabase();
