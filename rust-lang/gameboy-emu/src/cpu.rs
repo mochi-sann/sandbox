@@ -172,58 +172,70 @@ impl Cpu {
         self.registers.set_c(false);
     }
 
-    fn cp(&mut self, value: u8) {
-        let result = self.registers.a.wrapping_sub(value);
-        self.registers.set_z(result == 0);
-        self.registers.set_n(true);
-        self.registers.set_h((self.registers.a & 0x0F) < (value & 0x0F));
-        self.registers.set_c(self.registers.a < value);
-    }
-
-    pub fn step(&mut self, mmu: &mut Mmu) {
-        // 1. Fetch instruction
-        let opcode = mmu.read(self.registers.pc);
-        self.registers.pc = self.registers.pc.wrapping_add(1);
-
-        // 2. Decode and execute instruction
-        match opcode {
-            0x00 => { /* NOP */ }
-            0x01 => {
-                let nn = self.read_next_word(mmu);
-                self.registers.set_bc(nn);
-            }
-            0x03 => self.registers.set_bc(self.registers.get_bc().wrapping_add(1)),
-            0x04 => self.registers.b = self.inc(self.registers.b),
-            0x05 => self.registers.b = self.dec(self.registers.b),
-            0x06 => self.registers.b = self.read_next_byte(mmu),
-            0x09 => self.add_hl(self.registers.get_bc()),
-            0x0B => self.registers.set_bc(self.registers.get_bc().wrapping_sub(1)),
-            0x0C => self.registers.c = self.inc(self.registers.c),
-            0x0D => self.registers.c = self.dec(self.registers.c),
-            0x0E => self.registers.c = self.read_next_byte(mmu),
-            0x11 => {
-                let nn = self.read_next_word(mmu);
-                self.registers.set_de(nn);
-            }
-            0x13 => self.registers.set_de(self.registers.get_de().wrapping_add(1)),
-            0x14 => self.registers.d = self.inc(self.registers.d),
-            0x15 => self.registers.d = self.dec(self.registers.d),
-            0x16 => self.registers.d = self.read_next_byte(mmu),
-            0x18 => {
-                let e = self.read_next_byte(mmu) as i8;
-                self.registers.pc = self.registers.pc.wrapping_add_signed(e as i16);
-            }
-            0x19 => self.add_hl(self.registers.get_de()),
-            0x1B => self.registers.set_de(self.registers.get_de().wrapping_sub(1)),
-            0x1C => self.registers.e = self.inc(self.registers.e),
-            0x1D => self.registers.e = self.dec(self.registers.e),
-            0x1E => self.registers.e = self.read_next_byte(mmu),
-            0x20 => {
-                let e = self.read_next_byte(mmu) as i8;
-                if !self.registers.get_z() {
-                    self.registers.pc = self.registers.pc.wrapping_add_signed(e as i16);
-                }
-            }
+        fn cp(&mut self, value: u8) {
+            let result = self.registers.a.wrapping_sub(value);
+            self.registers.set_z(result == 0);
+            self.registers.set_n(true);
+            self.registers.set_h((self.registers.a & 0x0F) < (value & 0x0F));
+            self.registers.set_c(self.registers.a < value);
+        }
+    
+        fn and(&mut self, value: u8) {
+            self.registers.a &= value;
+            self.registers.set_z(self.registers.a == 0);
+            self.registers.set_n(false);
+            self.registers.set_h(true);
+            self.registers.set_c(false);
+        }
+    
+        pub fn step(&mut self, mmu: &mut Mmu) {
+            // 1. Fetch instruction
+            let opcode = mmu.read(self.registers.pc);
+            self.registers.pc = self.registers.pc.wrapping_add(1);
+            
+            // 2. Decode and execute instruction
+            match opcode {
+                0x00 => { /* NOP */ }
+                            0x01 => {
+                                let nn = self.read_next_word(mmu);
+                                self.registers.set_bc(nn);
+                            }
+                            0x02 => mmu.write(self.registers.get_bc(), self.registers.a),
+                            0x03 => self.registers.set_bc(self.registers.get_bc().wrapping_add(1)),
+                            0x04 => self.registers.b = self.inc(self.registers.b),
+                            0x05 => self.registers.b = self.dec(self.registers.b),
+                            0x06 => self.registers.b = self.read_next_byte(mmu),
+                            0x09 => self.add_hl(self.registers.get_bc()),
+                            0x0A => self.registers.a = mmu.read(self.registers.get_bc()),
+                            0x0B => self.registers.set_bc(self.registers.get_bc().wrapping_sub(1)),
+                            0x0C => self.registers.c = self.inc(self.registers.c),
+                            0x0D => self.registers.c = self.dec(self.registers.c),
+                            0x0E => self.registers.c = self.read_next_byte(mmu),
+                            0x11 => {
+                                let nn = self.read_next_word(mmu);
+                                self.registers.set_de(nn);
+                            }
+                            0x12 => mmu.write(self.registers.get_de(), self.registers.a),
+                            0x13 => self.registers.set_de(self.registers.get_de().wrapping_add(1)),
+                            0x14 => self.registers.d = self.inc(self.registers.d),
+                            0x15 => self.registers.d = self.dec(self.registers.d),
+                            0x16 => self.registers.d = self.read_next_byte(mmu),
+                            0x18 => {
+                                let e = self.read_next_byte(mmu) as i8;
+                                self.registers.pc = self.registers.pc.wrapping_add_signed(e as i16);
+                            }
+                            0x19 => self.add_hl(self.registers.get_de()),
+                            0x1A => self.registers.a = mmu.read(self.registers.get_de()),
+                            0x1B => self.registers.set_de(self.registers.get_de().wrapping_sub(1)),
+                            0x1C => self.registers.e = self.inc(self.registers.e),
+                            0x1D => self.registers.e = self.dec(self.registers.e),
+                            0x1E => self.registers.e = self.read_next_byte(mmu),
+                            0x20 => {
+                                let e = self.read_next_byte(mmu) as i8;
+                                if !self.registers.get_z() {
+                                    self.registers.pc = self.registers.pc.wrapping_add_signed(e as i16);
+                                }
+                            }
             0x21 => {
                 let nn = self.read_next_word(mmu);
                 self.registers.set_hl(nn);
@@ -345,6 +357,18 @@ impl Cpu {
             0x7E => self.registers.a = mmu.read(self.registers.get_hl()),
             0x7F => self.registers.a = self.registers.a,
 
+            0xA0 => self.and(self.registers.b),
+            0xA1 => self.and(self.registers.c),
+            0xA2 => self.and(self.registers.d),
+            0xA3 => self.and(self.registers.e),
+            0xA4 => self.and(self.registers.h),
+            0xA5 => self.and(self.registers.l),
+            0xA6 => {
+                let value = mmu.read(self.registers.get_hl());
+                self.and(value);
+            }
+            0xA7 => self.and(self.registers.a),
+
             0xB0 => self.or(self.registers.b),
             0xB1 => self.or(self.registers.c),
             0xB2 => self.or(self.registers.d),
@@ -374,50 +398,88 @@ impl Cpu {
                 self.registers.b = mmu.read(self.registers.sp);
                 self.registers.sp = self.registers.sp.wrapping_add(1);
             }
-            0xC3 => {
-                let nn = self.read_next_word(mmu);
-                self.registers.pc = nn;
-            }
-            0xC5 => {
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, self.registers.b);
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, self.registers.c);
-            }
-            0xC9 => {
-                let low = mmu.read(self.registers.sp) as u16;
-                self.registers.sp = self.registers.sp.wrapping_add(1);
-                let high = mmu.read(self.registers.sp) as u16;
-                self.registers.sp = self.registers.sp.wrapping_add(1);
-                self.registers.pc = (high << 8) | low;
-            }
-
-            0xCD => {
-                let nn = self.read_next_word(mmu);
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
-                self.registers.pc = nn;
-            }
-
-            0xD1 => {
-                self.registers.e = mmu.read(self.registers.sp);
-                self.registers.sp = self.registers.sp.wrapping_add(1);
-                self.registers.d = mmu.read(self.registers.sp);
-                self.registers.sp = self.registers.sp.wrapping_add(1);
-            }
-            0xD5 => {
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, self.registers.d);
-                self.registers.sp = self.registers.sp.wrapping_sub(1);
-                mmu.write(self.registers.sp, self.registers.e);
-            }
-
-            0xE0 => {
-                let n = self.read_next_byte(mmu) as u16;
-                mmu.write(0xFF00 + n, self.registers.a);
-            }
+                        0xC3 => {
+                            let nn = self.read_next_word(mmu);
+                            self.registers.pc = nn;
+                        }
+                        0xC4 => {
+                            let nn = self.read_next_word(mmu);
+                            if !self.registers.get_z() {
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
+                                self.registers.pc = nn;
+                            }
+                        }
+                        0xC5 => {
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, self.registers.b);
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, self.registers.c);
+                        }
+                        0xC9 => {
+                            let low = mmu.read(self.registers.sp) as u16;
+                            self.registers.sp = self.registers.sp.wrapping_add(1);
+                            let high = mmu.read(self.registers.sp) as u16;
+                            self.registers.sp = self.registers.sp.wrapping_add(1);
+                            self.registers.pc = (high << 8) | low;
+                        }
+                        0xCC => {
+                            let nn = self.read_next_word(mmu);
+                            if self.registers.get_z() {
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
+                                self.registers.pc = nn;
+                            }
+                        }
+                        0xCD => {
+                            let nn = self.read_next_word(mmu);
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
+                            self.registers.pc = nn;
+                        }
+                        0xD1 => {
+                            self.registers.e = mmu.read(self.registers.sp);
+                            self.registers.sp = self.registers.sp.wrapping_add(1);
+                            self.registers.d = mmu.read(self.registers.sp);
+                            self.registers.sp = self.registers.sp.wrapping_add(1);
+                        }
+                        0xD4 => {
+                            let nn = self.read_next_word(mmu);
+                            if !self.registers.get_c() {
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
+                                self.registers.pc = nn;
+                            }
+                        }
+                        0xD5 => {
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, self.registers.d);
+                            self.registers.sp = self.registers.sp.wrapping_sub(1);
+                            mmu.write(self.registers.sp, self.registers.e);
+                        }
+                        0xDC => {
+                            let nn = self.read_next_word(mmu);
+                            if self.registers.get_c() {
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc >> 8) as u8);
+                                self.registers.sp = self.registers.sp.wrapping_sub(1);
+                                mmu.write(self.registers.sp, (self.registers.pc & 0xFF) as u8);
+                                self.registers.pc = nn;
+                            }
+                        }
+                        0xE0 => {
+                            let n = self.read_next_byte(mmu) as u16;
+                            mmu.write(0xFF00 + n, self.registers.a);
+                        }
+            
             0xE1 => {
                 self.registers.l = mmu.read(self.registers.sp);
                 self.registers.sp = self.registers.sp.wrapping_add(1);
@@ -429,6 +491,10 @@ impl Cpu {
                 mmu.write(self.registers.sp, self.registers.h);
                 self.registers.sp = self.registers.sp.wrapping_sub(1);
                 mmu.write(self.registers.sp, self.registers.l);
+            }
+            0xE6 => {
+                let value = self.read_next_byte(mmu);
+                self.and(value);
             }
             0xEA => {
                 let nn = self.read_next_word(mmu);
