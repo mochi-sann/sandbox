@@ -23,6 +23,7 @@ export const todos = pgTable("todos", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
+  status: integer("status").notNull().default(0),
   completed: boolean("completed").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

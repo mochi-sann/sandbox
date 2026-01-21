@@ -2,15 +2,15 @@ import "dotenv/config";
 import { faker } from "@faker-js/faker";
 import { db, schema } from ".";
 
-const USER_COUNT = Number(process.env.SEED_USER_COUNT ?? 500000);
+const USER_COUNT = Number(process.env.SEED_USER_COUNT ?? 10_000);
 const TODOS_PER_USER = Number(process.env.SEED_TODO_COUNT ?? 20);
 const USER_BATCH_SIZE = Math.max(
   1,
-  Number(process.env.SEED_USER_BATCH_SIZE ?? 1000)
+  Number(process.env.SEED_USER_BATCH_SIZE ?? 1000),
 );
 const TODO_BATCH_SIZE = Math.max(
   1,
-  Number(process.env.SEED_TODO_BATCH_SIZE ?? 5000)
+  Number(process.env.SEED_TODO_BATCH_SIZE ?? 5000),
 );
 
 type NewUser = typeof schema.users.$inferInsert;
@@ -47,6 +47,7 @@ const createTodos = async (users: Array<{ id: number }>) => {
         title: faker.hacker.phrase(),
         userId: user.id,
         completed: faker.datatype.boolean({ probability: 0.4 }),
+        status: faker.number.int({ min: 0, max: 2 }),
       });
 
       if (todoBatch.length >= TODO_BATCH_SIZE) {
@@ -63,7 +64,7 @@ const createTodos = async (users: Array<{ id: number }>) => {
 
 const main = async () => {
   console.log(
-    `Seeding database with ${USER_COUNT} users and ${TODOS_PER_USER} todos per user...`
+    `Seeding database with ${USER_COUNT} users and ${TODOS_PER_USER} todos per user...`,
   );
 
   await resetDatabase();
