@@ -1,42 +1,82 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #8eb1d6 0%, #d7ebff 45%, #e2f7ff 100%);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.game-canvas {
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.hud-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
 }
 
-.card {
-  padding: 2em;
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
 }
 
-.read-the-docs {
-  color: #888;
+.crosshair::before {
+  width: 2px;
+  height: 18px;
+  left: 8px;
+  top: 0;
+}
+
+.crosshair::after {
+  width: 18px;
+  height: 2px;
+  left: 0;
+  top: 8px;
+}
+
+.hud-panel {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  backdrop-filter: blur(4px);
+}
+
+.top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.center-hint {
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+}
+
+.bottom-help {
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
