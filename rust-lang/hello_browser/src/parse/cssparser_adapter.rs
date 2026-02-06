@@ -91,7 +91,7 @@ impl CssParserAdapter {
             Token::Hash(s) => s.to_string(),
             Token::QuotedString(s) => s.to_string(),
             Token::UnquotedUrl(s) => s.to_string(),
-            Token::Dimension { unit, .. } => unit.to_string(),
+            Token::Dimension { value, unit, .. } => format!("{value}{unit}"),
             Token::WhiteSpace(s) => s.to_string(),
             Token::Comment(s) => s.to_string(),
             Token::Number { value, .. } => value.to_string(),

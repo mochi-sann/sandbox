@@ -52,7 +52,7 @@ fn main() -> anyhow::Result<()> {
     let mut renderer = TinySkiaRenderer::new();
     let mut chrome = ChromeState::new();
 
-    let initial = std::env::args().nth(1).unwrap_or_else(|| "about:blank".to_string());
+    let initial = std::env::args().nth(1).unwrap_or_else(|| "https://example.com/".to_string());
     let size = window.inner_size();
     browser.navigate(&initial, size.width as f32);
     chrome.sync_url(&browser.current_url_string());
