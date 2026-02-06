@@ -12,6 +12,10 @@ const mod = (value: number, divisor: number): number => {
 
 const keyOfChunk = (cx: number, cz: number): string => `${cx},${cz}`
 const keyOfBlock = (x: number, y: number, z: number): string => `${x},${y},${z}`
+const parseChunkKey = (key: string): { cx: number; cz: number } => {
+  const [cxRaw, czRaw] = key.split(',')
+  return { cx: Number(cxRaw), cz: Number(czRaw) }
+}
 
 export interface ChunkWithCoord {
   key: string
@@ -28,6 +32,10 @@ export class World {
   private readonly modifiedByChunk = new Map<string, ModifiedBlock[]>()
 
   private readonly modifiedByCoord = new Map<string, BlockId>()
+
+  private readonly generationQueue: string[] = []
+
+  private readonly generationQueuedSet = new Set<string>()
 
   public readonly seed: number
 
@@ -72,7 +80,53 @@ export class World {
 
     this.chunks.set(key, chunk)
     this.dirtyChunks.add(key)
+    this.generationQueuedSet.delete(key)
+    this.markChunkDirty(cx - 1, cz)
+    this.markChunkDirty(cx + 1, cz)
+    this.markChunkDirty(cx, cz - 1)
+    this.markChunkDirty(cx, cz + 1)
     return chunk
+  }
+
+  public isChunkLoaded(cx: number, cz: number): boolean {
+    return this.chunks.has(keyOfChunk(cx, cz))
+  }
+
+  public markChunkDirty(cx: number, cz: number): void {
+    const key = keyOfChunk(cx, cz)
+    if (this.chunks.has(key)) {
+      this.dirtyChunks.add(key)
+    }
+  }
+
+  public enqueueChunkGeneration(cx: number, cz: number): void {
+    const key = keyOfChunk(cx, cz)
+    if (this.chunks.has(key) || this.generationQueuedSet.has(key)) {
+      return
+    }
+    this.generationQueuedSet.add(key)
+    this.generationQueue.push(key)
+  }
+
+  public enqueueChunkGenerationByWorld(x: number, z: number): void {
+    const { cx, cz } = this.getChunkCoordsByWorld(x, z)
+    this.enqueueChunkGeneration(cx, cz)
+  }
+
+  public drainChunkGenerationBudget(maxChunks: number): number {
+    let generated = 0
+    while (generated < maxChunks && this.generationQueue.length > 0) {
+      const key = this.generationQueue.shift()
+      if (!key) {
+        break
+      }
+
+      const { cx, cz } = parseChunkKey(key)
+      this.ensureChunk(cx, cz)
+      generated += 1
+    }
+
+    return generated
   }
 
   public getBlock(x: number, y: number, z: number): BlockId {
@@ -82,6 +136,22 @@ export class World {
 
     const { cx, cz } = this.getChunkCoordsByWorld(x, z)
     const chunk = this.ensureChunk(cx, cz)
+    const lx = mod(x, CHUNK_SIZE_X)
+    const lz = mod(z, CHUNK_SIZE_Z)
+    return chunk.get(lx, y, lz)
+  }
+
+  public peekBlock(x: number, y: number, z: number): BlockId | undefined {
+    if (y < 0 || y >= CHUNK_SIZE_Y) {
+      return 0
+    }
+
+    const { cx, cz } = this.getChunkCoordsByWorld(x, z)
+    const chunk = this.chunks.get(keyOfChunk(cx, cz))
+    if (!chunk) {
+      return undefined
+    }
+
     const lx = mod(x, CHUNK_SIZE_X)
     const lz = mod(z, CHUNK_SIZE_Z)
     return chunk.get(lx, y, lz)
@@ -109,21 +179,24 @@ export class World {
     }
   }
 
-  public collectDirtyChunkCoords(): Array<{ key: string; cx: number; cz: number }> {
+  public collectDirtyChunkCoords(maxCount?: number): Array<{ key: string; cx: number; cz: number }> {
     const values: Array<{ key: string; cx: number; cz: number }> = []
-    for (const key of this.dirtyChunks) {
-      const [cxRaw, czRaw] = key.split(',')
-      values.push({ key, cx: Number(cxRaw), cz: Number(czRaw) })
+    const limit = maxCount ?? Number.POSITIVE_INFINITY
+    const keys = Array.from(this.dirtyChunks)
+    for (let index = 0; index < keys.length && index < limit; index += 1) {
+      const key = keys[index]
+      const { cx, cz } = parseChunkKey(key)
+      values.push({ key, cx, cz })
+      this.dirtyChunks.delete(key)
     }
-    this.dirtyChunks.clear()
     return values
   }
 
   public getLoadedChunks(): ChunkWithCoord[] {
     const entries: ChunkWithCoord[] = []
     for (const [key, chunk] of this.chunks.entries()) {
-      const [cxRaw, czRaw] = key.split(',')
-      entries.push({ key, cx: Number(cxRaw), cz: Number(czRaw), chunk })
+      const { cx, cz } = parseChunkKey(key)
+      entries.push({ key, cx, cz, chunk })
     }
     return entries
   }
@@ -142,9 +215,7 @@ export class World {
     const removed: string[] = []
 
     for (const key of this.chunks.keys()) {
-      const [cxRaw, czRaw] = key.split(',')
-      const cx = Number(cxRaw)
-      const cz = Number(czRaw)
+      const { cx, cz } = parseChunkKey(key)
 
       if (Math.abs(cx - center.cx) > keepRadiusInChunks || Math.abs(cz - center.cz) > keepRadiusInChunks) {
         this.chunks.delete(key)
@@ -152,6 +223,8 @@ export class World {
         removed.push(key)
       }
     }
+
+    this.dedupeAndKeepNearbyQueue(center.cx, center.cz, keepRadiusInChunks)
 
     return removed
   }
@@ -187,5 +260,29 @@ export class World {
       list.push(entry)
     }
     this.modifiedByChunk.set(chunkKey, list)
+  }
+
+  private dedupeAndKeepNearbyQueue(centerCx: number, centerCz: number, keepRadiusInChunks: number): void {
+    const rebuilt: string[] = []
+    const seen = new Set<string>()
+
+    for (const key of this.generationQueue) {
+      if (seen.has(key)) {
+        continue
+      }
+      seen.add(key)
+
+      const { cx, cz } = parseChunkKey(key)
+      const isFar = Math.abs(cx - centerCx) > keepRadiusInChunks || Math.abs(cz - centerCz) > keepRadiusInChunks
+      if (isFar || this.chunks.has(key)) {
+        this.generationQueuedSet.delete(key)
+        continue
+      }
+
+      rebuilt.push(key)
+    }
+
+    this.generationQueue.length = 0
+    this.generationQueue.push(...rebuilt)
   }
 }

@@ -16,7 +16,10 @@ import { CHUNK_SIZE_X, CHUNK_SIZE_Z } from '../world/Chunk'
 import { World } from '../world/World'
 
 const VIEW_RADIUS_CHUNKS = 2
-const KEEP_RADIUS_CHUNKS = 3
+const GENERATION_RADIUS_CHUNKS = 3
+const KEEP_RADIUS_CHUNKS = 4
+const MAX_CHUNK_GEN_PER_TICK = 1
+const MAX_MESH_REBUILD_PER_TICK = 2
 const SAVE_INTERVAL_MS = 2000
 
 const buildInitialPlayerState = (saved: ReturnType<typeof SaveRepository.load>): Partial<PlayerState> | undefined => {
@@ -70,8 +73,8 @@ function Scene({
   const fpsElapsed = useRef(0)
   const saveElapsedMs = useRef(0)
 
-  const rebuildDirtyChunks = useCallback(() => {
-    const dirty = world.collectDirtyChunkCoords()
+  const rebuildDirtyChunks = useCallback((maxCount: number) => {
+    const dirty = world.collectDirtyChunkCoords(maxCount)
     if (dirty.length === 0) {
       return
     }
@@ -94,6 +97,13 @@ function Scene({
     })
   }, [setChunkGeometries, world])
 
+  const drainChunkGeneration = useCallback((maxCount: number) => {
+    const generated = world.drainChunkGenerationBudget(maxCount)
+    if (generated > 0) {
+      rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK)
+    }
+  }, [rebuildDirtyChunks, world])
+
   const ensureVisibleChunks = useCallback(() => {
     const px = player.state.position[0]
     const pz = player.state.position[2]
@@ -107,9 +117,14 @@ function Scene({
 
     lastCenter.current = { cx: centerCx, cz: centerCz }
 
-    for (let dz = -VIEW_RADIUS_CHUNKS; dz <= VIEW_RADIUS_CHUNKS; dz += 1) {
-      for (let dx = -VIEW_RADIUS_CHUNKS; dx <= VIEW_RADIUS_CHUNKS; dx += 1) {
-        world.ensureChunk(centerCx + dx, centerCz + dz)
+    for (let dz = -GENERATION_RADIUS_CHUNKS; dz <= GENERATION_RADIUS_CHUNKS; dz += 1) {
+      for (let dx = -GENERATION_RADIUS_CHUNKS; dx <= GENERATION_RADIUS_CHUNKS; dx += 1) {
+        const targetCx = centerCx + dx
+        const targetCz = centerCz + dz
+        const isInsideView = Math.abs(dx) <= VIEW_RADIUS_CHUNKS && Math.abs(dz) <= VIEW_RADIUS_CHUNKS
+        if (isInsideView || !world.isChunkLoaded(targetCx, targetCz)) {
+          world.enqueueChunkGeneration(targetCx, targetCz)
+        }
       }
     }
 
@@ -128,8 +143,7 @@ function Scene({
       })
     }
 
-    rebuildDirtyChunks()
-  }, [player, rebuildDirtyChunks, setChunkGeometries, world])
+  }, [player, setChunkGeometries, world])
 
   useEffect(() => {
     const canvas = gl.domElement
@@ -145,21 +159,27 @@ function Scene({
     scene.add(directional)
 
     ensureVisibleChunks()
+    drainChunkGeneration(MAX_CHUNK_GEN_PER_TICK * 4)
+    rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK * 4)
 
     return () => {
       input.detach()
       canvas.removeEventListener('click', onCanvasClick)
       scene.remove(directional)
     }
-  }, [camera, ensureVisibleChunks, gl.domElement, input, scene])
+  }, [camera, drainChunkGeneration, ensureVisibleChunks, gl.domElement, input, rebuildDirtyChunks, scene])
 
   useFrame((_, delta) => {
     const steps = loop.consumeSteps(delta)
 
     for (let i = 0; i < steps; i += 1) {
+      ensureVisibleChunks()
+      drainChunkGeneration(MAX_CHUNK_GEN_PER_TICK)
+      rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK)
       player.update(input, world, loop.fixedStep)
       ensureVisibleChunks()
-      rebuildDirtyChunks()
+      drainChunkGeneration(MAX_CHUNK_GEN_PER_TICK)
+      rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK)
 
       const eye = player.getEyePosition()
       const eyeVec = new Vector3(eye[0], eye[1], eye[2])
@@ -176,12 +196,14 @@ function Scene({
         const hit = raycastBlock(world, eyeVec, dir, 6)
         if (hit && shouldBreak) {
           world.setBlock(hit.block.x, hit.block.y, hit.block.z, 0, true)
+          rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK)
         }
 
         if (hit && shouldPlace) {
           const place = hit.previous
           if (player.canPlaceBlockAt(place.x, place.y, place.z)) {
             world.setBlock(place.x, place.y, place.z, player.state.selectedBlockId, true)
+            rebuildDirtyChunks(MAX_MESH_REBUILD_PER_TICK)
           }
         }
       }

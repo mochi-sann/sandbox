@@ -40,8 +40,11 @@ export const buildChunkGeometry = (world: World, cx: number, cz: number): Buffer
       for (let lx = 0; lx < CHUNK_SIZE_X; lx += 1) {
         const wx = baseX + lx
         const wz = baseZ + lz
-        const blockId = world.getBlock(wx, y, wz)
+        const blockId = world.peekBlock(wx, y, wz)
         if (blockId === 0) {
+          continue
+        }
+        if (blockId === undefined) {
           continue
         }
 
@@ -51,7 +54,14 @@ export const buildChunkGeometry = (world: World, cx: number, cz: number): Buffer
           const nx = face.normal[0]
           const ny = face.normal[1]
           const nz = face.normal[2]
-          const neighbor = world.getBlock(wx + nx, y + ny, wz + nz)
+          const neighborX = wx + nx
+          const neighborY = y + ny
+          const neighborZ = wz + nz
+          const neighbor = world.peekBlock(neighborX, neighborY, neighborZ)
+          if (neighbor === undefined) {
+            world.enqueueChunkGenerationByWorld(neighborX, neighborZ)
+            continue
+          }
           if (neighbor !== 0) {
             continue
           }
