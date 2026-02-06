@@ -17,4 +17,5 @@ test "sum" {
   let length = None
   // Use `?` for punning
   inspect(sum(data=array, length?), content="15")
+  inspect(sum(data=[1, 2, 10, 40]), content="53")
 }
