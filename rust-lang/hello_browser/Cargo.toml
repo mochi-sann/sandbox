@@ -4,3 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1"
+cssparser = "0.35"
+font8x8 = "0.3"
+html5ever = "0.35"
+markup5ever_rcdom = "0.35"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+softbuffer = "0.4"
+thiserror = "2"
+tiny-skia = "0.11"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+url = "2"
+winit = "0.29"
