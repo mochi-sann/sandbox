@@ -4,10 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run index.ts"
+    "dev": "bun vite",
+    "start": "bun vite"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "vite": "^7.1.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -16,5 +18,4 @@
     "hikkaku": "^0.1.15"
   }
 }
-
 
