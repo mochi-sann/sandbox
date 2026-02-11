@@ -1,5 +1,5 @@
 use crate::dom::types::NodeType;
-use crate::style::{AlignItems, Display, FlexDirection, JustifyContent, StyleNode};
+use crate::style::{AlignItems, Display, FlexDirection, FlexWrap, JustifyContent, StyleNode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Color {
@@ -176,6 +176,150 @@ fn layout_flex_children(node: &StyleNode, x: f32, y: f32, width: f32, commands: 
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct FlexItem {
+    basis: f32,
+    grow: f32,
+    shrink: f32,
+}
+
+#[derive(Debug, Clone)]
+struct FlexLine {
+    indices: Vec<usize>,
+    sizes: Vec<f32>,
+    main_sum: f32,
+}
+
+fn build_flex_items(children: &[&StyleNode], available_main: f32) -> Vec<FlexItem> {
+    let fallback_basis = (available_main / children.len().max(1) as f32).max(40.0);
+    children
+        .iter()
+        .map(|child| FlexItem {
+            basis: child
+                .computed
+                .flex_basis
+                .or(child.computed.width)
+                .unwrap_or(fallback_basis)
+                .max(1.0),
+            grow: child.computed.flex_grow.max(0.0),
+            shrink: child.computed.flex_shrink.max(0.0),
+        })
+        .collect()
+}
+
+fn build_row_lines(items: &[FlexItem], available_width: f32, wrap: FlexWrap) -> Vec<FlexLine> {
+    let mut lines = Vec::new();
+    let mut current = FlexLine {
+        indices: Vec::new(),
+        sizes: Vec::new(),
+        main_sum: 0.0,
+    };
+
+    for (idx, item) in items.iter().enumerate() {
+        let would_overflow = !current.indices.is_empty() && current.main_sum + item.basis > available_width;
+        if wrap == FlexWrap::Wrap && would_overflow {
+            lines.push(current);
+            current = FlexLine {
+                indices: Vec::new(),
+                sizes: Vec::new(),
+                main_sum: 0.0,
+            };
+        }
+        current.indices.push(idx);
+        current.sizes.push(item.basis);
+        current.main_sum += item.basis;
+    }
+
+    if !current.indices.is_empty() {
+        lines.push(current);
+    }
+
+    if lines.is_empty() {
+        lines.push(FlexLine {
+            indices: vec![0],
+            sizes: vec![available_width.max(1.0)],
+            main_sum: available_width.max(1.0),
+        });
+    }
+
+    lines
+}
+
+fn build_column_lines(items: &[FlexItem], available_height: f32, wrap: FlexWrap) -> Vec<FlexLine> {
+    let mut lines = Vec::new();
+    let mut current = FlexLine {
+        indices: Vec::new(),
+        sizes: Vec::new(),
+        main_sum: 0.0,
+    };
+
+    for (idx, item) in items.iter().enumerate() {
+        let would_overflow = !current.indices.is_empty() && current.main_sum + item.basis > available_height;
+        if wrap == FlexWrap::Wrap && would_overflow {
+            lines.push(current);
+            current = FlexLine {
+                indices: Vec::new(),
+                sizes: Vec::new(),
+                main_sum: 0.0,
+            };
+        }
+        current.indices.push(idx);
+        current.sizes.push(item.basis);
+        current.main_sum += item.basis;
+    }
+
+    if !current.indices.is_empty() {
+        lines.push(current);
+    }
+
+    if lines.is_empty() {
+        lines.push(FlexLine {
+            indices: vec![0],
+            sizes: vec![available_height.max(1.0)],
+            main_sum: available_height.max(1.0),
+        });
+    }
+
+    lines
+}
+
+fn distribute_main_sizes(line: &mut FlexLine, items: &[FlexItem], available_main: f32) {
+    let mut sum: f32 = line.sizes.iter().sum();
+    if available_main > sum {
+        let extra = available_main - sum;
+        let total_grow: f32 = line.indices.iter().map(|idx| items[*idx].grow).sum();
+        if total_grow > 0.0 {
+            for (i, idx) in line.indices.iter().enumerate() {
+                let share = extra * (items[*idx].grow / total_grow);
+                line.sizes[i] += share;
+            }
+        }
+    } else if sum > available_main {
+        let deficit = sum - available_main;
+        let weighted_total: f32 = line
+            .indices
+            .iter()
+            .enumerate()
+            .map(|(i, idx)| items[*idx].shrink * line.sizes[i])
+            .sum();
+        if weighted_total > 0.0 {
+            for (i, idx) in line.indices.iter().enumerate() {
+                let weight = items[*idx].shrink * line.sizes[i];
+                let reduce = deficit * (weight / weighted_total);
+                line.sizes[i] = (line.sizes[i] - reduce).max(1.0);
+            }
+        } else {
+            let scale = available_main / sum;
+            for size in &mut line.sizes {
+                *size = (*size * scale).max(1.0);
+            }
+        }
+    }
+
+    sum = line.sizes.iter().sum();
+    line.main_sum = sum;
+}
+
 fn layout_flex_row(
     container: &StyleNode,
     children: &[&StyleNode],
@@ -184,54 +328,48 @@ fn layout_flex_row(
     width: f32,
     commands: &mut Vec<DrawCommand>,
 ) -> f32 {
-    let mut widths = children
-        .iter()
-        .map(|child| {
-            child
-                .computed
-                .width
-                .unwrap_or((width / children.len() as f32).max(40.0))
-                .max(1.0)
-        })
-        .collect::<Vec<_>>();
-
-    let total_w: f32 = widths.iter().sum();
-    if total_w > width {
-        let scale = width / total_w;
-        for w in &mut widths {
-            *w *= scale;
-        }
+    let items = build_flex_items(children, width);
+    let mut lines = build_row_lines(&items, width, container.computed.flex_wrap);
+    for line in &mut lines {
+        distribute_main_sizes(line, &items, width);
     }
 
-    let total_w: f32 = widths.iter().sum();
-    let free_w = (width - total_w).max(0.0);
-
-    let (start_x, gap) = match container.computed.justify_content {
-        JustifyContent::FlexStart => (x, 0.0),
-        JustifyContent::Center => (x + free_w / 2.0, 0.0),
-        JustifyContent::SpaceBetween if children.len() > 1 => (x, free_w / (children.len() - 1) as f32),
-        _ => (x, 0.0),
-    };
-
-    let mut measured_h = Vec::with_capacity(children.len());
-    for (idx, child) in children.iter().enumerate() {
-        let h = measure_node(child, start_x + widths[..idx].iter().sum::<f32>() + gap * idx as f32, y, widths[idx]);
-        measured_h.push(h);
-    }
-    let content_h = measured_h.into_iter().fold(0.0f32, f32::max);
-
-    let mut cursor_x = start_x;
-    for (idx, child) in children.iter().enumerate() {
-        let measured = measure_node(child, cursor_x, y, widths[idx]);
-        let child_y = match container.computed.align_items {
-            AlignItems::FlexStart | AlignItems::Stretch => y,
-            AlignItems::Center => y + (content_h - measured).max(0.0) / 2.0,
+    let mut cursor_y = y;
+    for line in lines {
+        let free_w = (width - line.main_sum).max(0.0);
+        let (start_x, gap) = match container.computed.justify_content {
+            JustifyContent::FlexStart => (x, 0.0),
+            JustifyContent::Center => (x + free_w / 2.0, 0.0),
+            JustifyContent::SpaceBetween if line.indices.len() > 1 => {
+                (x, free_w / (line.indices.len() - 1) as f32)
+            }
+            _ => (x, 0.0),
         };
-        let _ = layout_node(child, cursor_x, child_y, widths[idx], commands);
-        cursor_x += widths[idx] + gap;
+
+        let mut measured_h = Vec::with_capacity(line.indices.len());
+        let mut measure_x = start_x;
+        for (pos, idx) in line.indices.iter().enumerate() {
+            let w = line.sizes[pos];
+            measured_h.push(measure_node(children[*idx], measure_x, cursor_y, w));
+            measure_x += w + gap;
+        }
+        let line_h = measured_h.into_iter().fold(0.0f32, f32::max);
+
+        let mut draw_x = start_x;
+        for (pos, idx) in line.indices.iter().enumerate() {
+            let w = line.sizes[pos];
+            let measured = measure_node(children[*idx], draw_x, cursor_y, w);
+            let child_y = match container.computed.align_items {
+                AlignItems::FlexStart | AlignItems::Stretch => cursor_y,
+                AlignItems::Center => cursor_y + (line_h - measured).max(0.0) / 2.0,
+            };
+            let _ = layout_node(children[*idx], draw_x, child_y, w, commands);
+            draw_x += w + gap;
+        }
+        cursor_y += line_h;
     }
 
-    content_h.max(container.computed.font_size_px * 0.8)
+    (cursor_y - y).max(container.computed.font_size_px * 0.8)
 }
 
 fn layout_flex_column(
@@ -242,43 +380,66 @@ fn layout_flex_column(
     width: f32,
     commands: &mut Vec<DrawCommand>,
 ) -> f32 {
-    let measured_h = children
+    let target_h = container.computed.height.unwrap_or(f32::INFINITY);
+    let items = build_flex_items(children, target_h.min(10_000.0));
+    let mut lines = build_column_lines(&items, target_h, container.computed.flex_wrap);
+    for line in &mut lines {
+        let available_main = if target_h.is_finite() {
+            target_h
+        } else {
+            line.main_sum
+        };
+        distribute_main_sizes(line, &items, available_main);
+    }
+    let used_main = lines
         .iter()
-        .map(|child| {
-            let w = child.computed.width.unwrap_or(width).max(1.0).min(width);
-            measure_node(child, x, y, w)
-        })
-        .collect::<Vec<_>>();
+        .map(|line| line.main_sum)
+        .fold(0.0f32, f32::max);
 
-    let total_h: f32 = measured_h.iter().sum();
-    let target_h = container.computed.height.unwrap_or(total_h).max(total_h);
-    let free_h = (target_h - total_h).max(0.0);
-
-    let (start_y, gap) = match container.computed.justify_content {
-        JustifyContent::FlexStart => (y, 0.0),
-        JustifyContent::Center => (y + free_h / 2.0, 0.0),
-        JustifyContent::SpaceBetween if children.len() > 1 => (y, free_h / (children.len() - 1) as f32),
-        _ => (y, 0.0),
-    };
-
-    let mut cursor_y = start_y;
-    for (idx, child) in children.iter().enumerate() {
-        let child_h = measured_h[idx];
-        let mut child_w = child.computed.width.unwrap_or(width).max(1.0).min(width);
-        if matches!(container.computed.align_items, AlignItems::Stretch) {
-            child_w = width;
-        }
-
-        let child_x = match container.computed.align_items {
-            AlignItems::FlexStart | AlignItems::Stretch => x,
-            AlignItems::Center => x + (width - child_w).max(0.0) / 2.0,
+    let mut cursor_x = x;
+    let mut max_used_x = x;
+    for line in lines {
+        let free_h = (target_h - line.main_sum).max(0.0);
+        let (start_y, gap) = match container.computed.justify_content {
+            JustifyContent::FlexStart => (y, 0.0),
+            JustifyContent::Center => (y + free_h / 2.0, 0.0),
+            JustifyContent::SpaceBetween if line.indices.len() > 1 => {
+                (y, free_h / (line.indices.len() - 1) as f32)
+            }
+            _ => (y, 0.0),
         };
 
-        let _ = layout_node(child, child_x, cursor_y, child_w, commands);
-        cursor_y += child_h + gap;
+        let mut max_col_w = 0.0f32;
+        let mut draw_y = start_y;
+        for (pos, idx) in line.indices.iter().enumerate() {
+            let item_h = line.sizes[pos];
+            let mut child_w = children[*idx]
+                .computed
+                .width
+                .or(children[*idx].computed.flex_basis)
+                .unwrap_or(width)
+                .max(1.0)
+                .min(width);
+            if matches!(container.computed.align_items, AlignItems::Stretch) {
+                child_w = width;
+            }
+            max_col_w = max_col_w.max(child_w);
+            let child_x = match container.computed.align_items {
+                AlignItems::FlexStart | AlignItems::Stretch => cursor_x,
+                AlignItems::Center => cursor_x + (width - child_w).max(0.0) / 2.0,
+            };
+            let _ = layout_node(children[*idx], child_x, draw_y, child_w, commands);
+            draw_y += item_h + gap;
+        }
+        cursor_x += max_col_w;
+        max_used_x = max_used_x.max(cursor_x);
     }
 
-    target_h.max(cursor_y - y)
+    if max_used_x <= x {
+        container.computed.font_size_px * 0.8
+    } else {
+        used_main.max(container.computed.font_size_px * 0.8)
+    }
 }
 
 fn measure_node(node: &StyleNode, x: f32, y: f32, width: f32) -> f32 {
@@ -360,5 +521,72 @@ mod tests {
         let styled = style_tree(&root, &css);
         let layout = build_layout(&styled, 500.0);
         assert!(layout.commands.iter().any(|cmd| matches!(cmd, DrawCommand::Text { .. })));
+    }
+
+    #[test]
+    fn flex_grow_distributes_extra_width() {
+        let parser = CssParserAdapter;
+        let css = parser
+            .parse_stylesheet(
+                "div{display:flex;} .a{flex-basis:100px;flex-grow:1;} .b{flex-basis:100px;flex-grow:3;}",
+            )
+            .expect("css parse should succeed");
+
+        let p1 = DomNode::element(
+            "p".to_string(),
+            [("class".to_string(), "a".to_string())].into_iter().collect(),
+            vec![DomNode::text("first".to_string())],
+        );
+        let p2 = DomNode::element(
+            "p".to_string(),
+            [("class".to_string(), "b".to_string())].into_iter().collect(),
+            vec![DomNode::text("second".to_string())],
+        );
+        let root = DomNode::element("div".to_string(), Default::default(), vec![p1, p2]);
+
+        let styled = style_tree(&root, &css);
+        let layout = build_layout(&styled, 600.0);
+        let (x1, x2) = text_x_positions(&layout);
+        assert!(x2 - x1 > 180.0);
+    }
+
+    #[test]
+    fn flex_wrap_moves_items_to_next_line() {
+        let parser = CssParserAdapter;
+        let css = parser
+            .parse_stylesheet("div{display:flex;flex-wrap:wrap;} p{flex-basis:180px;}")
+            .expect("css parse should succeed");
+
+        let p1 = DomNode::element("p".to_string(), Default::default(), vec![DomNode::text("one".to_string())]);
+        let p2 = DomNode::element("p".to_string(), Default::default(), vec![DomNode::text("two".to_string())]);
+        let p3 = DomNode::element("p".to_string(), Default::default(), vec![DomNode::text("three".to_string())]);
+        let root = DomNode::element("div".to_string(), Default::default(), vec![p1, p2, p3]);
+
+        let styled = style_tree(&root, &css);
+        let layout = build_layout(&styled, 320.0);
+        let ys = text_y_positions(&layout);
+        assert!(ys[2] > ys[1]);
+    }
+
+    fn text_x_positions(layout: &super::LayoutTree) -> (f32, f32) {
+        let mut xs = Vec::new();
+        for cmd in &layout.commands {
+            if let DrawCommand::Text { x, .. } = cmd {
+                xs.push(*x);
+            }
+        }
+        xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        (xs[0], xs[xs.len() - 1])
+    }
+
+    fn text_y_positions(layout: &super::LayoutTree) -> Vec<f32> {
+        let mut ys = Vec::new();
+        for cmd in &layout.commands {
+            if let DrawCommand::Text { y, .. } = cmd {
+                ys.push(*y);
+            }
+        }
+        ys.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+        ys
     }
 }

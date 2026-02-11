@@ -32,6 +32,12 @@ pub enum AlignItems {
     Stretch,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FlexWrap {
+    NoWrap,
+    Wrap,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EdgeSizes {
     pub top: f32,
@@ -64,6 +70,10 @@ pub struct ComputedStyle {
     pub flex_direction: FlexDirection,
     pub justify_content: JustifyContent,
     pub align_items: AlignItems,
+    pub flex_wrap: FlexWrap,
+    pub flex_grow: f32,
+    pub flex_shrink: f32,
+    pub flex_basis: Option<f32>,
 }
 
 impl ComputedStyle {
@@ -107,7 +117,7 @@ impl Specificity {
                 class: 0,
                 tag: 0,
             },
-            Selector::Class(_) => Self {
+            Selector::Class(_) | Selector::Attribute(_) => Self {
                 inline: 0,
                 id: 0,
                 class: 1,
@@ -228,6 +238,12 @@ fn selector_matches(selector: &Selector, node: &DomNode) -> bool {
         Selector::Class(class) => node.attr("class").is_some_and(|list| {
             list.split_whitespace().any(|candidate| candidate == class)
         }),
+        Selector::Attribute(attr) => match &attr.value {
+            Some(expected) => node
+                .attr(&attr.name)
+                .is_some_and(|actual| actual.eq_ignore_ascii_case(expected)),
+            None => node.attr(&attr.name).is_some(),
+        },
     }
 }
 
@@ -286,6 +302,22 @@ fn compute_style(
         .and_then(|d| parse_align_items(&d.value))
         .unwrap_or(AlignItems::Stretch);
 
+    let flex_wrap = specified
+        .get("flex-wrap")
+        .and_then(|d| parse_flex_wrap(&d.value))
+        .unwrap_or(FlexWrap::NoWrap);
+    let flex_grow = specified
+        .get("flex-grow")
+        .and_then(|d| parse_number(&d.value))
+        .unwrap_or(0.0)
+        .max(0.0);
+    let flex_shrink = specified
+        .get("flex-shrink")
+        .and_then(|d| parse_number(&d.value))
+        .unwrap_or(1.0)
+        .max(0.0);
+    let flex_basis = specified.get("flex-basis").and_then(|d| parse_px(&d.value));
+
     ComputedStyle {
         display,
         font_size_px,
@@ -300,6 +332,10 @@ fn compute_style(
         flex_direction,
         justify_content,
         align_items,
+        flex_wrap,
+        flex_grow,
+        flex_shrink,
+        flex_basis,
     }
 }
 
@@ -426,6 +462,19 @@ fn parse_align_items(input: &str) -> Option<AlignItems> {
     }
 }
 
+fn parse_flex_wrap(input: &str) -> Option<FlexWrap> {
+    match input.trim().to_ascii_lowercase().as_str() {
+        "nowrap" => Some(FlexWrap::NoWrap),
+        "wrap" => Some(FlexWrap::Wrap),
+        _ => None,
+    }
+}
+
+fn parse_number(input: &str) -> Option<f32> {
+    let value = input.trim().replace(' ', "");
+    value.parse::<f32>().ok()
+}
+
 fn parse_px(input: &str) -> Option<f32> {
     let trimmed = input.trim().to_ascii_lowercase().replace(' ', "");
     if let Some(v) = trimmed.strip_suffix("px") {
@@ -475,7 +524,7 @@ pub fn parse_color(input: &str) -> Option<Color> {
 mod tests {
     use std::collections::HashMap;
 
-    use super::{Display, style_tree};
+    use super::{Display, FlexWrap, style_tree};
     use crate::dom::types::DomNode;
     use crate::parse::cssparser_adapter::{CssParser, CssParserAdapter};
 
@@ -507,5 +556,43 @@ mod tests {
         let html = DomNode::element("span".to_string(), HashMap::new(), Vec::new());
         let styled = style_tree(&html, &Default::default());
         assert_eq!(styled.computed.display, Display::Inline);
+    }
+
+    #[test]
+    fn attribute_selector_matches() {
+        let parser = CssParserAdapter;
+        let css = parser
+            .parse_stylesheet("[data-kind=card] { color: blue; }")
+            .expect("css parse should succeed");
+
+        let html = DomNode::element(
+            "div".to_string(),
+            [("data-kind".to_string(), "card".to_string())]
+                .into_iter()
+                .collect(),
+            Vec::new(),
+        );
+
+        let styled = style_tree(&html, &css);
+        assert_eq!(styled.computed.color, crate::layout::Color::new(65, 105, 225, 255));
+    }
+
+    #[test]
+    fn flex_properties_are_computed() {
+        let parser = CssParserAdapter;
+        let css = parser
+            .parse_stylesheet(
+                "div { display:flex; flex-wrap: wrap; } p { flex-grow: 2; flex-shrink: 3; flex-basis: 120px; }",
+            )
+            .expect("css parse should succeed");
+
+        let child = DomNode::element("p".to_string(), HashMap::new(), vec![DomNode::text("x".to_string())]);
+        let root = DomNode::element("div".to_string(), HashMap::new(), vec![child]);
+        let styled = style_tree(&root, &css);
+
+        assert_eq!(styled.computed.flex_wrap, FlexWrap::Wrap);
+        assert_eq!(styled.children[0].computed.flex_grow, 2.0);
+        assert_eq!(styled.children[0].computed.flex_shrink, 3.0);
+        assert_eq!(styled.children[0].computed.flex_basis, Some(120.0));
     }
 }

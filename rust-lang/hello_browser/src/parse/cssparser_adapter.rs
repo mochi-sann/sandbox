@@ -9,6 +9,13 @@ pub enum Selector {
     Tag(String),
     Class(String),
     Id(String),
+    Attribute(AttributeSelector),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AttributeSelector {
+    pub name: String,
+    pub value: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,6 +46,8 @@ impl CssParserAdapter {
                     Some(Selector::Class(class.to_string()))
                 } else if let Some(id) = sel.strip_prefix('#') {
                     Some(Selector::Id(id.to_string()))
+                } else if sel.starts_with('[') && sel.ends_with(']') {
+                    Self::parse_attribute_selector(sel).map(Selector::Attribute)
                 } else if sel.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
                     Some(Selector::Tag(sel.to_ascii_lowercase()))
                 } else {
@@ -46,6 +55,38 @@ impl CssParserAdapter {
                 }
             })
             .collect()
+    }
+
+    fn parse_attribute_selector(raw: &str) -> Option<AttributeSelector> {
+        let inner = raw.trim().strip_prefix('[')?.strip_suffix(']')?.trim();
+        if inner.is_empty() {
+            return None;
+        }
+
+        if let Some((name, value)) = inner.split_once('=') {
+            let name = name.trim().to_ascii_lowercase();
+            if name.is_empty() {
+                return None;
+            }
+            let value = value
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'')
+                .to_string();
+            if value.is_empty() {
+                return None;
+            }
+            Some(AttributeSelector {
+                name,
+                value: Some(value),
+            })
+        } else {
+            let name = inner.to_ascii_lowercase();
+            if name.is_empty() {
+                return None;
+            }
+            Some(AttributeSelector { name, value: None })
+        }
     }
 
     fn parse_declarations(raw: &str) -> Vec<(String, String)> {
@@ -135,7 +176,7 @@ impl CssParser for CssParserAdapter {
 
 #[cfg(test)]
 mod tests {
-    use super::{CssParser, CssParserAdapter, Selector};
+    use super::{AttributeSelector, CssParser, CssParserAdapter, Selector};
 
     #[test]
     fn parse_basic_rule() {
@@ -148,5 +189,28 @@ mod tests {
         assert_eq!(sheet.rules[0].selectors[0], Selector::Tag("h1".to_string()));
         assert_eq!(sheet.rules[0].selectors[1], Selector::Class("title".to_string()));
         assert_eq!(sheet.rules[0].declarations.len(), 2);
+    }
+
+    #[test]
+    fn parse_attribute_selector() {
+        let parser = CssParserAdapter;
+        let sheet = parser
+            .parse_stylesheet("[data-x], [type=text] { color: red; }")
+            .expect("css parse should succeed");
+
+        assert_eq!(
+            sheet.rules[0].selectors[0],
+            Selector::Attribute(AttributeSelector {
+                name: "data-x".to_string(),
+                value: None
+            })
+        );
+        assert_eq!(
+            sheet.rules[0].selectors[1],
+            Selector::Attribute(AttributeSelector {
+                name: "type".to_string(),
+                value: Some("text".to_string())
+            })
+        );
     }
 }
