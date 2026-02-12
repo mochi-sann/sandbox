@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import DemoOne from "@/components/ui/demo";
 import { APITester } from "./APITester";
 import "./index.css";
 
@@ -7,7 +8,7 @@ import reactLogo from "./react.svg";
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
+    <div className="relative z-10 container mx-auto p-8 text-center">
       <div className="flex justify-center items-center gap-8 mb-8">
         <img
           src={logo}
@@ -32,6 +33,9 @@ export function App() {
           <APITester />
         </CardContent>
       </Card>
+      <div className="mt-8">
+        <DemoOne />
+      </div>
     </div>
   );
 }

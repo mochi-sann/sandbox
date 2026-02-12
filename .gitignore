@@ -65,3 +65,4 @@ nodejs-ts/svg-type-size/public/reports/latest
 nodejs-ts/svg-type-size/reports/history
 python/zyugyou/tests/__pycache__
 bun/db-performance-test/.bun-tmp
+/nodejs-ts/backgroaund_paths/.bun/install/cache
