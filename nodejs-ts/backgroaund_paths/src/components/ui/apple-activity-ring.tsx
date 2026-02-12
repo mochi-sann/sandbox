@@ -97,7 +97,12 @@ function CircleProgress({ data, index }: CircleProgressProps) {
               <stop
                 offset="100%"
                 style={{
-                  stopColor: data.color === "#FF2D55" ? "#FF6B8B" : data.color === "#A3F900" ? "#C5FF4D" : "#4DDFED",
+                  stopColor:
+                    data.color === "#FF2D55"
+                      ? "#FF6B8B"
+                      : data.color === "#A3F900"
+                        ? "#C5FF4D"
+                        : "#4DDFED",
                   stopOpacity: 1,
                 }}
               />
@@ -150,7 +155,9 @@ function DetailedActivityInfo({ activities }: { activities: ActivityData[] }) {
     >
       {activities.map((activity) => (
         <motion.div key={activity.label} className="flex flex-col text-left">
-          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{activity.label}</span>
+          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            {activity.label}
+          </span>
           <span className="text-2xl font-semibold" style={{ color: activity.color }}>
             {activity.current}/{activity.target}
             <span className="ml-1 text-base text-zinc-600 dark:text-zinc-400">{activity.unit}</span>
@@ -200,4 +207,3 @@ export function AppleActivityCard({
     </div>
   );
 }
-

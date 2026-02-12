@@ -54,7 +54,12 @@ export default function DemoOne() {
         <div className="grid gap-4 sm:grid-cols-2">
           {images.map((image) => (
             <figure key={image.src} className="overflow-hidden rounded-xl border bg-muted">
-              <img src={image.src} alt={image.alt} loading="lazy" className="h-44 w-full object-cover md:h-56" />
+              <img
+                src={image.src}
+                alt={image.alt}
+                loading="lazy"
+                className="h-44 w-full object-cover md:h-56"
+              />
               <figcaption className="flex items-center gap-2 p-3 text-left text-xs text-muted-foreground">
                 <Flame className="h-3.5 w-3.5" aria-hidden />
                 Unsplash stock image
@@ -68,10 +73,13 @@ export default function DemoOne() {
             <Clock3 className="h-4 w-4" aria-hidden />
             Updated live from props
           </div>
-          <AppleActivityCard title="Today Activity Rings" activities={demoActivities} className="max-w-none p-6" />
+          <AppleActivityCard
+            title="Today Activity Rings"
+            activities={demoActivities}
+            className="max-w-none p-6"
+          />
         </div>
       </div>
     </section>
   );
 }
-
