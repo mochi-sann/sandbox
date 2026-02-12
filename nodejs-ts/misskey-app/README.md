@@ -20,7 +20,14 @@ cp .env.example .env
 ## 実行
 
 ```bash
-bun run index.ts
+bun run start
 ```
 
 起動すると1回投稿し、その後は `POST_INTERVAL_SEC` ごとに自動投稿します。
+
+## トラブルシュート
+
+- `OpenRouter API error (401): User not found.` が出る場合:
+  - `OPENROUTER_API_KEY` を再発行して `.env` に入れ直してください
+  - 前後に空白や引用符が入っていないか確認してください
+  - 利用中の OpenRouter アカウントで発行したキーか確認してください
