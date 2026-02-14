@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DemoOne from "@/components/ui/demo";
+import PaperShaderDemo from "@/components/ui/paper-shader-demo";
 import { APITester } from "./APITester";
 import "./index.css";
 
@@ -37,6 +38,7 @@ export function App() {
       <div className="mt-8">
         <DemoOne />
       </div>
+      <PaperShaderDemo />
     </div>
   );
 }
