@@ -1,42 +1,139 @@
-#root {
-  max-width: 1280px;
+.app-shell {
+  width: min(1100px, 100%);
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8ea9ff;
+}
+
+h1 {
+  margin: 0.25rem 0;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+}
+
+.scene-description {
+  margin: 0;
+  color: #b9c3d6;
+  font-size: 0.95rem;
+}
+
+.toolbar {
+  display: grid;
+  gap: 8px;
+  min-width: 220px;
+  padding: 10px 12px;
+  background: rgba(13, 18, 28, 0.78);
+  border: 1px solid rgba(160, 178, 224, 0.2);
+  border-radius: 10px;
+}
+
+.toggle-row,
+.select-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+}
+
+.scene-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scene-nav button {
+  border: 1px solid rgba(153, 173, 223, 0.35);
+  background: rgba(9, 14, 22, 0.8);
+  color: #dce7ff;
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.scene-nav button.active {
+  background: #6486ff;
+  color: #0b142e;
+  border-color: #6486ff;
+}
+
+.scene-canvas {
+  position: relative;
+  width: 100%;
+  height: min(68vh, 720px);
+  min-height: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 169, 214, 0.25);
+  background: #0a0f18;
+}
+
+.scene-canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  background: rgba(8, 13, 21, 0.78);
+  border: 1px solid rgba(164, 184, 255, 0.3);
+  min-width: 250px;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.loading-title {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.loading-meta {
+  margin: 0.35rem 0 0;
+  color: #b6c0d8;
+  font-size: 0.84rem;
+}
+
+.r3f-stats {
+  top: 10px !important;
+  left: 10px !important;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    padding: 14px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .app-header {
+    flex-direction: column;
+    gap: 12px;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .toolbar {
+    min-width: 100%;
   }
-}
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  .scene-canvas {
+    min-height: 360px;
+    height: 58vh;
+  }
 }
