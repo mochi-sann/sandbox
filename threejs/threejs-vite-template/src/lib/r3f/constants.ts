@@ -16,7 +16,7 @@ export const CAMERA_SETTINGS = {
 }
 
 export const PERFORMANCE_SETTINGS = {
-  desktopDpr: [1, 2] as const,
-  mobileDpr: [1, 1.5] as const,
+  desktopDpr: [1, 2] as [number, number],
+  mobileDpr: [1, 1.5] as [number, number],
   targetFps: 60,
 }

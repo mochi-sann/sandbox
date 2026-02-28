@@ -4,7 +4,7 @@ export function isMobileWidth(width: number): boolean {
   return width <= BREAKPOINT_MOBILE
 }
 
-export function getDprForWidth(width: number): readonly [number, number] {
+export function getDprForWidth(width: number): [number, number] {
   return isMobileWidth(width)
     ? PERFORMANCE_SETTINGS.mobileDpr
     : PERFORMANCE_SETTINGS.desktopDpr

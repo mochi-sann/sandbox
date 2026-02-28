@@ -1,42 +1,61 @@
 # React Three Fiber (R3F) TypeScript Boilerplate
 
-## このプレミアムボイラープレートについて
+React Three Fiber + TypeScript で 3D Web アプリを始めるための実践的なボイラープレートです。
 
-React Three Fiber プロジェクトを、より高性能・高拡張・高開発体験へ。  
-このプレミアムボイラープレートは TypeScript をベースに構築され、型安全性とモダンな開発フローで 3D Web アプリ開発を加速します。
+## 現在の実装内容（MVP）
 
-## 主な機能
+- Vite + React + strict TypeScript
+- `three` / `@react-three/fiber` / `@react-three/drei` 導入済み
+- レスポンシブ対応の `Canvas` シーン
+- `OrbitControls` を使ったカメラ制御
+- 開発時のみ表示される `r3f-perf` パフォーマンスパネル
+- カスタム hooks
+  - `useViewport`
+  - `useReducedMotion`
+  - `useFrameLimiter`
+  - `useTextureLoader`
+- パフォーマンス設定ヘルパー（DPR・シャドウ切替）
+- Vitest + React Testing Library テスト基盤
 
-- 本番環境向けに最適化された高性能ビルド設定
-- 厳格な型チェックを備えた TypeScript 初期設定
-- クリーンで拡張しやすいモジュール構成
-- R3F 向けに調整済みの高度なカメラ制御
-- よく使う R3F 処理を簡略化するカスタムフック
-- マルチデバイス対応のレスポンシブ設計
-- パフォーマンス監視・最適化ユーティリティを標準搭載
-- Jest + React Testing Library によるテスト環境
-- 実践例を含む包括的なドキュメント
+## 拡張予定（次フェーズ）
 
-## 高度な機能
+- Geometry instancing の実例
+- LOD（Level of Detail）運用テンプレート
+- Scene graph 可視化ツール
+- Material editor / animation timeline などの高度な開発UI
 
-### パフォーマンス最適化
+## セットアップ
 
-- ジオメトリインスタンシングによる効率的な描画
-- テクスチャ読み込みの最適化で表示速度を向上
-- 複雑なシーン向けの動的 LOD（Level of Detail）
-- Suspense / 遅延読み込みによるリソース効率化
-- 高負荷 3D ワークフロー向けメモリ管理ツール
+```bash
+npm install
+npm run dev
+```
 
-### 開発ツール
+## スクリプト
 
-- パフォーマンスをリアルタイムで可視化するデバッグパネル
-- プロジェクト構成把握を助けるシーングラフ可視化
-- 見た目を細かく調整できるマテリアルエディタ
-- 動きや演出を調整しやすいアニメーションタイムライン
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run test
+npm run test:watch
+npm run test:coverage
+```
 
-## モジュラーなプロジェクト構造
+## ディレクトリ構成
 
-このボイラープレートは、規模を問わず拡張しやすいクリーンなアーキテクチャを採用しています。  
-ゲーム、ビジュアライゼーション、没入型体験など、あらゆる React Three Fiber 開発の強力な土台になります。
+```txt
+src/
+  components/
+    debug/
+    scene/
+  hooks/
+  lib/r3f/
+  styles/
+  test/
+```
 
-3D アプリ開発を、今すぐ自信を持って始めましょう。
+## 対応方針
+
+- 対象ブラウザ: モダンブラウザ（Chrome / Edge / Safari / Firefox の最新世代）
+- テストランナー: Vitest（Jest ではなく Vitest を採用）
