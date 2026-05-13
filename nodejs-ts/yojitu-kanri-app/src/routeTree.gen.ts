@@ -20,32 +20,32 @@ const UsageRoute = UsageRouteImport.update({
   id: '/usage',
   path: '/usage',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/usage.lazy').then((d) => d.Route))
 const PermissionsRoute = PermissionsRouteImport.update({
   id: '/permissions',
   path: '/permissions',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/permissions.lazy').then((d) => d.Route))
 const ImportRoute = ImportRouteImport.update({
   id: '/import',
   path: '/import',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/import.lazy').then((d) => d.Route))
 const ContractsRoute = ContractsRouteImport.update({
   id: '/contracts',
   path: '/contracts',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/contracts.lazy').then((d) => d.Route))
 const AnalysisRoute = AnalysisRouteImport.update({
   id: '/analysis',
   path: '/analysis',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/analysis.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
