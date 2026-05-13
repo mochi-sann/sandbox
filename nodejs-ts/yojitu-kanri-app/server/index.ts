@@ -94,6 +94,14 @@ function pick(row: Record<string, string>, ...keys: string[]): string {
   return ''
 }
 
+function isDateText(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+}
+
+function isMonthText(value: string): boolean {
+  return /^\d{4}-\d{2}$/.test(value)
+}
+
 async function getCurrentUser(userId: number) {
   const [user] = await db
     .select({
@@ -514,6 +522,20 @@ app.post('/api/import/contracts', async (c) => {
       result.warnings.push(`${index + 2}行目: 部門、ベンダー、ツール名のいずれかが不足`)
       continue
     }
+    const contractAmount = numberValue(pick(row, '契約金額'))
+    const startDate = pick(row, '契約開始日') || '2026-04-01'
+    const endDate = pick(row, '契約終了日') || '2027-03-31'
+    const noticeDate = pick(row, '解約通知期限')
+    if (contractAmount <= 0 || !isDateText(startDate) || !isDateText(endDate)) {
+      result.warnings.push(
+        `${index + 2}行目: 契約金額、契約開始日、契約終了日の形式を確認してください`,
+      )
+      continue
+    }
+    if (noticeDate && !isDateText(noticeDate)) {
+      result.warnings.push(`${index + 2}行目: 解約通知期限の形式を確認してください`)
+      continue
+    }
     const department = await ensureByName(departments, departmentName, { name: departmentName })
     const vendor = await ensureByName(vendors, vendorName, { name: vendorName })
     const tool = await ensureByName(tools, toolName, {
@@ -526,10 +548,10 @@ app.post('/api/import/contracts', async (c) => {
       toolId: tool.id,
       vendorId: vendor.id,
       departmentId: department.id,
-      contractAmount: numberValue(pick(row, '契約金額')),
-      startDate: pick(row, '契約開始日') || '2026-04-01',
-      endDate: pick(row, '契約終了日') || '2027-03-31',
-      noticeDate: pick(row, '解約通知期限') || null,
+      contractAmount,
+      startDate,
+      endDate,
+      noticeDate: noticeDate || null,
       autoRenew: ['あり', 'true', 'TRUE', '1', 'yes'].includes(pick(row, '自動更新')),
       owner: pick(row, '契約責任者') || '未設定',
       status: pick(row, '契約ステータス') || '有効',
@@ -558,6 +580,10 @@ app.post('/api/import/budget-actuals', async (c) => {
     const vendorName = pick(row, 'ベンダー')
     if (!periodMonth || !departmentName || !projectName || !categoryName || !toolName || !vendorName) {
       result.warnings.push(`${index + 2}行目: 対象年月または分析軸が不足`)
+      continue
+    }
+    if (!isMonthText(periodMonth)) {
+      result.warnings.push(`${index + 2}行目: 対象年月はYYYY-MM形式で指定してください`)
       continue
     }
     const department = await ensureByName(departments, departmentName, { name: departmentName })
