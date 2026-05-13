@@ -12,7 +12,7 @@ export function LoadingOverlay() {
       {errors.length > 0 ? (
         <>
           <p className="loading-title">アセット読み込みに失敗しました</p>
-          <p className="loading-meta">{errors[0].message}</p>
+          <p className="loading-meta">{String(errors[0])}</p>
         </>
       ) : (
         <>

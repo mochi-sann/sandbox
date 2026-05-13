@@ -1,5 +1,4 @@
 import { Suspense, type ComponentType } from 'react'
-import { ACESFilmicToneMapping, NoToneMapping } from 'three'
 import { Canvas } from '@react-three/fiber'
 import type { App3DConfig } from '../../app/config'
 import type { QualityProfile } from '../../app/config'
@@ -38,8 +37,6 @@ export function SceneCanvas({ SceneComponent, config }: SceneCanvasProps) {
           shadows={config.shadows}
           gl={{
             antialias: config.qualityProfile !== 'low',
-            toneMapping:
-              config.toneMapping === 'aces' ? ACESFilmicToneMapping : NoToneMapping,
           }}
         >
           <Suspense fallback={null}>

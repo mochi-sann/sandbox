@@ -1,10 +1,16 @@
 import { Float } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
-import type { Mesh } from 'three'
+
+interface RotatableMeshRef {
+  rotation: {
+    x: number
+    y: number
+  }
+}
 
 export function BasicShapesScene() {
-  const torusRef = useRef<Mesh>(null)
+  const torusRef = useRef<RotatableMeshRef | null>(null)
 
   useFrame((_state, delta) => {
     if (!torusRef.current) {

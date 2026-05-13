@@ -1,4 +1,6 @@
 import './App.css'
+import { Leva, useControls } from 'leva'
+import type { QualityProfile } from './app/config'
 import { defaultApp3DConfig } from './app/config'
 import { useSceneStore } from './state/sceneStore'
 import { SceneCanvas } from './three/core/SceneCanvas'
@@ -10,9 +12,35 @@ function App() {
   const qualityProfile = useSceneStore((state) => state.qualityProfile)
   const adaptiveQuality = useSceneStore((state) => state.adaptiveQuality)
   const setActiveScene = useSceneStore((state) => state.setActiveScene)
-  const toggleDebug = useSceneStore((state) => state.toggleDebug)
-  const setQualityProfile = useSceneStore((state) => state.setQualityProfile)
-  const setAdaptiveQuality = useSceneStore((state) => state.setAdaptiveQuality)
+  useControls(
+    'Renderer',
+    {
+      Debug: {
+        value: debug,
+        onChange: (value: boolean) => {
+          const state = useSceneStore.getState()
+          if (state.debug !== value) {
+            state.toggleDebug()
+          }
+        },
+      },
+      'Adaptive Quality': {
+        value: adaptiveQuality,
+        onChange: (value: boolean) => {
+          useSceneStore.getState().setAdaptiveQuality(value)
+        },
+      },
+      Quality: {
+        options: ['high', 'medium', 'low'],
+        value: qualityProfile,
+        disabled: adaptiveQuality,
+        onChange: (value: QualityProfile) => {
+          useSceneStore.getState().setQualityProfile(value)
+        },
+      },
+    },
+    [debug, adaptiveQuality, qualityProfile],
+  )
 
   const activeScene =
     sceneModules.find((scene) => scene.id === activeSceneId) ?? sceneModules[0]
@@ -31,37 +59,6 @@ function App() {
           <h1>{activeScene.title}</h1>
           <p className="scene-description">{activeScene.description}</p>
         </div>
-
-        <div className="toolbar">
-          <label className="toggle-row">
-            <span>Debug</span>
-            <input type="checkbox" checked={debug} onChange={toggleDebug} />
-          </label>
-
-          <label className="toggle-row">
-            <span>Adaptive Quality</span>
-            <input
-              type="checkbox"
-              checked={adaptiveQuality}
-              onChange={(event) => setAdaptiveQuality(event.target.checked)}
-            />
-          </label>
-
-          <label className="select-row">
-            <span>Quality</span>
-            <select
-              value={qualityProfile}
-              onChange={(event) =>
-                setQualityProfile(event.target.value as typeof qualityProfile)
-              }
-              disabled={adaptiveQuality}
-            >
-              <option value="high">high</option>
-              <option value="medium">medium</option>
-              <option value="low">low</option>
-            </select>
-          </label>
-        </div>
       </header>
 
       <nav className="scene-nav" aria-label="scene switcher">
@@ -78,6 +75,12 @@ function App() {
       </nav>
 
       <SceneCanvas SceneComponent={activeScene.Component} config={config} />
+      <Leva
+        collapsed
+        oneLineLabels
+        hideCopyButton
+        titleBar={{ title: 'Renderer Controls', drag: false, filter: false }}
+      />
     </main>
   )
 }
