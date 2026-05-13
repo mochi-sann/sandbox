@@ -348,7 +348,14 @@ function AnalysisPage() {
   const rows = useMemo(() => {
     const grouped = new Map<string, { budget: number; actual: number; forecast: number }>()
     for (const item of data ?? []) {
-      const key = String(item[axis as keyof BudgetActualRecord] ?? '未分類')
+      const periodLabel =
+        period === 'month'
+          ? item.periodMonth
+          : period === 'quarter'
+            ? item.quarter
+            : `${item.fiscalYear}年度`
+      const axisLabel = String(item[axis as keyof BudgetActualRecord] ?? '未分類')
+      const key = `${periodLabel} / ${axisLabel}`
       const current = grouped.get(key) ?? { budget: 0, actual: 0, forecast: 0 }
       current.budget += item.annualBudget
       current.actual += item.monthlyActual
