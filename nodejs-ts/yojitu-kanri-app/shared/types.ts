@@ -164,3 +164,28 @@ export type ImportResult = {
   inserted: number
   warnings: string[]
 }
+
+export type ImportPreviewRow = {
+  rowNumber: number
+  valid: boolean
+  warnings: string[]
+  creates: string[]
+  values: Record<string, string | number | boolean | null>
+}
+
+export type ImportPreview = {
+  rows: ImportPreviewRow[]
+  warnings: string[]
+}
+
+export type AuditLogRecord = {
+  id: number
+  target: string
+  action: string
+  summary: string
+  beforeValue: unknown
+  afterValue: unknown
+  changedFields: string
+  createdAt: string
+  userName: string | null
+}

@@ -6,16 +6,7 @@ import { LoadingState } from '../components/LoadingState'
 import { useAppContext } from '../context/AppContext'
 import { useAsync } from '../hooks/useAsync'
 import { asNumber, asString } from '../lib/form'
-import type { AppUser } from '../../shared/types'
-
-type AuditLogRow = {
-  id: number
-  target: string
-  action: string
-  summary: string
-  createdAt: string
-  userName: string | null
-}
+import type { AppUser, AuditLogRecord } from '../../shared/types'
 
 export function PermissionsPage() {
   const { userId, currentUser, masters, refreshMasters } = useAppContext()
@@ -24,7 +15,7 @@ export function PermissionsPage() {
     masters,
   ])
   const [editing, setEditing] = useState<AppUser | null>(null)
-  const [logs, setLogs] = useState<AuditLogRow[]>([])
+  const [logs, setLogs] = useState<AuditLogRecord[]>([])
   const canEdit = Boolean(currentUser?.canManageSettings)
 
   useEffect(() => {
@@ -96,12 +87,25 @@ export function PermissionsPage() {
       <section className="panel table-panel">
         <h2>変更履歴</h2>
         <table>
+          <thead>
+            <tr>
+              <th>日時</th>
+              <th>ユーザー</th>
+              <th>操作</th>
+              <th>変更項目</th>
+              <th>変更前</th>
+              <th>変更後</th>
+            </tr>
+          </thead>
           <tbody>
             {logs.map((log) => (
               <tr key={log.id}>
                 <td>{new Date(log.createdAt).toLocaleString('ja-JP')}</td>
                 <td>{log.userName ?? '-'}</td>
                 <td>{log.summary}</td>
+                <td>{log.changedFields || '-'}</td>
+                <td className="audit-json">{formatAuditValue(log.beforeValue)}</td>
+                <td className="audit-json">{formatAuditValue(log.afterValue)}</td>
               </tr>
             ))}
           </tbody>
@@ -109,4 +113,10 @@ export function PermissionsPage() {
       </section>
     </section>
   )
+}
+
+function formatAuditValue(value: unknown): string {
+  if (value == null) return '-'
+  if (typeof value !== 'object') return String(value)
+  return JSON.stringify(value)
 }

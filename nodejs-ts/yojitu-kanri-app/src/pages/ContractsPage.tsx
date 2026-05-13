@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
+import { FilterBar, emptyFilters } from '../components/FilterBar'
 import { InputField, SelectField } from '../components/FormFields'
 import { LoadingState } from '../components/LoadingState'
 import { useAppContext } from '../context/AppContext'
 import { useAsync } from '../hooks/useAsync'
 import { asNumber, asOptionalString, asString } from '../lib/form'
+import { filterContracts } from '../lib/filterRecords'
 import { yen } from '../lib/format'
 import type { ContractInput, ContractRecord } from '../../shared/types'
 
@@ -16,7 +18,9 @@ export function ContractsPage() {
     [userId],
   )
   const [editing, setEditing] = useState<ContractRecord | null>(null)
+  const [filters, setFilters] = useState(emptyFilters)
   const canEdit = Boolean(currentUser?.canEditContracts)
+  const filteredRecords = filterContracts(data ?? [], filters)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -84,6 +88,13 @@ export function ContractsPage() {
       </form>
       <section className="panel table-panel">
         <h2>契約台帳</h2>
+        <FilterBar
+          filters={filters}
+          masters={masters}
+          visible={['search', 'departmentId', 'toolId', 'vendorId']}
+          onChange={setFilters}
+          onReset={() => setFilters(emptyFilters)}
+        />
         <LoadingState loading={loading} error={error} />
         <table>
           <thead>
@@ -97,7 +108,7 @@ export function ContractsPage() {
             </tr>
           </thead>
           <tbody>
-            {(data ?? []).map((record) => (
+            {filteredRecords.map((record) => (
               <tr key={record.id}>
                 <td>{record.toolName}</td>
                 <td>{record.departmentName}</td>

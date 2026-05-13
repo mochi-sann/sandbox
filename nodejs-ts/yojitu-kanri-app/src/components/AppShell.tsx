@@ -20,6 +20,7 @@ function ShellContent() {
           <Link to="/analysis">予実分析</Link>
           <Link to="/usage">従量課金</Link>
           <Link to="/import">CSV取り込み</Link>
+          <Link to="/alerts">アラート</Link>
           <Link to="/permissions">権限管理</Link>
         </nav>
       </aside>

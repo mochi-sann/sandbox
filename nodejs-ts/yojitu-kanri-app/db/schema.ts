@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -136,5 +137,8 @@ export const auditLogs = pgTable('audit_logs', {
   target: varchar('target', { length: 120 }).notNull(),
   action: varchar('action', { length: 80 }).notNull(),
   summary: text('summary').notNull(),
+  beforeValue: jsonb('before_value'),
+  afterValue: jsonb('after_value'),
+  changedFields: text('changed_fields').notNull().default(''),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })

@@ -14,6 +14,7 @@ import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as ContractsRouteImport } from './routes/contracts'
 import { Route as AnalysisRouteImport } from './routes/analysis'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as IndexRouteImport } from './routes/index'
 
 const UsageRoute = UsageRouteImport.update({
@@ -41,6 +42,11 @@ const AnalysisRoute = AnalysisRouteImport.update({
   path: '/analysis',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/analysis.lazy').then((d) => d.Route))
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/alerts.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/contracts': typeof ContractsRoute
   '/import': typeof ImportRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/contracts': typeof ContractsRoute
   '/import': typeof ImportRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/analysis': typeof AnalysisRoute
   '/contracts': typeof ContractsRoute
   '/import': typeof ImportRoute
@@ -76,16 +85,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts'
     | '/analysis'
     | '/contracts'
     | '/import'
     | '/permissions'
     | '/usage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analysis' | '/contracts' | '/import' | '/permissions' | '/usage'
+  to:
+    | '/'
+    | '/alerts'
+    | '/analysis'
+    | '/contracts'
+    | '/import'
+    | '/permissions'
+    | '/usage'
   id:
     | '__root__'
     | '/'
+    | '/alerts'
     | '/analysis'
     | '/contracts'
     | '/import'
@@ -95,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
   AnalysisRoute: typeof AnalysisRoute
   ContractsRoute: typeof ContractsRoute
   ImportRoute: typeof ImportRoute
@@ -139,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -151,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
   AnalysisRoute: AnalysisRoute,
   ContractsRoute: ContractsRoute,
   ImportRoute: ImportRoute,

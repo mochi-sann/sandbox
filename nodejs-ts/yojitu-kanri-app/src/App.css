@@ -121,6 +121,10 @@ button {
   cursor: pointer;
 }
 
+button.secondary {
+  background: #627386;
+}
+
 button:disabled {
   background: #aab3bf;
   cursor: not-allowed;
@@ -292,6 +296,36 @@ th {
   flex-wrap: wrap;
   align-items: end;
   gap: 12px;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+  box-shadow: none;
+}
+
+.filter-bar button {
+  align-self: end;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.section-heading h2 {
+  margin: 0;
+}
+
+.audit-json {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .import-panel {

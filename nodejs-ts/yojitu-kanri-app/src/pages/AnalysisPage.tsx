@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
+import { FilterBar, emptyFilters } from '../components/FilterBar'
 import { InputField, SelectField } from '../components/FormFields'
 import { LoadingState } from '../components/LoadingState'
 import { useAppContext } from '../context/AppContext'
 import { useAsync } from '../hooks/useAsync'
+import { filterBudgetActuals } from '../lib/filterRecords'
 import { asNumber, asString } from '../lib/form'
 import { yen } from '../lib/format'
 import type { BudgetActualInput, BudgetActualRecord } from '../../shared/types'
@@ -18,11 +20,13 @@ export function AnalysisPage() {
   const [period, setPeriod] = useState('month')
   const [axis, setAxis] = useState('departmentName')
   const [editing, setEditing] = useState<BudgetActualRecord | null>(null)
+  const [filters, setFilters] = useState(emptyFilters)
   const canEdit = Boolean(currentUser?.canEditFinance)
+  const filteredData = useMemo(() => filterBudgetActuals(data ?? [], filters), [data, filters])
 
   const rows = useMemo(() => {
     const grouped = new Map<string, { budget: number; actual: number; forecast: number }>()
-    for (const item of data ?? []) {
+    for (const item of filteredData) {
       const periodLabel =
         period === 'month'
           ? item.periodMonth
@@ -46,7 +50,7 @@ export function AnalysisPage() {
           value.budget > 0 ? Math.round(((value.budget - value.forecast) / value.budget) * 100) : 0,
       }))
       .sort((a, b) => b.actual - a.actual)
-  }, [axis, data, period])
+  }, [axis, filteredData, period])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -99,6 +103,21 @@ export function AnalysisPage() {
       </section>
       <section className="panel table-panel">
         <h2>予実比較ランキング</h2>
+        <FilterBar
+          filters={filters}
+          masters={masters}
+          visible={[
+            'search',
+            'periodMonth',
+            'departmentId',
+            'projectId',
+            'costCategoryId',
+            'toolId',
+            'vendorId',
+          ]}
+          onChange={setFilters}
+          onReset={() => setFilters(emptyFilters)}
+        />
         <LoadingState loading={loading} error={error} />
         <table>
           <thead>
@@ -154,7 +173,7 @@ export function AnalysisPage() {
         <h2>予実データ</h2>
         <table>
           <tbody>
-            {(data ?? []).map((record) => (
+            {filteredData.map((record) => (
               <tr key={record.id}>
                 <td>{record.periodMonth}</td>
                 <td>{record.departmentName}</td>

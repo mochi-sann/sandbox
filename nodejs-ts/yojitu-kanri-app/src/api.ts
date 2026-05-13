@@ -5,6 +5,8 @@ import type {
   ContractInput,
   ContractRecord,
   Dashboard,
+  AuditLogRecord,
+  ImportPreview,
   ImportResult,
   Masters,
   UsageInput,
@@ -99,25 +101,25 @@ export const api = {
     }),
   deleteUser: (options: ApiOptions, id: number) =>
     request<{ ok: boolean }>(`/api/users/${id}`, options, { method: 'DELETE' }),
-  importContracts: (options: ApiOptions, csv: string) =>
+  previewContractsImport: (options: ApiOptions, csv: string) =>
+    request<ImportPreview>('/api/import/contracts/preview', options, {
+      method: 'POST',
+      body: JSON.stringify({ csv }),
+    }),
+  importContracts: (options: ApiOptions, csv: string, selectedRows?: number[]) =>
     request<ImportResult>('/api/import/contracts', options, {
       method: 'POST',
-      body: JSON.stringify({ csv }),
+      body: JSON.stringify({ csv, selectedRows }),
     }),
-  importBudgetActuals: (options: ApiOptions, csv: string) =>
-    request<ImportResult>('/api/import/budget-actuals', options, {
+  previewBudgetActualsImport: (options: ApiOptions, csv: string) =>
+    request<ImportPreview>('/api/import/budget-actuals/preview', options, {
       method: 'POST',
       body: JSON.stringify({ csv }),
     }),
-  auditLogs: (options: ApiOptions) =>
-    request<
-      {
-        id: number
-        target: string
-        action: string
-        summary: string
-        createdAt: string
-        userName: string | null
-      }[]
-    >('/api/audit-logs', options),
+  importBudgetActuals: (options: ApiOptions, csv: string, selectedRows?: number[]) =>
+    request<ImportResult>('/api/import/budget-actuals', options, {
+      method: 'POST',
+      body: JSON.stringify({ csv, selectedRows }),
+    }),
+  auditLogs: (options: ApiOptions) => request<AuditLogRecord[]>('/api/audit-logs', options),
 }

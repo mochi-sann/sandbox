@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '../api'
+import { FilterBar, emptyFilters } from '../components/FilterBar'
 import { InputField, SelectField } from '../components/FormFields'
 import { LoadingState } from '../components/LoadingState'
 import { useAppContext } from '../context/AppContext'
 import { useAsync } from '../hooks/useAsync'
 import { asNumber, asString } from '../lib/form'
+import { filterUsageRecords } from '../lib/filterRecords'
 import { numberFormat, yen } from '../lib/format'
 import type { UsageInput, UsageRecord } from '../../shared/types'
 
@@ -16,7 +18,9 @@ export function UsagePage() {
     [userId],
   )
   const [editing, setEditing] = useState<UsageRecord | null>(null)
+  const [filters, setFilters] = useState(emptyFilters)
   const canEdit = Boolean(currentUser?.canEditUsage)
+  const filteredRecords = filterUsageRecords(data ?? [], filters)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -68,6 +72,13 @@ export function UsagePage() {
       </form>
       <section className="panel table-panel">
         <h2>従量課金・利用状況</h2>
+        <FilterBar
+          filters={filters}
+          masters={masters}
+          visible={['search', 'periodMonth', 'departmentId', 'projectId', 'toolId']}
+          onChange={setFilters}
+          onReset={() => setFilters(emptyFilters)}
+        />
         <LoadingState loading={loading} error={error} />
         <table>
           <thead>
@@ -81,7 +92,7 @@ export function UsagePage() {
             </tr>
           </thead>
           <tbody>
-            {(data ?? []).map((record) => (
+            {filteredRecords.map((record) => (
               <tr key={record.id}>
                 <td>{record.periodMonth}</td>
                 <td>{record.toolName}</td>
