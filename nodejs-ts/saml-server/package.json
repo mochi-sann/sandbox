@@ -1,0 +1,30 @@
+{
+  "name": "saml-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SAML 2.0 学習用: 低レベル実装の IdP(認証サーバー) + 動作確認用の最小SP",
+  "scripts": {
+    "gen-certs": "bash scripts/gen-certs.sh",
+    "dev:idp": "tsx watch src/idp/index.ts",
+    "dev:sp": "tsx watch src/sp/index.ts",
+    "dev": "concurrently -n idp,sp -c blue,green \"pnpm dev:idp\" \"pnpm dev:sp\"",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "@xmldom/xmldom": "^0.9.6",
+    "hono": "^4.6.14",
+    "xml-crypto": "^6.0.0",
+    "xpath": "^0.0.34"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.1.0",
+    "selfsigned": "^2.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
