@@ -5,6 +5,7 @@ import { PORTS, sp } from "../config";
 import { registerMetadata } from "./routes/metadata";
 import { registerLogin } from "./routes/login";
 import { registerAcs } from "./routes/acs";
+import { registerMemos } from "./routes/memos";
 import { registerHome } from "./routes/home";
 import { registerSlo } from "./routes/slo";
 
@@ -13,6 +14,7 @@ const app = new Hono();
 registerMetadata(app);
 registerLogin(app);
 registerAcs(app);
+registerMemos(app);
 registerSlo(app);
 registerHome(app); // "/" と "/sp/" を最後に登録
 

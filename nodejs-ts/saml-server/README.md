@@ -1,7 +1,7 @@
 # saml-server — SAML 2.0 学習用 IdP + SP
 
 SAML 2.0 の仕組みを手を動かして理解するための学習用プロジェクト。
-**認証サーバー(IdP)** を本体とし、SSO の往復を観察するための **動作確認用の最小 SP** を同梱する。
+**認証サーバー(IdP)** を本体とし、SSO の往復を観察するための **SP(メモ帳アプリ)** を同梱する。
 
 XML 署名(c14n)という最も難しい部分だけ [`xml-crypto`](https://github.com/node-saml/xml-crypto) に任せ、
 それ以外(メッセージの組み立て・パース・バインディング・フロー)はすべて自前で実装している。
@@ -65,8 +65,10 @@ src/
     authn-request.ts / assertion.ts / response.ts / metadata.ts / logout.ts
   idp/                 ★認証サーバー (Hono, :8001)
     routes/ metadata, sso, login, init, slo
-  sp/                  ★動作確認用 SP (Hono, :8002)
-    routes/ metadata, login, acs, home, slo
+  sp/                  ★SP = メモ帳アプリ (Hono, :8002)
+    auth.ts            アプリ側セッションの取得ヘルパ
+    memos.ts           メモのインメモリ・ストア (NameID ごと)
+    routes/ metadata, login, acs, home(アプリUI), memos(CRUD), slo
 test/                  コアの往復・改ざん・XSW・検証テスト
 ```
 
@@ -83,12 +85,37 @@ pnpm dev              # IdP(:8001) と SP(:8002) を同時起動
 
 ブラウザで試す:
 
-1. **SP-initiated**: <http://localhost:8002/sp/login> → `alice` / `password` でログイン → 属性が表示される
-2. **IdP-initiated**: <http://localhost:8001/idp/init> → ログイン → SP へ
+1. **SP-initiated**: <http://localhost:8002/sp/> → 「SAML でログイン」→ `alice`/`password` → メモ帳が開く
+2. **IdP-initiated**: <http://localhost:8001/idp/init> → ログイン → メモ帳へ
 3. **メタデータ**: <http://localhost:8001/idp/metadata> / <http://localhost:8002/sp/metadata>
-4. **SLO**: 保護ページの「ログアウト」→ 両者のセッションが破棄される
+4. **SLO**: メモ帳の「ログアウト」→ 両者のセッションが破棄される
 
 テストユーザー: `alice` / `password` (role=admin), `bob` / `password` (role=user)
+
+---
+
+## サンプルアプリ: メモ帳 (SAML 統合パターン)
+
+SP(:8002) は SAML でログインするメモ帳アプリ。ログイン後はユーザーごとにメモを CRUD できる。
+
+ここで学べる **SAML 統合の実務パターン**:
+
+- **SAML は「入口」だけ**を担う。ログインが済んだら、アプリは `sp_sid` cookie で引く
+  **自前のセッション**(`src/sp/store.ts`)でユーザーを識別する。SAML Response を毎回
+  検証するわけではない。
+- **アプリのデータはユーザーに紐づく**。SAML から受け取るのは「誰か(NameID)」という事実だけ。
+  メモは NameID をキーに保存する(`src/sp/memos.ts`)。別ユーザー(alice/bob)のメモは互いに見えない。
+- **属性(attributes)は認可に使える**。Assertion の `role`(admin/user)はアプリ画面に表示しており、
+  ロールで操作を制限する拡張の足がかりになる。
+
+| メソッド/パス | 役割 |
+|---|---|
+| `GET  /sp/` | メモ一覧(保護ページ)。未ログインならログイン誘導 |
+| `POST /sp/memos` | メモ追加 |
+| `POST /sp/memos/:id/toggle` | 完了の切替 |
+| `POST /sp/memos/:id/delete` | 削除 |
+
+> 学習用のため CSRF 対策・永続化は省略(本番では必須)。
 
 ---
 
