@@ -263,8 +263,8 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
 fn new_pixmap(width: usize, height: usize) -> Result<Pixmap, String> {
     let w = u32::try_from(width).map_err(|_| "canvas width too large".to_string())?;
     let h = u32::try_from(height).map_err(|_| "canvas height too large".to_string())?;
-    let size = IntSize::from_wh(w.max(1), h.max(1))
-        .ok_or_else(|| "invalid canvas size".to_string())?;
+    let size =
+        IntSize::from_wh(w.max(1), h.max(1)).ok_or_else(|| "invalid canvas size".to_string())?;
     let mut pixmap = Pixmap::new(size.width(), size.height())
         .ok_or_else(|| "failed to allocate pixmap".to_string())?;
     pixmap.fill(SkColor::WHITE);
@@ -294,6 +294,115 @@ pub fn paint_pixmap(layout_root: &LayoutBox, width: usize, height: usize) -> Pix
     for item in &display_list {
         paint_item(&mut pixmap, item);
     }
+    pixmap
+}
+
+/// Renders the browser "chrome" — an address bar toolbar — into a freshly
+/// allocated [`Pixmap`] of `width`x`height` pixels.
+///
+/// The toolbar has a flat background, an inset text field (its border turns blue
+/// while `focused`), the `address` text, and a blinking-free caret drawn at the
+/// end of the text when `focused`. The shell blits this above the page content
+/// every frame, so it stays fixed while the document scrolls.
+pub fn paint_address_bar(width: usize, height: usize, address: &str, focused: bool) -> Pixmap {
+    let mut pixmap = new_pixmap(width, height)
+        .or_else(|_| new_pixmap(1, 1))
+        .expect("1x1 pixmap is always allocatable");
+
+    let w = width as f32;
+    let h = height as f32;
+
+    // Toolbar background.
+    let bar_bg = Color {
+        r: 0xe8,
+        g: 0xe8,
+        b: 0xec,
+        a: 255,
+    };
+    fill_rect(
+        &mut pixmap,
+        &bar_bg,
+        &Rect {
+            x: 0.0,
+            y: 0.0,
+            width: w,
+            height: h,
+        },
+    );
+
+    // Inset text field: a colored border rectangle with a white interior.
+    let margin = 6.0;
+    let field = Rect {
+        x: margin,
+        y: margin,
+        width: (w - 2.0 * margin).max(0.0),
+        height: (h - 2.0 * margin).max(0.0),
+    };
+    let border = if focused {
+        Color {
+            r: 0x1a,
+            g: 0x73,
+            b: 0xe8,
+            a: 255,
+        } // focus blue
+    } else {
+        Color {
+            r: 0xb4,
+            g: 0xb4,
+            b: 0xbc,
+            a: 255,
+        } // idle gray
+    };
+    fill_rect(&mut pixmap, &border, &field);
+    let inner = Rect {
+        x: field.x + 1.5,
+        y: field.y + 1.5,
+        width: (field.width - 3.0).max(0.0),
+        height: (field.height - 3.0).max(0.0),
+    };
+    let white = Color {
+        r: 0xff,
+        g: 0xff,
+        b: 0xff,
+        a: 255,
+    };
+    fill_rect(&mut pixmap, &white, &inner);
+
+    // Address text, vertically centered in the field.
+    let font_size = 15.0;
+    let text_color = Color {
+        r: 0x20,
+        g: 0x20,
+        b: 0x24,
+        a: 255,
+    };
+    let pad_x = inner.x + 7.0;
+    let f = font::default_font();
+    let line_h = f.line_height(font_size);
+    let ascent = f.ascent(font_size);
+    let top = inner.y + ((inner.height - line_h) / 2.0).max(0.0);
+    let baseline = top + ascent;
+    draw_text(
+        &mut pixmap,
+        address,
+        &text_color,
+        pad_x,
+        baseline,
+        font_size,
+    );
+
+    // Caret at the end of the text while editing.
+    if focused {
+        let caret_x = pad_x + f.measure(address, font_size) + 1.0;
+        let caret = Rect {
+            x: caret_x,
+            y: top + 1.0,
+            width: 1.5,
+            height: (line_h - 2.0).max(2.0),
+        };
+        fill_rect(&mut pixmap, &text_color, &caret);
+    }
+
     pixmap
 }
 

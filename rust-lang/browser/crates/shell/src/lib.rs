@@ -25,7 +25,11 @@ use winit::keyboard::{Key, NamedKey};
 use winit::window::{Window, WindowId};
 
 use browser_net::Url;
-use browser_paint::{pixmap_to_u32, Canvas};
+use browser_paint::{paint_address_bar, pixmap_to_u32, Canvas};
+
+/// Height of the address-bar toolbar (browser chrome) drawn above the page, in
+/// physical pixels.
+const TOOLBAR_H: u32 = 40;
 
 pub mod nav;
 
@@ -62,12 +66,23 @@ pub fn canvas_to_buffer(canvas: &Canvas) -> Vec<u32> {
 /// thread of a process that has access to a display server. It is never invoked
 /// from tests.
 pub fn run(canvas: Canvas) -> Result<(), Box<dyn Error>> {
-    let event_loop = build_event_loop()?;
+    let event_loop = build_event_loop().map_err(backend_hint)?;
     event_loop.set_control_flow(ControlFlow::Wait);
 
     let mut app = App::new(canvas);
-    event_loop.run_app(&mut app)?;
+    event_loop.run_app(&mut app).map_err(backend_hint)?;
     Ok(())
+}
+
+/// Prints a troubleshooting hint for the common display-backend failure — an X11
+/// "Broken pipe" caused by a `DISPLAY` pointing at an unreachable X server —
+/// before propagating `err`.
+fn backend_hint(err: impl Into<Box<dyn Error>>) -> Box<dyn Error> {
+    eprintln!(
+        "hint: a 'Broken pipe' / display error usually means DISPLAY points at an \
+         unreachable X server. Try `WINIT_UNIX_BACKEND=wayland ...` or `DISPLAY=:0 ...`."
+    );
+    err.into()
 }
 
 /// Builds the winit event loop, preferring the Wayland backend when one is
@@ -76,9 +91,9 @@ pub fn run(canvas: Canvas) -> Result<(), Box<dyn Error>> {
 /// winit otherwise selects X11 whenever `DISPLAY` is set. Under WSLg (and some
 /// remote setups) `DISPLAY` can point at an unreachable X server, so the X11
 /// backend fails with a "Broken pipe" error even though a working Wayland
-/// compositor is present. When `WAYLAND_DISPLAY` is set and the user has not
-/// explicitly forced a backend via `WINIT_UNIX_BACKEND`, we therefore ask winit
-/// to use Wayland. On pure-X11 sessions `WAYLAND_DISPLAY` is unset, so winit
+/// compositor is present. When a Wayland display is available and the user has
+/// not explicitly forced a backend via `WINIT_UNIX_BACKEND`, we therefore ask
+/// winit to use Wayland. On pure-X11 sessions no Wayland socket exists, so winit
 /// keeps its default X11 behavior.
 fn build_event_loop() -> Result<EventLoop<()>, Box<dyn Error>> {
     let mut builder = EventLoop::builder();
@@ -88,13 +103,36 @@ fn build_event_loop() -> Result<EventLoop<()>, Box<dyn Error>> {
         use winit::platform::wayland::EventLoopBuilderExtWayland;
 
         let backend_forced = std::env::var_os("WINIT_UNIX_BACKEND").is_some();
-        let wayland_available = std::env::var_os("WAYLAND_DISPLAY").is_some_and(|v| !v.is_empty());
-        if wayland_available && !backend_forced {
+        if wayland_available() && !backend_forced {
             builder.with_wayland();
         }
     }
 
     Ok(builder.build()?)
+}
+
+/// Whether a Wayland display is available, ensuring `WAYLAND_DISPLAY` is set when
+/// so.
+///
+/// Returns `true` when `WAYLAND_DISPLAY` is already set, or — for environments
+/// (notably WSLg) whose interactive shell does not export it — when the default
+/// `wayland-0` compositor socket exists under `XDG_RUNTIME_DIR`. In that latter
+/// case it also sets `WAYLAND_DISPLAY=wayland-0`, because `wayland-client` will
+/// not connect without the variable even when the socket is present. This runs
+/// on the main thread before the event loop starts (no other threads yet), so
+/// the process-global env mutation is safe.
+#[cfg(all(unix, not(target_os = "macos")))]
+fn wayland_available() -> bool {
+    if std::env::var_os("WAYLAND_DISPLAY").is_some_and(|v| !v.is_empty()) {
+        return true;
+    }
+    if let Some(dir) = std::env::var_os("XDG_RUNTIME_DIR") {
+        if std::path::Path::new(&dir).join("wayland-0").exists() {
+            std::env::set_var("WAYLAND_DISPLAY", "wayland-0");
+            return true;
+        }
+    }
+    false
 }
 
 /// winit application state. The window and softbuffer surface are created lazily
@@ -255,11 +293,11 @@ impl App {
 /// Must be called from the main thread of a process with display-server access;
 /// never invoked from tests.
 pub fn run_browser(start: Url, width: u32, height: u32) -> Result<(), Box<dyn Error>> {
-    let event_loop = build_event_loop()?;
+    let event_loop = build_event_loop().map_err(backend_hint)?;
     event_loop.set_control_flow(ControlFlow::Wait);
 
     let mut app = NavApp::new(start, width, height);
-    event_loop.run_app(&mut app)?;
+    event_loop.run_app(&mut app).map_err(backend_hint)?;
     Ok(())
 }
 
@@ -278,6 +316,10 @@ struct NavApp {
     height: u32,
     /// Vertical scroll offset in document px (0 = top).
     scroll_y: f32,
+    /// The editable address-bar text (the URL shown in the toolbar).
+    address: String,
+    /// Whether the address bar has keyboard focus (is being edited).
+    editing: bool,
     /// Last known cursor position, in physical window pixels.
     cursor: PhysicalPosition<f64>,
     /// The window, created on `resumed`.
@@ -289,16 +331,52 @@ struct NavApp {
 impl NavApp {
     fn new(start: Url, width: u32, height: u32) -> NavApp {
         NavApp {
+            address: start.as_str().to_string(),
             state: BrowserState::new(),
             pending: Some(start),
             page: None,
             width,
             height,
             scroll_y: 0.0,
+            editing: false,
             cursor: PhysicalPosition::new(0.0, 0.0),
             window: None,
             surface: None,
         }
+    }
+
+    /// Requests a repaint of the window, if one exists.
+    fn request_redraw(&self) {
+        if let Some(window) = &self.window {
+            window.request_redraw();
+        }
+    }
+
+    /// Navigates to whatever the user has typed into the address bar. The input
+    /// is resolved the same way a clicked link is: an absolute URL goes there
+    /// directly, anything else is resolved against the current page.
+    fn commit_address(&mut self) {
+        let input = self.address.trim().to_string();
+        if input.is_empty() {
+            return;
+        }
+        match self.state.resolve_target(&input) {
+            Ok(url) => {
+                self.editing = false;
+                self.navigate(url);
+            }
+            Err(e) => eprintln!("error: invalid address '{input}': {e}"),
+        }
+    }
+
+    /// Abandons an in-progress edit, restoring the address bar to the current
+    /// page's URL.
+    fn cancel_editing(&mut self) {
+        self.editing = false;
+        if let Some(url) = &self.state.current_url {
+            self.address = url.as_str().to_string();
+        }
+        self.request_redraw();
     }
 
     /// Loads `url` into the current page, logging any error (so a bad link does
@@ -308,21 +386,39 @@ impl NavApp {
             Ok(page) => {
                 println!("Loaded {}", page.url);
                 self.scroll_y = 0.0;
-                self.page = Some(page);
-                if let Some(window) = &self.window {
-                    window.request_redraw();
+                // Reflect the loaded URL in the address bar (unless the user is
+                // mid-edit) and clear any stale editing state.
+                if !self.editing {
+                    self.address = page.url.as_str().to_string();
                 }
+                self.page = Some(page);
+                self.request_redraw();
             }
             Err(e) => eprintln!("error: failed to load page: {e}"),
         }
     }
 
-    /// Handles a left-button click at the current cursor position: maps the
-    /// physical pixel to document coordinates (accounting for scroll) and, if it
-    /// hits a link, resolves and navigates to it.
+    /// Handles a left-button click at the current cursor position.
+    ///
+    /// A click inside the toolbar focuses the address bar for editing; a click
+    /// below it is mapped to document coordinates (accounting for the toolbar
+    /// offset and scroll) and, if it hits a link, resolves and navigates to it.
     fn handle_click(&mut self) {
+        let cy = self.cursor.y as f32;
+
+        // Click in the toolbar: focus the address bar.
+        if cy < TOOLBAR_H as f32 {
+            self.editing = true;
+            self.request_redraw();
+            return;
+        }
+
+        // Click in the page area: leave edit mode and hit-test links.
+        if self.editing {
+            self.cancel_editing();
+        }
         let doc_x = self.cursor.x as f32;
-        let doc_y = self.cursor.y as f32 + self.scroll_y;
+        let doc_y = (cy - TOOLBAR_H as f32) + self.scroll_y;
 
         let href = self
             .page
@@ -395,19 +491,21 @@ impl NavApp {
 
         buffer.fill(0x00FF_FFFF);
 
+        let win_w = win_w.get() as usize;
+        let win_h = win_h.get() as usize;
+        let toolbar_h = (TOOLBAR_H as usize).min(win_h);
+
+        // 1. Page content, blitted into the area below the toolbar (offset by the
+        //    toolbar height and the scroll position).
         if let Some(page) = &self.page {
             let pm_w = page.pixmap.width() as usize;
             let pm_h = page.pixmap.height() as usize;
             let pixels = pixmap_to_u32(&page.pixmap);
-
-            let win_w = win_w.get() as usize;
-            let win_h = win_h.get() as usize;
             let scroll = self.scroll_y.max(0.0) as usize;
-
             let copy_w = win_w.min(pm_w);
-            // For each window row, find the corresponding (scrolled) pixmap row.
-            for y in 0..win_h {
-                let src_y = y + scroll;
+
+            for y in toolbar_h..win_h {
+                let src_y = (y - toolbar_h) + scroll;
                 if src_y >= pm_h {
                     break;
                 }
@@ -415,6 +513,20 @@ impl NavApp {
                 let dst_row = y * win_w;
                 buffer[dst_row..dst_row + copy_w]
                     .copy_from_slice(&pixels[src_row..src_row + copy_w]);
+            }
+        }
+
+        // 2. Address-bar toolbar, fixed at the top (drawn last so it overlays).
+        if toolbar_h > 0 {
+            let bar = paint_address_bar(win_w, toolbar_h, &self.address, self.editing);
+            let bar_px = pixmap_to_u32(&bar);
+            let bar_w = bar.width() as usize;
+            let copy_w = win_w.min(bar_w);
+            for y in 0..toolbar_h {
+                let src_row = y * bar_w;
+                let dst_row = y * win_w;
+                buffer[dst_row..dst_row + copy_w]
+                    .copy_from_slice(&bar_px[src_row..src_row + copy_w]);
             }
         }
 
@@ -434,7 +546,9 @@ impl ApplicationHandler for NavApp {
             .with_title("browser")
             .with_inner_size(winit::dpi::LogicalSize::new(
                 self.width as f64,
-                self.height as f64,
+                // Add the toolbar height so the page keeps its requested
+                // viewport size below the address bar.
+                (self.height + TOOLBAR_H) as f64,
             ));
 
         let window = match event_loop.create_window(attributes) {
@@ -481,12 +595,36 @@ impl ApplicationHandler for NavApp {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::KeyboardInput { event, .. } if event.state.is_pressed() => {
-                match event.logical_key {
-                    Key::Named(NamedKey::Escape) => event_loop.exit(),
-                    Key::Named(NamedKey::Backspace) | Key::Named(NamedKey::BrowserBack) => {
-                        self.go_back();
+                if self.editing {
+                    // Address-bar editing mode.
+                    match &event.logical_key {
+                        Key::Named(NamedKey::Escape) => self.cancel_editing(),
+                        Key::Named(NamedKey::Enter) => self.commit_address(),
+                        Key::Named(NamedKey::Backspace) => {
+                            self.address.pop();
+                            self.request_redraw();
+                        }
+                        _ => {
+                            // Insert any printable text the key produced.
+                            if let Some(text) = &event.text {
+                                let before = self.address.len();
+                                self.address
+                                    .extend(text.chars().filter(|c| !c.is_control()));
+                                if self.address.len() != before {
+                                    self.request_redraw();
+                                }
+                            }
+                        }
                     }
-                    _ => {}
+                } else {
+                    // Page navigation mode.
+                    match event.logical_key {
+                        Key::Named(NamedKey::Escape) => event_loop.exit(),
+                        Key::Named(NamedKey::Backspace) | Key::Named(NamedKey::BrowserBack) => {
+                            self.go_back();
+                        }
+                        _ => {}
+                    }
                 }
             }
             WindowEvent::CursorMoved { position, .. } => {

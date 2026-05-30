@@ -14,8 +14,8 @@
 //! The public entry point is [`layout_tree`].
 
 use browser_css::{Unit, Value};
-use browser_text::{self as font, DEFAULT_FONT_SIZE};
 use browser_style::{Display, StyledNode};
+use browser_text::{self as font, DEFAULT_FONT_SIZE};
 
 /// A rectangle in the page's coordinate space (pixels). `x`/`y` are the
 /// top-left corner of the *content* area.

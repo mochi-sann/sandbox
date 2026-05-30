@@ -319,8 +319,9 @@ pub fn url_from_input(input: &str) -> Result<Url, net::NetError> {
             .map_err(|e| net::NetError::Io(e.to_string()))?
             .join(path)
     };
-    Url::from_file_path(&abs)
-        .map_err(|()| net::NetError::InvalidUrl(format!("not a valid file path: {}", abs.display())))
+    Url::from_file_path(&abs).map_err(|()| {
+        net::NetError::InvalidUrl(format!("not a valid file path: {}", abs.display()))
+    })
 }
 
 /// Errors that can occur while loading a page.
@@ -353,12 +354,9 @@ mod tests {
 
     #[test]
     fn hit_test_finds_link_by_point() {
-        let dom = html::parse(
-            r#"<div><a href="https://example.com/">click</a></div>"#.to_string(),
-        );
-        let sheet = css::parse(
-            "div { display: block; } a { display: block; height: 20px; }".to_string(),
-        );
+        let dom = html::parse(r#"<div><a href="https://example.com/">click</a></div>"#.to_string());
+        let sheet =
+            css::parse("div { display: block; } a { display: block; height: 20px; }".to_string());
         let styled = style_tree(&dom, &sheet);
         let layout = layout_tree(&styled, vp(800.0, 600.0));
 
@@ -369,12 +367,10 @@ mod tests {
 
     #[test]
     fn hit_test_misses_outside_link() {
-        let dom = html::parse(
-            r#"<div><a href="https://example.com/" >click</a></div>"#.to_string(),
-        );
-        let sheet = css::parse(
-            "div { display: block; } a { display: block; height: 20px; }".to_string(),
-        );
+        let dom =
+            html::parse(r#"<div><a href="https://example.com/" >click</a></div>"#.to_string());
+        let sheet =
+            css::parse("div { display: block; } a { display: block; height: 20px; }".to_string());
         let styled = style_tree(&dom, &sheet);
         let layout = layout_tree(&styled, vp(800.0, 600.0));
 
@@ -386,9 +382,8 @@ mod tests {
     #[test]
     fn hit_test_ignores_anchor_without_href() {
         let dom = html::parse(r#"<div><a>no href</a></div>"#.to_string());
-        let sheet = css::parse(
-            "div { display: block; } a { display: block; height: 20px; }".to_string(),
-        );
+        let sheet =
+            css::parse("div { display: block; } a { display: block; height: 20px; }".to_string());
         let styled = style_tree(&dom, &sheet);
         let layout = layout_tree(&styled, vp(800.0, 600.0));
 
@@ -397,12 +392,9 @@ mod tests {
 
     #[test]
     fn collect_links_records_each_anchor() {
-        let dom = html::parse(
-            r#"<div><a href="/a">a</a><a href="/b">b</a></div>"#.to_string(),
-        );
-        let sheet = css::parse(
-            "div { display: block; } a { display: block; height: 10px; }".to_string(),
-        );
+        let dom = html::parse(r#"<div><a href="/a">a</a><a href="/b">b</a></div>"#.to_string());
+        let sheet =
+            css::parse("div { display: block; } a { display: block; height: 10px; }".to_string());
         let styled = style_tree(&dom, &sheet);
         let layout = layout_tree(&styled, vp(800.0, 600.0));
 
@@ -414,12 +406,9 @@ mod tests {
 
     #[test]
     fn hit_test_links_snapshot_matches_pure_hit_test() {
-        let dom = html::parse(
-            r#"<div><a href="/a">a</a><a href="/b">b</a></div>"#.to_string(),
-        );
-        let sheet = css::parse(
-            "div { display: block; } a { display: block; height: 10px; }".to_string(),
-        );
+        let dom = html::parse(r#"<div><a href="/a">a</a><a href="/b">b</a></div>"#.to_string());
+        let sheet =
+            css::parse("div { display: block; } a { display: block; height: 10px; }".to_string());
         let styled = style_tree(&dom, &sheet);
         let layout = layout_tree(&styled, vp(800.0, 600.0));
         let links = collect_links(&layout);

@@ -121,9 +121,20 @@ pub fn initial_value(name: &str) -> Option<Value> {
         "font-family" => Some(Value::Keyword("serif".to_string())),
         "font-weight" | "font-style" => Some(Value::Keyword("normal".to_string())),
         "line-height" => Some(Value::Keyword("normal".to_string())),
-        "margin" | "margin-top" | "margin-right" | "margin-bottom" | "margin-left" | "padding"
-        | "padding-top" | "padding-right" | "padding-bottom" | "padding-left" | "border-width"
-        | "border-top-width" | "border-right-width" | "border-bottom-width"
+        "margin"
+        | "margin-top"
+        | "margin-right"
+        | "margin-bottom"
+        | "margin-left"
+        | "padding"
+        | "padding-top"
+        | "padding-right"
+        | "padding-bottom"
+        | "padding-left"
+        | "border-width"
+        | "border-top-width"
+        | "border-right-width"
+        | "border-bottom-width"
         | "border-left-width" => Some(Value::Length(0.0, Unit::Px)),
         _ => None,
     }
@@ -461,9 +472,8 @@ mod tests {
     fn important_beats_higher_specificity() {
         // The tag rule is !important; the id rule is more specific but normal.
         // !important must win.
-        let sheet = css::parse(
-            "div { color: #ff0000 !important; } #box { color: #000000; }".to_string(),
-        );
+        let sheet =
+            css::parse("div { color: #ff0000 !important; } #box { color: #000000; }".to_string());
         let mut attrs = AttrMap::new();
         attrs.insert("id".to_string(), "box".to_string());
         let node = dom::elem("div".to_string(), attrs, vec![]);
@@ -494,8 +504,7 @@ mod tests {
     #[test]
     fn relative_em_font_size_resolves_against_parent() {
         // Parent 20px, child 1.5em -> 30px.
-        let sheet =
-            css::parse("div { font-size: 20px; } span { font-size: 1.5em; }".to_string());
+        let sheet = css::parse("div { font-size: 20px; } span { font-size: 1.5em; }".to_string());
         let span = dom::elem("span".to_string(), AttrMap::new(), vec![]);
         let div = dom::elem("div".to_string(), AttrMap::new(), vec![span]);
 

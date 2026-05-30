@@ -63,7 +63,10 @@ impl fmt::Display for NetError {
         match self {
             NetError::InvalidUrl(s) => write!(f, "invalid or unresolvable URL: {s}"),
             NetError::InvalidScheme(url) => {
-                write!(f, "unsupported URL scheme (expected http/https/file): {url}")
+                write!(
+                    f,
+                    "unsupported URL scheme (expected http/https/file): {url}"
+                )
             }
             NetError::HttpStatus { url, status } => {
                 write!(f, "request to {url} failed with HTTP status {status}")
@@ -215,7 +218,8 @@ fn fetch_file(url: &Url) -> Result<Resource, NetError> {
         .to_file_path()
         .map_err(|()| NetError::InvalidUrl(format!("not a valid file path: {url}")))?;
 
-    let bytes = std::fs::read(&path).map_err(|e| NetError::Io(format!("{}: {e}", path.display())))?;
+    let bytes =
+        std::fs::read(&path).map_err(|e| NetError::Io(format!("{}: {e}", path.display())))?;
 
     Ok(Resource {
         final_url: url.clone(),
@@ -247,8 +251,8 @@ fn decode_bytes(bytes: &[u8], charset: Option<&str>) -> String {
         Some(enc) => enc,
         // 2/3. No usable label: let encoding_rs sniff a BOM, defaulting to UTF-8.
         None => {
-            let (enc, _bom_len) = encoding_rs::Encoding::for_bom(bytes)
-                .unwrap_or((encoding_rs::UTF_8, 0));
+            let (enc, _bom_len) =
+                encoding_rs::Encoding::for_bom(bytes).unwrap_or((encoding_rs::UTF_8, 0));
             enc
         }
     };
