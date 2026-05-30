@@ -200,7 +200,7 @@ impl Parser {
         }
         // Most-specific first; `sort_by` is stable so equal selectors keep
         // their source order.
-        selectors.sort_by(|a, b| specificity(b).cmp(&specificity(a)));
+        selectors.sort_by_key(|s| std::cmp::Reverse(specificity(s)));
         selectors
     }
 

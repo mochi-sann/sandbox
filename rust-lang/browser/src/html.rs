@@ -234,7 +234,10 @@ mod tests {
             _ => panic!("expected element"),
         }
         assert_eq!(root.children.len(), 1);
-        assert_eq!(root.children[0].node_type, NodeType::Text("Hello".to_string()));
+        assert_eq!(
+            root.children[0].node_type,
+            NodeType::Text("Hello".to_string())
+        );
     }
 
     #[test]

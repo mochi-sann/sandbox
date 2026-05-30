@@ -137,10 +137,11 @@ impl ApplicationHandler for App {
     ) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
-            WindowEvent::KeyboardInput { event, .. } => {
-                if event.state.is_pressed() && event.logical_key == Key::Named(NamedKey::Escape) {
-                    event_loop.exit();
-                }
+            WindowEvent::KeyboardInput { event, .. }
+                if event.state.is_pressed()
+                    && event.logical_key == Key::Named(NamedKey::Escape) =>
+            {
+                event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
                 self.redraw();
@@ -162,7 +163,8 @@ impl App {
         };
 
         let size = window.inner_size();
-        let (Some(win_w), Some(win_h)) = (NonZeroU32::new(size.width), NonZeroU32::new(size.height))
+        let (Some(win_w), Some(win_h)) =
+            (NonZeroU32::new(size.width), NonZeroU32::new(size.height))
         else {
             return;
         };

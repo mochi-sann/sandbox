@@ -88,7 +88,10 @@ fn run() -> Result<(), String> {
         .save_png(out_path)
         .map_err(|e| format!("failed to write PNG '{out_path}': {e}"))?;
 
-    println!("Wrote {}x{} image to {out_path}", canvas.width, canvas.height);
+    println!(
+        "Wrote {}x{} image to {out_path}",
+        canvas.width, canvas.height
+    );
     Ok(())
 }
 
@@ -118,14 +121,15 @@ fn render(html_source: &str, css_source: &str, viewport: Dimensions) -> painting
 
 /// Builds an initial containing block (the viewport) of the given size.
 fn viewport_dimensions(width: f32, height: f32) -> Dimensions {
-    let mut viewport = Dimensions::default();
-    viewport.content = Rect {
-        x: 0.0,
-        y: 0.0,
-        width,
-        height,
-    };
-    viewport
+    Dimensions {
+        content: Rect {
+            x: 0.0,
+            y: 0.0,
+            width,
+            height,
+        },
+        ..Default::default()
+    }
 }
 
 fn parse_dim(arg: Option<&String>, default: u32, label: &str) -> Result<u32, String> {

@@ -9,14 +9,15 @@ use browser::{css, html, painting, style};
 
 /// Builds a viewport (initial containing block) of the given size.
 fn viewport(width: f32, height: f32) -> Dimensions {
-    let mut d = Dimensions::default();
-    d.content = Rect {
-        x: 0.0,
-        y: 0.0,
-        width,
-        height,
-    };
-    d
+    Dimensions {
+        content: Rect {
+            x: 0.0,
+            y: 0.0,
+            width,
+            height,
+        },
+        ..Default::default()
+    }
 }
 
 #[test]

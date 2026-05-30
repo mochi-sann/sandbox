@@ -210,8 +210,8 @@ fn render_text(list: &mut DisplayList, layout_box: &LayoutBox, color: &Color) {
 /// Emits a background fill covering the box's border area, if it has a
 /// `background` (or `background-color`) color.
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
-    if let Some(color) = get_color(layout_box, "background")
-        .or_else(|| get_color(layout_box, "background-color"))
+    if let Some(color) =
+        get_color(layout_box, "background").or_else(|| get_color(layout_box, "background-color"))
     {
         list.push(DisplayCommand::SolidColor(
             color,
@@ -296,7 +296,9 @@ fn blend(src: &Color, coverage: u8, dst: &Color) -> Color {
     // alpha channel.
     let a = (coverage as f32 / 255.0) * (src.a as f32 / 255.0);
     let mix = |s: u8, d: u8| -> u8 {
-        (s as f32 * a + d as f32 * (1.0 - a)).round().clamp(0.0, 255.0) as u8
+        (s as f32 * a + d as f32 * (1.0 - a))
+            .round()
+            .clamp(0.0, 255.0) as u8
     };
     Color {
         r: mix(src.r, dst.r),
@@ -344,9 +346,8 @@ mod tests {
     fn background_color_fills_box() {
         // A single block filling the whole viewport, painted red.
         let dom = html::parse("<div></div>".to_string());
-        let sheet = css::parse(
-            "div { display: block; height: 50px; background: #ff0000; }".to_string(),
-        );
+        let sheet =
+            css::parse("div { display: block; height: 50px; background: #ff0000; }".to_string());
         let styled = style_tree(&dom, &sheet);
 
         let bounds = Rect {
@@ -427,12 +428,8 @@ mod tests {
     fn text_paints_non_background_pixels() {
         // A paragraph containing text on a white background. After painting,
         // some pixels must differ from the white background (glyph ink).
-        let dom = html::parse(
-            "<div><p>Hello World</p></div>".to_string(),
-        );
-        let sheet = css::parse(
-            "div, p { display: block; } p { color: #000000; }".to_string(),
-        );
+        let dom = html::parse("<div><p>Hello World</p></div>".to_string());
+        let sheet = css::parse("div, p { display: block; } p { color: #000000; }".to_string());
         let styled = style_tree(&dom, &sheet);
 
         let bounds = Rect {
@@ -461,8 +458,7 @@ mod tests {
     fn text_color_is_applied() {
         // Red text should produce pixels with a red component and no blue.
         let dom = html::parse("<p>iii</p>".to_string());
-        let sheet =
-            css::parse("p { display: block; color: #ff0000; }".to_string());
+        let sheet = css::parse("p { display: block; color: #ff0000; }".to_string());
         let styled = style_tree(&dom, &sheet);
 
         let bounds = Rect {
@@ -477,10 +473,7 @@ mod tests {
         // Red text over white leaves the red channel high while the green and
         // blue channels are pulled toward 0 wherever a glyph has coverage, so
         // some pixel must be clearly red-dominant (r > g and r > b).
-        let has_red_ink = canvas
-            .pixels
-            .iter()
-            .any(|c| c.r > c.g && c.r > c.b);
+        let has_red_ink = canvas.pixels.iter().any(|c| c.r > c.g && c.r > c.b);
         assert!(has_red_ink, "expected red-tinted glyph pixels");
     }
 }

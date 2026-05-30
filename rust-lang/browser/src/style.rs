@@ -74,11 +74,7 @@ type MatchedRule<'a> = (Specificity, &'a Rule);
 /// classes) are satisfied by the element.
 fn matches_simple_selector(elem: &ElementData, selector: &SimpleSelector) -> bool {
     // Tag name: must match if specified.
-    if selector
-        .tag_name
-        .iter()
-        .any(|name| *name != elem.tag_name)
-    {
+    if selector.tag_name.iter().any(|name| *name != elem.tag_name) {
         return false;
     }
 
@@ -137,7 +133,7 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
     // Sort by ascending specificity so that more specific (and later) rules
     // overwrite earlier ones. `sort_by` is stable, preserving source order for
     // equal specificities.
-    rules.sort_by(|(a, _), (b, _)| a.cmp(b));
+    rules.sort_by_key(|(specificity, _)| *specificity);
 
     for (_, rule) in rules {
         for declaration in &rule.declarations {

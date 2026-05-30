@@ -304,10 +304,8 @@ impl<'a> LayoutBox<'a> {
 
         let zero = Value::Length(0.0, Unit::Px);
 
-        let mut margin_left = style
-            .lookup("margin-left", "margin", &zero);
-        let mut margin_right = style
-            .lookup("margin-right", "margin", &zero);
+        let mut margin_left = style.lookup("margin-left", "margin", &zero);
+        let mut margin_right = style.lookup("margin-right", "margin", &zero);
 
         let border_left = style.lookup("border-left-width", "border-width", &zero);
         let border_right = style.lookup("border-right-width", "border-width", &zero);
@@ -402,7 +400,9 @@ impl<'a> LayoutBox<'a> {
         d.margin.top = style.lookup("margin-top", "margin", &zero).to_px();
         d.margin.bottom = style.lookup("margin-bottom", "margin", &zero).to_px();
 
-        d.border.top = style.lookup("border-top-width", "border-width", &zero).to_px();
+        d.border.top = style
+            .lookup("border-top-width", "border-width", &zero)
+            .to_px();
         d.border.bottom = style
             .lookup("border-bottom-width", "border-width", &zero)
             .to_px();
@@ -410,8 +410,7 @@ impl<'a> LayoutBox<'a> {
         d.padding.top = style.lookup("padding-top", "padding", &zero).to_px();
         d.padding.bottom = style.lookup("padding-bottom", "padding", &zero).to_px();
 
-        d.content.x =
-            containing_block.content.x + d.margin.left + d.border.left + d.padding.left;
+        d.content.x = containing_block.content.x + d.margin.left + d.border.left + d.padding.left;
         // Position below all previous content in the containing block.
         d.content.y = containing_block.content.height
             + containing_block.content.y
@@ -568,9 +567,8 @@ mod tests {
 
     #[test]
     fn root_block_fills_container_width_and_stacks_children() {
-        let dom = html::parse(
-            "<div><div class=\"a\"></div><div class=\"b\"></div></div>".to_string(),
-        );
+        let dom =
+            html::parse("<div><div class=\"a\"></div><div class=\"b\"></div></div>".to_string());
         let sheet = css::parse(
             "div { display: block; } .a { height: 50px; } .b { height: 30px; }".to_string(),
         );
@@ -602,9 +600,7 @@ mod tests {
     #[test]
     fn fixed_width_with_auto_margins_centers_box() {
         let dom = html::parse("<div></div>".to_string());
-        let sheet = css::parse(
-            "div { display: block; width: 200px; margin: auto; }".to_string(),
-        );
+        let sheet = css::parse("div { display: block; width: 200px; margin: auto; }".to_string());
         let styled = style_tree(&dom, &sheet);
 
         let root = layout_tree(&styled, viewport(800.0, 600.0));
@@ -621,8 +617,7 @@ mod tests {
     fn padding_and_explicit_height_affect_geometry() {
         let dom = html::parse("<div></div>".to_string());
         let sheet = css::parse(
-            "div { display: block; width: 100px; padding: 10px; height: 40px; }"
-                .to_string(),
+            "div { display: block; width: 100px; padding: 10px; height: 40px; }".to_string(),
         );
         let styled = style_tree(&dom, &sheet);
 
