@@ -145,6 +145,10 @@ painting::paint → Canvas::save_png` を順に呼び出してパイプライン
   された CSS の相対 URL 解決は未対応。
 - `--gui` は WSLg など表示サーバが必要。ウィンドウはキャンバスを左上に等倍表示します
   (スケーリングなし)。ヘッドレス環境ではハングし得るため、CI/テストでは起動しません。
+- バックエンド選択: `WAYLAND_DISPLAY` が設定されていれば Wayland を優先します
+  (winit は既定で X11 を選ぶため、WSLg のように `DISPLAY` が到達不能な X サーバを
+  指していると `Broken pipe` で失敗するのを避ける目的)。`WINIT_UNIX_BACKEND=x11` /
+  `=wayland` で明示的に上書きできます。
 
 ## ライセンス
 

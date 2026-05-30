@@ -53,12 +53,39 @@ pub fn canvas_to_buffer(canvas: &Canvas) -> Vec<u32> {
 /// thread of a process that has access to a display server. It is never invoked
 /// from tests.
 pub fn run(canvas: Canvas) -> Result<(), Box<dyn Error>> {
-    let event_loop = EventLoop::new()?;
+    let event_loop = build_event_loop()?;
     event_loop.set_control_flow(ControlFlow::Wait);
 
     let mut app = App::new(canvas);
     event_loop.run_app(&mut app)?;
     Ok(())
+}
+
+/// Builds the winit event loop, preferring the Wayland backend when one is
+/// available.
+///
+/// winit otherwise selects X11 whenever `DISPLAY` is set. Under WSLg (and some
+/// remote setups) `DISPLAY` can point at an unreachable X server, so the X11
+/// backend fails with a "Broken pipe" error even though a working Wayland
+/// compositor is present. When `WAYLAND_DISPLAY` is set and the user has not
+/// explicitly forced a backend via `WINIT_UNIX_BACKEND`, we therefore ask winit
+/// to use Wayland. On pure-X11 sessions `WAYLAND_DISPLAY` is unset, so winit
+/// keeps its default X11 behavior.
+fn build_event_loop() -> Result<EventLoop<()>, Box<dyn Error>> {
+    let mut builder = EventLoop::builder();
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        use winit::platform::wayland::EventLoopBuilderExtWayland;
+
+        let backend_forced = std::env::var_os("WINIT_UNIX_BACKEND").is_some();
+        let wayland_available = std::env::var_os("WAYLAND_DISPLAY").is_some_and(|v| !v.is_empty());
+        if wayland_available && !backend_forced {
+            builder.with_wayland();
+        }
+    }
+
+    Ok(builder.build()?)
 }
 
 /// winit application state. The window and softbuffer surface are created lazily
