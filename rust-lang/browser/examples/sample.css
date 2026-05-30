@@ -1,0 +1,45 @@
+html, body, div, h1, p {
+  display: block;
+}
+
+.page {
+  background: #f0f0f0;
+  padding: 20px;
+}
+
+.header {
+  background: #333344;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: #ffffff;
+  font-size: 28px;
+}
+
+.content {
+  background: #ffffff;
+  border-color: #cccccc;
+  border-width: 2px;
+  padding: 15px;
+  color: #222222;
+}
+
+.lead {
+  color: #1a3c6e;
+  font-size: 18px;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.footer {
+  background: #333344;
+  color: #cccccc;
+  padding: 10px;
+  margin-top: 20px;
+  font-size: 14px;
+}

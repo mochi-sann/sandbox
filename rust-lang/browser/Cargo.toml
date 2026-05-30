@@ -1,0 +1,30 @@
+[package]
+name = "browser"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.95"
+description = "A minimal browser engine built incrementally in Rust, inspired by Matt Brubeck's robinson."
+license = "MIT"
+readme = "README.md"
+
+# This crate provides both a library (the engine) and a binary (the CLI driver).
+[lib]
+name = "browser"
+path = "src/lib.rs"
+
+[[bin]]
+name = "browser"
+path = "src/main.rs"
+
+[dependencies]
+fontdue = "0.9.3"
+# `image` is used by the painting stage to encode the rasterized canvas to PNG.
+image = "0.25"
+# `ureq` is a small blocking HTTP/HTTPS client. Its default features include
+# rustls, so https works out of the box without any system TLS libraries.
+ureq = "3"
+# `winit` creates the native window and drives the event loop (0.30 uses the
+# `ApplicationHandler` trait-based API). `softbuffer` pushes a CPU pixel buffer
+# to that window without a GPU, which suits our software rasterizer.
+winit = "0.30"
+softbuffer = "0.4"
