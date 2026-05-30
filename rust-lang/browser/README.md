@@ -1,155 +1,151 @@
 # browser — Rust 製ミニブラウザエンジン
 
-Rust で最小のブラウザエンジンを **段階的に** 構築する学習用プロジェクトです。
+Rust で本格派寄りのブラウザエンジンを **段階的に** 構築する学習用プロジェクトです。
 Matt Brubeck の ["Let's build a browser engine!" (robinson)](https://limpet.net/mbrubeck/2014/08/08/toy-layout-engine-1.html)
-を下敷きに、HTML/CSS のごく小さなサブセットを解釈して 1 枚の画像に描画するまでの
-レンダリングパイプラインを実装していきます。
+を下敷きに、HTML/CSS のサブセットを解釈してネイティブウィンドウに描画し、
+リンククリックで再ナビゲーションするところまでを実装しています。
 
 ## レンダリングパイプライン
 
 ```text
+  URL/file ──fetch──▶ bytes ──decode──▶ HTML 文字列
   HTML  ──parse──▶  DOM tree
-  CSS   ──parse──▶  Stylesheet
+  CSS   ──parse──▶  Stylesheet (UA 既定 + ページ内 <style>)
                       │
-        DOM + CSS ──▶ Style tree (styled nodes)
+        DOM + CSS ──▶ Style tree (cascade + 継承 + computed values)
                       │
-                 Layout tree (boxes with geometry)
+                 Layout tree (box model + block/inline + text shaping)
                       │
-                 Display list ──paint──▶ pixels (image)
+                 Display list ──paint(tiny-skia)──▶ Pixmap
+                      │
+            ┌─────────┴──────────┐
+        PNG 出力            winit ウィンドウ表示 + リンク遷移
 ```
 
-各モジュールがパイプラインの 1 ステージに対応します。
+## ワークスペース構成
 
-| モジュール (`src/`) | 役割 |
-| --- | --- |
-| `dom`      | DOM ノード (要素 / テキスト) のツリー表現 |
-| `html`     | HTML ソース文字列 → DOM ツリーへのパーサ |
-| `css`      | CSS のデータモデルとパーサ (`Stylesheet` 等) |
-| `style`    | DOM + CSS を合成したスタイルツリー (computed values) |
-| `layout`   | スタイルツリー → ボックスツリー (位置・寸法 + テキストの行折り返し) |
-| `painting` | レイアウトツリー → 描画コマンド → ピクセル/画像 (グリフ描画含む) |
-| `font`     | DejaVu Sans フォントのラスタライズ (`fontdue` ラッパ) |
-| `net`      | http(s) URL から HTML/CSS を取得する HTTP クライアント (`ureq`) |
-| `gui`      | レンダリング結果をネイティブウィンドウに表示 (`winit` + `softbuffer`) |
+単一クレートから Cargo ワークスペースへ移行済みです。各エンジン機能が独立した
+ライブラリクレート (`crates/*`) になり、CLI バイナリ (`apps/browser`) がそれらを束ねます。
+パッケージ名は `browser-<name>`、ライブラリ名は `browser_<name>` です。
 
-## 構成
-
-ライブラリ (`src/lib.rs`) とバイナリ (`src/main.rs`) の両方を持つ構成です。
-エンジン本体はライブラリとして提供し、`main.rs` はそれを駆動する CLI です。
-
-```
+```text
 browser/
-├── Cargo.toml
-├── README.md
-├── src/
-│   ├── lib.rs        # クレートのエントリ。pub mod 宣言
-│   ├── main.rs       # CLI ドライバ (全段を結線)
-│   ├── dom.rs
-│   ├── html.rs
-│   ├── css.rs
-│   ├── style.rs
-│   ├── layout.rs
-│   ├── painting.rs
-│   ├── font.rs        # フォントのラスタライズ (fontdue)
-│   ├── net.rs         # http(s) フェッチ (ureq)
-│   └── gui.rs         # ネイティブウィンドウ表示 (winit + softbuffer)
-├── examples/
-│   ├── sample.html   # 動作確認用サンプル HTML
-│   └── sample.css    # 動作確認用サンプル CSS
-└── tests/
-    ├── scaffold.rs   # モジュール構成のスモークテスト
-    └── integration.rs # パイプライン全体の E2E テスト
+├── Cargo.toml                 # [workspace] / 共有メタデータ / 共有依存
+├── crates/
+│   ├── dom/      browser-dom     DOM Node/NodeType/ElementData 型と text/elem
+│   ├── html/     browser-html    再帰下降 HTML パーサ → DOM
+│   ├── css/      browser-css     CSS パーサ/モデル (!important, shorthand, Px/Em/%)
+│   ├── style/    browser-style   スタイルツリー (cascade + 継承 + computed + em/%)
+│   ├── text/     browser-text    フォント読込・rustybuzz シェーピング・fontdue ラスタライズ
+│   ├── layout/   browser-layout  box model + block/inline レイアウト + 折り返し
+│   ├── paint/    browser-paint   ディスプレイリスト + tiny-skia ラスタライズ + PNG
+│   ├── net/      browser-net     URL parse/resolve・http(s)/file fetch・charset decode
+│   └── shell/    browser-shell   winit+softbuffer ウィンドウ + ナビゲーション + hit-test
+└── apps/
+    └── browser/  browser         CLI ドライバ (URL/ファイル → PNG または --gui)
 ```
 
-## 段階的な構築ステージ
+クレート間の依存はおおむね上から下へ単方向です
+(`shell` は `dom/html/css/style/layout/paint/net` に依存し、`apps/browser` が全体を束ねます)。
 
-1. **Scaffold**: Cargo プロジェクトの足場とモジュール構成の雛形を作成。
-2. **DOM**: `dom` モジュールでノードツリーを定義。
-3. **HTML parser**: `html` で HTML を DOM に変換。
-4. **CSS parser**: `css` で CSS をパースしデータモデルを構築。
-5. **Style tree**: `style` で DOM と CSS を合成し computed values を求める。
-6. **Layout**: `layout` でブロック/インラインのボックスツリーと幾何を計算。
-7. **Painting**: `painting` で表示リストを生成しピクセル/画像に描画。
-8. **Integration**: CLI で HTML+CSS を読み、PNG を出力する E2E を完成。
-9. **Text**: `font` + インラインレイアウトでテキストを行折り返しし、グリフを
-   アルファブレンドして描画 (複数フォントサイズ・継承された文字色に対応)。
-10. **Networking**: `net` で `http(s)` URL から HTML/CSS を取得可能に
-    (ローカルファイルと URL を引数ごとに自動判別)。
-11. **GUI Window** (現在): `gui` でレンダリング結果をネイティブウィンドウに表示。
+## マイルストーンの達成内容 (M1–M4)
 
-### 依存クレート
+- **M1 — エンジン基盤**: DOM / HTML パーサ / CSS パーサ / スタイルツリー / box model
+  レイアウト / ディスプレイリスト描画 / PNG 出力。ワークスペース化。
+- **M2 — カスケード**: `!important`・specificity・source order による本物のカスケード、
+  color/font-size などの継承、initial 値テーブル、`em`/`%` の font-size 解決。
+- **M3 — テキスト & ペイント**: rustybuzz によるシェーピング (advance/offset を px へ)、
+  fontdue による glyph ラスタライズ、tiny-skia (`Pixmap`) による矩形/ボーダー/テキスト描画。
+- **M4 — シェル & ナビゲーション**: winit + softbuffer のネイティブウィンドウ表示、
+  ウィンドウリサイズ・スクロール対応、`<a href>` のヒットテストとリンククリック遷移、
+  履歴 (戻る)、URL 解決 (相対 href を現在ページ基準で resolve)。
 
-| クレート | バージョン | 用途 |
-| --- | --- | --- |
-| `image`     | 0.25 | キャンバスの PNG エンコード |
-| `fontdue`   | 0.9  | フォントのグリフラスタライズ |
-| `ureq`      | 3    | http(s) からの HTML/CSS 取得 (rustls 既定) |
-| `winit`     | 0.30 | ウィンドウ生成とイベントループ (`ApplicationHandler`) |
-| `softbuffer`| 0.4  | CPU ピクセルバッファをウィンドウへ転送 |
+## 本格派の依存
+
+| クレート | 用途 |
+|----------|------|
+| [`url`](https://crates.io/crates/url) | URL parse / 相対参照の resolve |
+| [`encoding_rs`](https://crates.io/crates/encoding_rs) | charset を見た best-effort テキストデコード |
+| [`ureq`](https://crates.io/crates/ureq) | http(s) fetch (rustls TLS, gzip, redirect) |
+| [`rustybuzz`](https://crates.io/crates/rustybuzz) | テキストシェーピング (advance / cluster) |
+| [`fontdue`](https://crates.io/crates/fontdue) | glyph ラスタライズ (カバレッジ bitmap) |
+| [`tiny-skia`](https://crates.io/crates/tiny-skia) | 2D ラスタライズ (`Pixmap`) + PNG エンコード |
+| [`winit`](https://crates.io/crates/winit) 0.30 | ウィンドウ / イベントループ |
+| [`softbuffer`](https://crates.io/crates/softbuffer) 0.4 | CPU ピクセルバッファをウィンドウへ転送 |
+| [`image`](https://crates.io/crates/image) | 互換 Canvas の PNG 出力 (補助) |
+
+フォントは `crates/text/assets/DejaVuSans.ttf` を `include_bytes!` で埋め込んでいます。
 
 ## 使い方
 
-```sh
-# ビルド
-cargo build
+ビルド・テスト:
 
-# テスト (ユニット + 統合テスト)
-cargo test
-
-# サンプルをレンダリング (引数なし: examples/sample.* → output.png, 800x600)
-cargo run
-
-# 任意の HTML/CSS を指定して PNG を出力
-cargo run -- <html> <css> <out.png> [width] [height]
-# 例:
-cargo run -- examples/sample.html examples/sample.css out.png 400 400
-
-# URL から HTML/CSS を取得して描画 (http(s) を自動判別)
-cargo run -- https://example.com/index.html https://example.com/style.css out.png
-
-# ネイティブウィンドウに表示 (PNG は出力しない。閉じるか Esc で終了)
-cargo run -- --gui
-cargo run -- examples/sample.html examples/sample.css --gui
-
-# ヘルプ
-cargo run -- --help
+```bash
+cargo build --workspace
+cargo test  --workspace
 ```
 
-`HTML` / `CSS` 引数はローカルファイルパスでも `http(s)` URL でも構いません
-(`net::is_url` で自動判別します)。`--gui` はフラグなので位置引数の順序には影響せず、
-任意の位置に置けます。`--gui` 指定時は PNG ではなくウィンドウ表示になります。
+### ファイル / URL を PNG にレンダリング
 
-### CLI 引数
+```bash
+# 既定 (examples/sample.html + examples/sample.css) を 800x600 で output.png に出力
+cargo run -p browser
 
-| 引数 | 説明 | デフォルト |
-| --- | --- | --- |
-| `HTML`    | 入力 HTML のパス または http(s) URL | `examples/sample.html` |
-| `CSS`     | 入力 CSS のパス または http(s) URL  | `examples/sample.css` |
-| `OUT.png` | 出力 PNG ファイルのパス (`--gui` 時は無視) | `output.png` |
-| `WIDTH`   | ビューポート幅 (px)      | `800` |
-| `HEIGHT`  | キャンバス高さ (px)      | `600` |
-| `--gui`   | ネイティブウィンドウに表示 (フラグ) | (なし) |
+# HTML/CSS/出力先/幅/高さを指定
+cargo run -p browser -- page.html style.css out.png 1024 768
 
-CLI は内部で `html::parse → css::parse → style::style_tree → layout::layout_tree →
-painting::paint → Canvas::save_png` を順に呼び出してパイプライン全体を駆動します。
+# URL からも取得可能 (http/https)
+cargo run -p browser -- https://example.com/ style.css out.png
+```
 
-### 制限事項
+### ナビゲーション可能なウィンドウ (`--gui`)
 
-- CSS パーサはコメント (`/* ... */`) 未対応。サンプルもコメントなしで記述しています。
-- インラインレイアウトは行単位のみ。1 つの段落内のテキストはブロックの `font-size` を
-  共有し、`<span>` など個別スタイルのインライン要素は親のテキスト行に平坦化されます
-  (段落内での混在スタイルは未対応)。長い単語の途中改行も未対応。
-- 空白処理は単純な collapse-and-trim (`white-space: pre` 等は未対応)。
-- 長さ単位は `px` のみ。グリフはアルファブレンドしますが、ソリッド矩形は上書き塗り。
-- `net::fetch` はボディを UTF-8 として読み、タイムアウト/リダイレクト上限やリンク
-  された CSS の相対 URL 解決は未対応。
-- `--gui` は WSLg など表示サーバが必要。ウィンドウはキャンバスを左上に等倍表示します
-  (スケーリングなし)。ヘッドレス環境ではハングし得るため、CI/テストでは起動しません。
-- バックエンド選択: `WAYLAND_DISPLAY` が設定されていれば Wayland を優先します
-  (winit は既定で X11 を選ぶため、WSLg のように `DISPLAY` が到達不能な X サーバを
-  指していると `Broken pipe` で失敗するのを避ける目的)。`WINIT_UNIX_BACKEND=x11` /
-  `=wayland` で明示的に上書きできます。
+`--gui` を付けると、HTML 引数 (URL またはローカルパス) を起点に **対話的な**
+ブラウザウィンドウを開きます。CSS 引数はこのモードでは無視され、
+ページ内の `<style>` と組み込みのユーザエージェント既定スタイルシートが使われます。
 
-## ライセンス
+```bash
+cargo run -p browser -- page.html --gui
+cargo run -p browser -- https://example.com/ --gui
+```
 
-MIT
+操作:
+
+| 操作 | 動作 |
+|------|------|
+| `<a href>` を左クリック | そのリンクへ遷移 (相対 href は現在ページ基準で解決) |
+| Backspace / ブラウザ Back キー | 履歴を 1 つ戻る |
+| マウスホイール | ページを縦スクロール |
+| Esc / 閉じるボタン | 終了 |
+
+### スタイルのダンプ (`--dump-style`)
+
+```bash
+cargo run -p browser -- page.html style.css --dump-style
+```
+
+DOM ツリーに各ノードの computed style (cascade + 継承) を注釈して標準出力に表示します。
+
+## アーキテクチャ上の判断
+
+- **ヒットテストの window 非依存化**: `browser_shell::hit_test(layout, x, y)` と
+  `collect_links(layout)` はウィンドウを開かずに動作し、単体テストできます。
+  実行中のウィンドウは描画後にリンク矩形の所有スナップショット (`Vec<LinkArea>`) を
+  作り、クリック時はそれを `hit_test_links` で引きます。これにより
+  「DOM/style/layout を借用する LayoutBox」を event loop 越しに保持せずに済みます。
+- **arena DOM 未採用**: 本プロジェクトの DOM は `Node` が `Vec<Node>` で子を所有する
+  単純な所有ツリーです。学習用途では親リンクや任意ノード参照が不要で、
+  借用チェッカと素直に付き合えるこの形が読みやすいため、`id`/arena 方式
+  (例: `indextree`) は採用していません。双方向リンクや DOM 変更 (スクリプト) が
+  必要になった段階で再検討します。
+
+## 既知の制限 (今後)
+
+- **Flexbox / Grid 未実装**: レイアウトは block + 単純な inline 折り返しのみ。
+- **JavaScript 未実装**: DOM は静的。スクリプト実行やイベント・DOM 変更はありません。
+- **`<link rel="stylesheet">` の外部 CSS 取得は未配線**: `--gui` はページ内 `<style>`
+  と UA 既定のみを読みます (`net::resolve` は用意済みなので将来 `<link>` を辿れます)。
+- 複雑スクリプト / 合字 / RTL・BiDi、web-font 読み込み、`line-height` のレイアウト消費、
+  半透明背景の真のアルファ合成、サブピクセル AA は未対応。
+- `--gui` の表示はビューポート幅でレイアウトした文書の上端を等倍表示し、
+  ホイールで縦スクロールします (横スクロール・ズームなし)。

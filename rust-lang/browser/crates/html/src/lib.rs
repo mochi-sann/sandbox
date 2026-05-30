@@ -1,6 +1,6 @@
 //! The HTML parser.
 //!
-//! Turns a source string of HTML into a [`crate::dom`] tree using a small
+//! Turns a source string of HTML into a [`browser_dom`] tree using a small
 //! recursive-descent parser in the style of Matt Brubeck's robinson.
 //!
 //! Supported subset:
@@ -15,7 +15,7 @@
 //! node: if the source has multiple top-level nodes they are wrapped in a
 //! synthetic `<html>` element.
 
-use crate::dom::{self, AttrMap, Node};
+use browser_dom::{self as dom, AttrMap, Node};
 
 /// Parses an HTML `source` string into a single DOM [`Node`].
 ///
@@ -224,7 +224,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dom::NodeType;
+    use browser_dom::NodeType;
 
     #[test]
     fn parses_single_element_with_text() {

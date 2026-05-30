@@ -1,0 +1,20 @@
+[package]
+name = "browser"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "CLI driver for the browser engine."
+
+[[bin]]
+name = "browser"
+path = "src/main.rs"
+
+[dependencies]
+browser-css.workspace = true
+browser-html.workspace = true
+browser-layout.workspace = true
+browser-net.workspace = true
+browser-paint.workspace = true
+browser-shell.workspace = true
+browser-style.workspace = true

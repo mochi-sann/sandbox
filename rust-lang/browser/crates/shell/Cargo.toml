@@ -1,0 +1,23 @@
+[package]
+name = "browser-shell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Native window shell (winit + softbuffer) for the browser engine."
+
+[lib]
+name = "browser_shell"
+path = "src/lib.rs"
+
+[dependencies]
+browser-css.workspace = true
+browser-dom.workspace = true
+browser-html.workspace = true
+browser-layout.workspace = true
+browser-net.workspace = true
+browser-paint.workspace = true
+browser-style.workspace = true
+tiny-skia.workspace = true
+winit.workspace = true
+softbuffer.workspace = true

@@ -1,0 +1,22 @@
+[package]
+name = "browser-paint"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Painting and rasterization (display list to pixels) for the browser engine."
+
+[lib]
+name = "browser_paint"
+path = "src/lib.rs"
+
+[dependencies]
+browser-css.workspace = true
+browser-layout.workspace = true
+browser-text.workspace = true
+image.workspace = true
+tiny-skia.workspace = true
+
+[dev-dependencies]
+browser-html.workspace = true
+browser-style.workspace = true

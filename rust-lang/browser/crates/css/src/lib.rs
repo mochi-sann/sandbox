@@ -6,7 +6,7 @@
 //!
 //! The design follows Matt Brubeck's "Let's build a browser engine"
 //! (robinson) and intentionally mirrors the helper-method style of the HTML
-//! parser in [`crate::html`].
+//! parser in the `browser-html` crate.
 //!
 //! Supported subset:
 //! - selectors: type (`p`), id (`#main`), class (`.lead`), universal (`*`),
@@ -60,6 +60,10 @@ pub struct Declaration {
     pub name: String,
     /// The property value.
     pub value: Value,
+    /// Whether the declaration carries the `!important` flag. Important
+    /// declarations win over normal ones in the cascade regardless of
+    /// specificity (see the `browser-style` crate).
+    pub important: bool,
 }
 
 /// A CSS value.
@@ -73,11 +77,16 @@ pub enum Value {
     ColorValue(Color),
 }
 
-/// A length unit. Only `px` is supported.
+/// A length unit.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Unit {
-    /// CSS pixels.
+    /// CSS pixels (absolute).
     Px,
+    /// `em` — relative to the element's font size.
+    Em,
+    /// `%` — relative to a context-dependent basis (e.g. parent font size for
+    /// `font-size`).
+    Percent,
 }
 
 /// An RGBA color, each channel in `0..=255`.
@@ -237,6 +246,10 @@ impl Parser {
     }
 
     /// Parses a declaration block: `{ name: value; ... }`.
+    ///
+    /// Box-model shorthands (`margin`, `padding`, `border-width`) are expanded
+    /// into their per-side longhand declarations here, so the cascade and
+    /// layout stages only ever see longhands.
     fn parse_declarations(&mut self) -> Vec<Declaration> {
         assert_eq!(self.consume_char(), '{');
         let mut declarations = Vec::new();
@@ -248,12 +261,13 @@ impl Parser {
                 }
                 break;
             }
-            declarations.push(self.parse_declaration());
+            let decl = self.parse_declaration();
+            expand_shorthand(decl, &mut declarations);
         }
         declarations
     }
 
-    /// Parses one `name: value;` declaration.
+    /// Parses one `name: value [!important];` declaration.
     fn parse_declaration(&mut self) -> Declaration {
         let name = self.parse_identifier();
         self.consume_whitespace();
@@ -261,11 +275,30 @@ impl Parser {
         self.consume_whitespace();
         let value = self.parse_value();
         self.consume_whitespace();
+        // Optional `!important` flag.
+        let important = self.parse_important();
+        self.consume_whitespace();
         // Optional trailing semicolon.
         if !self.eof() && self.next_char() == ';' {
             self.consume_char();
         }
-        Declaration { name, value }
+        Declaration {
+            name,
+            value,
+            important,
+        }
+    }
+
+    /// Consumes a trailing `!important` flag if present, returning whether it
+    /// was found.
+    fn parse_important(&mut self) -> bool {
+        if self.eof() || self.next_char() != '!' {
+            return false;
+        }
+        self.consume_char(); // '!'
+        self.consume_whitespace();
+        let ident = self.parse_identifier().to_ascii_lowercase();
+        ident == "important"
     }
 
     /// Parses a value: hex color, length, or keyword.
@@ -277,9 +310,8 @@ impl Parser {
         }
     }
 
-    /// Parses a length value such as `10px` or `12.5px`. A unit-less number
-    /// becomes a keyword fallback only if no `px` follows; here we default a
-    /// bare number to `Px`.
+    /// Parses a length value such as `10px`, `12.5px`, `1.5em`, or `150%`.
+    /// A unit-less number defaults to `Px`.
     fn parse_length(&mut self) -> Value {
         let number = self.parse_float();
         let unit = self.parse_unit();
@@ -292,13 +324,17 @@ impl Parser {
         s.parse().unwrap_or(0.0)
     }
 
-    /// Parses a length unit. Only `px` is recognized; anything else defaults
-    /// to `Px`.
+    /// Parses a length unit. `px`, `em`, and `%` are recognized; any other
+    /// (or missing) unit defaults to `Px`.
     fn parse_unit(&mut self) -> Unit {
-        // Consume any unit token; only `px` is supported, so everything maps
-        // to `Unit::Px`.
-        let _unit = self.parse_identifier().to_ascii_lowercase();
-        Unit::Px
+        if !self.eof() && self.next_char() == '%' {
+            self.consume_char();
+            return Unit::Percent;
+        }
+        match self.parse_identifier().to_ascii_lowercase().as_str() {
+            "em" => Unit::Em,
+            _ => Unit::Px,
+        }
     }
 
     /// Parses a `#rgb` or `#rrggbb` color.
@@ -340,6 +376,46 @@ impl Parser {
     }
 }
 
+/// Expands a box-model shorthand declaration (`margin`, `padding`,
+/// `border-width`) into its four per-side longhand declarations, pushing the
+/// results onto `out`. Non-shorthand declarations are pushed through unchanged.
+///
+/// The CSS 1-to-4 value syntax is honoured, but because this minimal parser
+/// only models a single [`Value`] per declaration (not a value list), a single
+/// value is applied to all four sides. That covers the common
+/// `margin: 10px;` case; multi-value shorthands degrade to the first value.
+fn expand_shorthand(decl: Declaration, out: &mut Vec<Declaration>) {
+    let sides = match decl.name.as_str() {
+        "margin" => ["margin-top", "margin-right", "margin-bottom", "margin-left"],
+        "padding" => [
+            "padding-top",
+            "padding-right",
+            "padding-bottom",
+            "padding-left",
+        ],
+        "border-width" => [
+            "border-top-width",
+            "border-right-width",
+            "border-bottom-width",
+            "border-left-width",
+        ],
+        _ => {
+            out.push(decl);
+            return;
+        }
+    };
+    for side in sides {
+        out.push(Declaration {
+            name: side.to_string(),
+            value: decl.value.clone(),
+            important: decl.important,
+        });
+    }
+    // Keep the shorthand itself too, so existing layout code that looks up the
+    // shorthand name (e.g. `lookup("margin-left", "margin", ...)`) still works.
+    out.push(decl);
+}
+
 /// Returns true if `c` may appear in a CSS identifier.
 fn valid_identifier_char(c: char) -> bool {
     matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
@@ -373,12 +449,14 @@ mod tests {
         assert_eq!(sel.id, None);
         assert!(sel.class.is_empty());
 
-        assert_eq!(rule.declarations.len(), 2);
-        assert_eq!(rule.declarations[0].name, "margin");
-        assert_eq!(rule.declarations[0].value, Value::Length(10.0, Unit::Px));
-        assert_eq!(rule.declarations[1].name, "color");
+        // `margin` expands into 4 longhands + the shorthand itself, then color.
+        let color = rule
+            .declarations
+            .iter()
+            .find(|d| d.name == "color")
+            .unwrap();
         assert_eq!(
-            rule.declarations[1].value,
+            color.value,
             Value::ColorValue(Color {
                 r: 255,
                 g: 0,
@@ -386,6 +464,44 @@ mod tests {
                 a: 255
             })
         );
+        let margin_left = rule
+            .declarations
+            .iter()
+            .find(|d| d.name == "margin-left")
+            .unwrap();
+        assert_eq!(margin_left.value, Value::Length(10.0, Unit::Px));
+        let margin = rule
+            .declarations
+            .iter()
+            .find(|d| d.name == "margin")
+            .unwrap();
+        assert_eq!(margin.value, Value::Length(10.0, Unit::Px));
+    }
+
+    #[test]
+    fn parses_important_flag_and_shorthand_expansion() {
+        let css = "p { color: #ff0000 !important; padding: 5px; }".to_string();
+        let sheet = parse(css);
+        let rule = &sheet.rules[0];
+
+        let color = rule
+            .declarations
+            .iter()
+            .find(|d| d.name == "color")
+            .unwrap();
+        assert!(color.important);
+
+        // padding -> 4 longhands (all 5px, not important) + shorthand.
+        let padding_top = rule
+            .declarations
+            .iter()
+            .find(|d| d.name == "padding-top")
+            .unwrap();
+        assert_eq!(padding_top.value, Value::Length(5.0, Unit::Px));
+        assert!(!padding_top.important);
+        assert!(rule.declarations.iter().any(|d| d.name == "padding-right"));
+        assert!(rule.declarations.iter().any(|d| d.name == "padding-bottom"));
+        assert!(rule.declarations.iter().any(|d| d.name == "padding-left"));
     }
 
     #[test]

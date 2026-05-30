@@ -1,0 +1,20 @@
+[package]
+name = "browser-layout"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Layout engine (box model and block/inline flow) for the browser engine."
+
+[lib]
+name = "browser_layout"
+path = "src/lib.rs"
+
+[dependencies]
+browser-dom.workspace = true
+browser-css.workspace = true
+browser-style.workspace = true
+browser-text.workspace = true
+
+[dev-dependencies]
+browser-html.workspace = true

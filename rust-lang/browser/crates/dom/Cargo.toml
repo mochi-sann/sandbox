@@ -1,0 +1,13 @@
+[package]
+name = "browser-dom"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "DOM tree types for the browser engine."
+
+[lib]
+name = "browser_dom"
+path = "src/lib.rs"
+
+[dependencies]

@@ -1,0 +1,16 @@
+[package]
+name = "browser-net"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Networking (HTTP/HTTPS resource fetching) for the browser engine."
+
+[lib]
+name = "browser_net"
+path = "src/lib.rs"
+
+[dependencies]
+ureq.workspace = true
+url.workspace = true
+encoding_rs.workspace = true

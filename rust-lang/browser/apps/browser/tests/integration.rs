@@ -4,8 +4,11 @@
 //! verifies that it produces a non-empty `Canvas` of the requested size without
 //! panicking.
 
-use browser::layout::{layout_tree, Dimensions, Rect};
-use browser::{css, html, painting, style};
+use browser_css as css;
+use browser_html as html;
+use browser_layout::{layout_tree, Dimensions, Rect};
+use browser_paint as painting;
+use browser_style as style;
 
 /// Builds a viewport (initial containing block) of the given size.
 fn viewport(width: f32, height: f32) -> Dimensions {

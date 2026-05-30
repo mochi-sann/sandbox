@@ -1,0 +1,13 @@
+[package]
+name = "browser-css"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "CSS parser and data model for the browser engine."
+
+[lib]
+name = "browser_css"
+path = "src/lib.rs"
+
+[dependencies]

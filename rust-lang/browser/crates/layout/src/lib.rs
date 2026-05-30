@@ -1,6 +1,6 @@
 //! The layout engine.
 //!
-//! This module takes the [`crate::style`] tree and computes the geometry of the
+//! This module takes the [`browser_style`] tree and computes the geometry of the
 //! page: a tree of boxes, each with a position and dimensions, following a
 //! simplified version of the CSS box model and normal block flow.
 //!
@@ -13,9 +13,9 @@
 //!
 //! The public entry point is [`layout_tree`].
 
-use crate::css::{Unit, Value};
-use crate::font::{self, DEFAULT_FONT_SIZE};
-use crate::style::{Display, StyledNode};
+use browser_css::{Unit, Value};
+use browser_text::{self as font, DEFAULT_FONT_SIZE};
+use browser_style::{Display, StyledNode};
 
 /// A rectangle in the page's coordinate space (pixels). `x`/`y` are the
 /// top-left corner of the *content* area.
@@ -163,7 +163,7 @@ impl<'a> LayoutBox<'a> {
     fn text_content(&self) -> Option<&'a str> {
         match self.box_type {
             BoxType::InlineNode(style) => match &style.node.node_type {
-                crate::dom::NodeType::Text(s) => Some(s.as_str()),
+                browser_dom::NodeType::Text(s) => Some(s.as_str()),
                 _ => None,
             },
             _ => None,
@@ -500,8 +500,9 @@ fn wrap_text(font: &font::Font, text: &str, font_size: f32, max_width: f32) -> V
             current.push_str(word);
             continue;
         }
-        // Tentatively add the word with a separating space.
-        let candidate_width = font.text_width(&format!("{current} {word}"), font_size);
+        // Tentatively add the word with a separating space. `measure` shapes
+        // the candidate line so wrapping reflects real (kerned) advances.
+        let candidate_width = font.measure(&format!("{current} {word}"), font_size);
         if candidate_width <= max_width {
             current.push(' ');
             current.push_str(word);
@@ -552,9 +553,9 @@ impl<'a> LookupValue for StyledNode<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::css;
-    use crate::html;
-    use crate::style::style_tree;
+    use browser_css as css;
+    use browser_html as html;
+    use browser_style::style_tree;
 
     /// Builds a styled tree from HTML + CSS strings, returning it boxed so the
     /// borrows live long enough for layout in each test.

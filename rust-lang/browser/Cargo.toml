@@ -1,30 +1,36 @@
-[package]
-name = "browser"
+[workspace]
+members = ["crates/*", "apps/browser"]
+resolver = "2"
+
+# Shared package metadata. Each member crate sets the inheritable fields with
+# `field.workspace = true` so versions and license stay in one place.
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.95"
-description = "A minimal browser engine built incrementally in Rust, inspired by Matt Brubeck's robinson."
 license = "MIT"
-readme = "README.md"
+description = "A minimal browser engine built incrementally in Rust, inspired by Matt Brubeck's robinson."
 
-# This crate provides both a library (the engine) and a binary (the CLI driver).
-[lib]
-name = "browser"
-path = "src/lib.rs"
-
-[[bin]]
-name = "browser"
-path = "src/main.rs"
-
-[dependencies]
+# Shared external dependencies. Member crates reference these with
+# `dep.workspace = true` so a single version applies workspace-wide.
+[workspace.dependencies]
 fontdue = "0.9.3"
-# `image` is used by the painting stage to encode the rasterized canvas to PNG.
+rustybuzz = "0.20"
 image = "0.25"
-# `ureq` is a small blocking HTTP/HTTPS client. Its default features include
-# rustls, so https works out of the box without any system TLS libraries.
+tiny-skia = "0.11"
 ureq = "3"
-# `winit` creates the native window and drives the event loop (0.30 uses the
-# `ApplicationHandler` trait-based API). `softbuffer` pushes a CPU pixel buffer
-# to that window without a GPU, which suits our software rasterizer.
+url = "2.5"
+encoding_rs = "0.8"
 winit = "0.30"
 softbuffer = "0.4"
+
+# Internal crates, referenced by path. Library names are `browser_<name>`.
+browser-dom = { path = "crates/dom" }
+browser-html = { path = "crates/html" }
+browser-css = { path = "crates/css" }
+browser-style = { path = "crates/style" }
+browser-text = { path = "crates/text" }
+browser-layout = { path = "crates/layout" }
+browser-paint = { path = "crates/paint" }
+browser-net = { path = "crates/net" }
+browser-shell = { path = "crates/shell" }
