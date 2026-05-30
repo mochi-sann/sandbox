@@ -123,12 +123,26 @@ fn build_event_loop() -> Result<EventLoop<()>, Box<dyn Error>> {
 /// the process-global env mutation is safe.
 #[cfg(all(unix, not(target_os = "macos")))]
 fn wayland_available() -> bool {
+    use std::path::{Path, PathBuf};
+
     if std::env::var_os("WAYLAND_DISPLAY").is_some_and(|v| !v.is_empty()) {
         return true;
     }
+
+    // Look for a compositor socket. `wayland-client` accepts an absolute path in
+    // `WAYLAND_DISPLAY`, so once we find one we point straight at it regardless of
+    // `XDG_RUNTIME_DIR`.
+    let mut candidates: Vec<PathBuf> = Vec::new();
     if let Some(dir) = std::env::var_os("XDG_RUNTIME_DIR") {
-        if std::path::Path::new(&dir).join("wayland-0").exists() {
-            std::env::set_var("WAYLAND_DISPLAY", "wayland-0");
+        candidates.push(Path::new(&dir).join("wayland-0"));
+    }
+    // WSLg's well-known socket, for shells that export neither WAYLAND_DISPLAY
+    // nor a usable XDG_RUNTIME_DIR.
+    candidates.push(PathBuf::from("/mnt/wslg/runtime-dir/wayland-0"));
+
+    for sock in candidates {
+        if sock.exists() {
+            std::env::set_var("WAYLAND_DISPLAY", &sock);
             return true;
         }
     }
