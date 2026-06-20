@@ -1,0 +1,294 @@
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #8eb1d6 0%, #d7ebff 45%, #e2f7ff 100%);
+}
+
+.game-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.phase-label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 13px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  backdrop-filter: blur(4px);
+}
+
+.hud-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.crosshair::before {
+  width: 2px;
+  height: 18px;
+  left: 8px;
+  top: 0;
+}
+
+.crosshair::after {
+  width: 18px;
+  height: 2px;
+  left: 0;
+  top: 8px;
+}
+
+.hud-panel {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  backdrop-filter: blur(4px);
+}
+
+.top-left {
+  top: 12px;
+  left: 12px;
+}
+
+.center-hint {
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+}
+
+.bottom-help {
+  left: 50%;
+  bottom: 76px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.hotbar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.slot {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.slot.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.slot-icon {
+  border-radius: 2px;
+}
+
+.slot-count {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+}
+
+.inventory-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+  color: #ffffff;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.inventory-panel {
+  background: rgba(20, 20, 24, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inventory-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 48px);
+  gap: 4px;
+}
+
+.held-stack {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -50%);
+}
+
+.crafting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.crafting-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 48px);
+  gap: 4px;
+}
+
+.crafting-arrow {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.menu-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #8eb1d6 0%, #d7ebff 45%, #e2f7ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.menu-panel {
+  background: rgba(20, 20, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #ffffff;
+  min-width: 320px;
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.menu-subtitle {
+  margin: 0 0 16px;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.menu-loading {
+  font-size: 14px;
+  opacity: 0.7;
+  padding: 16px 0;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.menu-button {
+  padding: 12px 20px;
+  font-size: 15px;
+  font-family: inherit;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(60, 60, 70, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.menu-button:hover {
+  background: rgba(80, 80, 95, 0.95);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.menu-button.primary {
+  background: rgba(58, 118, 58, 0.95);
+  border-color: rgba(120, 200, 120, 0.5);
+}
+
+.menu-button.primary:hover {
+  background: rgba(72, 148, 72, 0.98);
+}
+
+.menu-back-button {
+  align-self: flex-end;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #ffffff;
+  background: rgba(80, 40, 40, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.menu-back-button:hover {
+  background: rgba(120, 50, 50, 0.95);
+}
