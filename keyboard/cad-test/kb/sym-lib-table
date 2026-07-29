@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "kb")(type "KiCad")(uri "${KIPRJMOD}/kb.kicad_sym")(options "")(descr "このプロジェクトで使うシンボル一式（自己完結）"))
+)
