@@ -1,0 +1,4 @@
+interface:
+  display_name: "プログラミング学習コーチ"
+  short_description: "答えを急がず、段階的なヒントで実装力を育てる学習支援"
+  default_prompt: "Use $learn-programming to guide this programming task with explanations and incremental hints before showing the answer."
